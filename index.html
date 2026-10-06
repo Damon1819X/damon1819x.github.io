@@ -650,6 +650,13 @@ function load(){
         const n=Math.floor(S.collect[c]/8*eff*sec);
         for(let i=0;i<n;i++){ const m=randMatOfCat(c); S.mats[m.id]=(S.mats[m.id]||0)+1; }
       }
+      for(const sv of S.servants){
+        if(!sv.task||sv.task.kind!=="cai") continue;
+        const eff2=SV_EFF[sv.lv]||0.4, iv2=8/eff2;
+        const n2=Math.floor(sec/iv2);
+        for(let i=0;i<n2;i++){ const m=randMatOfCat(sv.task.t); S.mats[m.id]=(S.mats[m.id]||0)+1; }
+        sv.prog=Math.max(0,sec-n2*iv2);
+      }
       if(away>10) showModal("闭关归来","离开期间挂机采得若干材料。\n（灵气产出默认暂停，未运功不产灵气）\n离线时长 "+fmt(sec)+" 秒 · 采集效率 "+Math.round(eff*100)+"%");
     }
     S.lastSaved=Date.now();
@@ -954,7 +961,7 @@ function renderStats(){
   $("cG").textContent=fmt(S.stoneG);
   $("cPerSec").textContent = S.yunning? fmt(prodPerSec())+" 灵气/s" : "0/s · 待机";
   const hpEl=$("cHP");
-  if(hpEl){ const pct2=Math.max(0,Math.round(S.hp/S.hpMax*100)); hpEl.textContent=S.hp+"/"+S.hpMax; hpEl.style.color=pct2>60?"var(--jade)":pct2>30?"#e67e22":"#d9534f"; }
+  if(hpEl){ const pct2=Math.max(0,Math.round(S.hp/S.hpMax*100)); hpEl.textContent=Math.floor(S.hp)+"/"+S.hpMax; hpEl.style.color=pct2>60?"var(--jade)":pct2>30?"#e67e22":"#d9534f"; }
   $("yunBtn").textContent = S.yunning? "运功中…" : "盘膝打坐 · 开始运功";
   $("yunBtn").disabled = S.yunning;
   $("stopYunBtn").style.display = S.yunning? "" : "none";
@@ -1808,7 +1815,7 @@ function renderExpPanel(){
   if(expTab==="loot"){ tabE.classList.remove("active"); tabL.classList.add("active"); viewE.style.display="none"; viewL.style.display="block"; renderExpLoot(); return; }
   tabE.classList.add("active"); tabL.classList.remove("active"); viewE.style.display="block"; viewL.style.display="none";
   const pct=Math.max(0,Math.round(S.hp/S.hpMax*100));
-  $("expInfo").textContent="气血 "+S.hp+"/"+S.hpMax+"（"+pct+"%） · 战力 "+playerPower()+" · 已获 "+exp.loot.length+" 件";
+  $("expInfo").textContent="气血 "+Math.floor(S.hp)+"/"+S.hpMax+"（"+pct+"%） · 战力 "+playerPower()+" · 已获 "+exp.loot.length+" 件";
   $("expLegend").textContent="图例：🧍 起点 · 🦶 已探索 · ❓ 迷雾 · ⚔️ 妖兽 · ☠️ 机关 · 🌿 材料 · 💎 灵石 · 💊 丹药 · 🧧 符箓 · ⬇️ 下层入口 · 👹 BOSS · 🚪 出口";
   const svg=$("expSvg"); svg.innerHTML="";
   const R=expMapR(exp.floor), size=Math.floor(140/(R+1)), ox=280, oy=250;
@@ -1829,7 +1836,7 @@ function renderExpPanel(){
     txt.setAttribute("x",xy[0]); txt.setAttribute("y",xy[1]+4); txt.setAttribute("text-anchor","middle"); txt.setAttribute("font-size",c.revealed===false?"12":"11");
     txt.textContent=c.used?(c.t==="start"?"🧍":"🦶"):(c.revealed===false?"❓":expCellIcon(c.t));
     g.appendChild(txt);
-    if(!c.used&&c.t!=="start"){ g.style.cursor="pointer"; g.addEventListener("click",()=>expMove(c.q,c.r)); }
+    if(c.revealed!==false&&c.t!=="start"){ g.style.cursor="pointer"; g.addEventListener("click",()=>expMove(c.q,c.r)); }
     svg.appendChild(g);
   }
 }
@@ -2066,7 +2073,7 @@ function gameTick(now){
     const t=$("aucTimer"); if(t){ const left=Math.max(0,S.auction.end-Date.now()); const mm=Math.floor(left/60000),ss=Math.floor((left%60000)/1000); t.textContent=mm+"分"+ss+"秒"; }
     S.auction.list.forEach((en,i)=>{ const el=$("aucBid"+i); if(el){ const who=en.bidder==="player"?"你":en.bidder==="npc"?"虚灵商客":"无人出价"; el.textContent=fmt(en.bid)+"（"+who+"）"; } });
   }
-  if(S.hp<S.hpMax){ S.hp=Math.min(S.hpMax, S.hp+S.hpMax*0.005*dt); }
+  if(!S.exp && S.hp<S.hpMax){ S.hp=Math.min(S.hpMax, S.hp+S.hpMax*0.00005*dt); }
   let mult=1;
   if(evt.prodBoost>now) mult*=2;
   if(evt.prodBoost3>now) mult*=3;
@@ -2122,7 +2129,7 @@ function gameTick(now){
     if(s.task.kind==="cai"){
       const iv=8/eff;
       s.prog+=dt;
-      if(s.prog>=iv){ s.prog-=iv; const m=randMatOfCat(s.task.t); S.mats[m.id]=(S.mats[m.id]||0)+1; svProduced=true; }
+      while(s.prog>=iv){ s.prog-=iv; const m=randMatOfCat(s.task.t); S.mats[m.id]=(S.mats[m.id]||0)+1; svProduced=true; }
     } else {
       const cat=s.task.t;
       const full=(CRAFT.find(c=>c.cat===cat)||{rec:[]}).rec;
@@ -2133,7 +2140,7 @@ function gameTick(now){
       if(!s.curR || !pool.some(p=>p.id===s.curR.id)) s.curR=pool[Math.floor(Math.random()*pool.length)];
       const r=s.curR, iv=craftTime(r)/eff;
       s.prog+=dt;
-      if(s.prog>=iv){ s.prog-=iv; s.curR=null; for(const k in r.need) S.mats[k]-=r.need[k]; if(isEquip(r.id)){ S.equip.push({uid:++S.uid,id:r.id}); } else { S.tres[r.id]=(S.tres[r.id]||0)+1; } svProduced=true; }
+      while(s.prog>=iv){ s.prog-=iv; s.curR=null; for(const k in r.need) S.mats[k]-=r.need[k]; if(isEquip(r.id)){ S.equip.push({uid:++S.uid,id:r.id}); } else { S.tres[r.id]=(S.tres[r.id]||0)+1; } svProduced=true; }
     }
   });
   if(svProduced && activeTab==="pu") renderTab();
