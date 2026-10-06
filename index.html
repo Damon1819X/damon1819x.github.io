@@ -111,6 +111,12 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 .craftBar button{flex:1;min-width:64px;padding:9px 4px;border-radius:8px;cursor:pointer;color:var(--ink);background:var(--panel2);border:1px solid var(--line);font-size:13px;}
 .craftBar button.active{color:#0b0f14;background:var(--jade);border-color:var(--jade);font-weight:700;}
 #itemTip{position:fixed;z-index:9999;pointer-events:none;display:none;max-width:280px;background:var(--panel);border:1px solid var(--mystic);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--ink);box-shadow:0 6px 18px rgba(0,0,0,.45);line-height:1.6;}
+.sw{position:relative;display:inline-block;width:34px;height:18px;vertical-align:middle;flex:none}
+.sw input{opacity:0;width:0;height:0}
+.sw .sl{position:absolute;cursor:pointer;inset:0;background:#88888880;border-radius:18px;transition:.2s}
+.sw .sl:before{content:"";position:absolute;width:12px;height:12px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+.sl{background:var(--jade)}
+.sw input:checked+.sl:before{transform:translateX(16px)}
 </style>
 </head>
 <body>
@@ -219,6 +225,15 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 <div class="banner" id="banner"></div>
 <div class="overlay" id="overlay"><div class="modal"><h3 id="mTitle"></h3><div class="mbody" id="mBody"></div><div class="btnPair"><button id="mBtn">确定</button></div></div></div>
 <div class="overlay" id="expOverlay"><div class="modal" style="width:960px;max-width:96vw"><h3 id="expTitle"></h3><div class="expTabs"><button id="expTabExplore" class="expTab active">🗺️ 探索</button><button id="expTabLoot" class="expTab">🎒 战利品</button></div><div id="expViewExplore"><div id="expInfo" style="color:var(--ink-dim);font-size:12px;margin:2px 0 8px"></div><svg id="expSvg" viewBox="0 0 560 500" style="display:block;margin:0 auto;background:rgba(0,0,0,.25);border-radius:12px;width:100%;max-width:640px"></svg><div id="expLegend" style="font-size:12px;color:var(--ink-dim);text-align:center;margin-top:8px;line-height:1.7"></div></div><div id="expViewLoot" style="display:none;font-size:13px;color:var(--ink);min-height:120px;max-height:46vh;overflow-y:auto"></div><div class="btnPair"><button id="expRetreatBtn" style="background:linear-gradient(135deg,#d9534f,#b03a35);color:#fff">撤出秘境（-50%气血 · -50%战利品）</button><button id="expCloseBtn">关闭</button></div></div></div>
+<div class="overlay" id="cycQtyOverlay">
+  <div class="modal">
+    <h3 id="cycQtyTitle">— 循环制造目标 —</h3>
+    <div class="mbody" id="cycQtyInfo"></div>
+    <div style="margin:8px 0">目标数量：<input id="cycQty" type="number" min="1" style="width:90px;padding:6px"></div>
+    <div class="btnPair"><button id="cycQtyOk">确定</button><button id="cycQtyCancel">取消</button></div>
+  </div>
+</div>
+
 <div class="overlay" id="sellOverlay">
   <div class="modal">
     <h3 id="sellTitle">— 出售物品 —</h3>
@@ -568,9 +583,9 @@ function newState(){
     realm:0, essence:0, lifetime:0, clicks:0, dao:0, daoTotal:0, hp:100, hpMax:100,
     crystal:0, stoneL:0, stoneM:0, stoneH:0, stoneT:0, stoneG:0,
     fa:FAC.map(()=>0), ups:Object.fromEntries(UPS.map(u=>[u.id,0])),
-    mats:{}, tres:{}, collect:{}, equip:[], equipped:{}, uid:0,
+    mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0,
     shen:[], shenProd:0, shenBreak:0, shenCrit:0, shenOffline:0, shenDaoProd:0,
-    ach:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, shop:{list:[],until:0}, lastSaved:Date.now(),
+    ach:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(),
     settings:{sound:true,theme:"dark",lang:"zh"},
   };
 }
@@ -579,7 +594,7 @@ function normalizeState(){
   S.mats=S.mats||{}; S.tres=S.tres||{}; S.collect=S.collect||{};
   S.equip=S.equip||[]; S.equipped=S.equipped||{}; S.uid=S.uid||0;
   for(const k in S.tres){ if(isEquip(k)&&(S.tres[k]||0)>0){ for(let i=0;i<S.tres[k];i++) S.equip.push({uid:++S.uid,id:k}); delete S.tres[k]; } }
-  S.making=S.making||null; S.collectCd=S.collectCd||0;
+  S.making=S.making||null; S.collectCd=S.collectCd||0; S.cycle=S.cycle||null; S.collectZone=S.collectZone||{beast:"外",ore:"外",herb:"外"};
   if(!S.servants || !S.servants.length) S.servants=[{lv:"丁",task:null,prog:0,curR:null}];
   S.servants.forEach(s=>{ s.lv=s.lv||"丁"; s.task=s.task||null; s.prog=s.prog||0; s.curR=s.curR||null; });
   for(const k in S.collect){ if(!["beast","ore","herb"].includes(k)) delete S.collect[k]; }
@@ -734,6 +749,7 @@ function offlineEfficiency(){ return 0.5 + UPS[4].fx(S.ups.offline) + rootOfflin
    ================================================================ */
 function startYun(){
   if(S.yunning) return;
+  if(S.cycle){ S.cycle=null; logEvent("运功前已停止循环制造"); }
   if(S.making){ banner("炼制中不可运功，请等待完成"); return; }
   S.collect={}; // 互斥：运功时停止采集挂机
   S.yunning=true; S.clicks++;
@@ -787,9 +803,23 @@ function doExch(e,mult){
   logEvent("兑换 "+e.n+"（手续费1%）"+(mult>1?"×"+mult+"：":"：")+"-"+cost+" → +"+gain);
   banner("兑换成功：「"+e.n+"」×"+gain+"（手续费1%）");
 }
+const ZONES={
+  外:{nm:"外围区域",lo:1,hi:4,unlock:0},
+  中:{nm:"中部区域",lo:3,hi:6,unlock:3},
+  内:{nm:"核心区域",lo:4,hi:8,unlock:6},
+};
+function zoneOf(cid){ return ZONES[(S.collectZone&&S.collectZone[cid])||"外"]||ZONES.外; }
+function setZone(cid,z){
+  if(S.realm<ZONES[z].unlock){ banner(ZONES[z].nm+"需"+REALMS[ZONES[z].unlock].full+"境界解锁"); return; }
+  S.collectZone=S.collectZone||{beast:"外",ore:"外",herb:"外"};
+  S.collectZone[cid]=z;
+  logEvent("采集区域切换至"+ZONES[z].nm+"（"+ (cid==="beast"?"狩猎":cid==="ore"?"挖矿":"采药") +"）",'sys');
+  save();
+}
 function randMatOfCat(cid){
   const cat = cid==="beast"?"妖兽材料":cid==="ore"?"矿石":"草药";
-  const pool=MATS.filter(m=>m.cat===cat);
+  const zn=zoneOf(cid);
+  const pool=MATS.filter(m=>m.cat===cat && m.rarity>=zn.lo && m.rarity<=zn.hi);
   return pool[Math.floor(Math.random()*pool.length)];
 }
 const SV_EFF={甲:0.9,乙:0.75,丙:0.6,丁:0.4}; // 仆人效率 = 玩家效率（100%）的比例
@@ -1009,7 +1039,7 @@ let caiCat="beast";
 function renderCai(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 采集 · 狩猎 / 挖矿 / 采药 —";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="按分类随机获得材料：点击「立即采集」收获 1 份，或开启「挂机」每 8 秒自动采集 1 份（离线按效率补发）。材料存放于须弥空间，按分类归类，可用于制造。"+(S.yunning?'<br><b style="color:#e05555">运功进行中，采集已暂停，请先停止运功。</b>':"");body.appendChild(p);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="深入<b>十万大山</b>采集，狩猎 / 挖矿 / 采药按区域产出：<b>外围区域</b>稀有 1-4（炼气解锁）· <b>中部区域</b>稀有 3-6（元婴解锁）· <b>核心区域</b>稀有 4-8（合体解锁）。点击「立即采集」收获 1 份，或开启「挂机」每 8 秒自动采集 1 份（离线按效率补发）。材料存放于须弥空间，按分类归类，可用于制造。"+(S.yunning?'<br><b style="color:#e05555">运功进行中，采集已暂停，请先停止运功。</b>':"");body.appendChild(p);
   const CATS=[
     {cid:"beast", nm:"狩猎", ic:"🏹", cat:"妖兽材料", ds:"进入深山猎取妖兽，随机得到一种妖兽材料。"},
     {cid:"ore",   nm:"挖矿", ic:"⛏️", cat:"矿石",       ds:"下矿层挖掘，随机得到一种矿石。"},
@@ -1024,13 +1054,28 @@ function renderCai(body){
   });
   const cur=CATS.find(c=>c.cid===caiCat)||CATS[0];
   const auto = S.collect[cur.cid]!==undefined;
-  const pool=MATS.filter(m=>m.cat===cur.cat);
+  const zn=zoneOf(cur.cid);
+  const pool=MATS.filter(m=>m.cat===cur.cat && m.rarity>=zn.lo && m.rarity<=zn.hi);
   const item=document.createElement("div");item.className="item";
   item.innerHTML=`<div class="ic">${cur.ic}</div><div class="body">
     <div class="nm">${cur.nm}<span class="cat">${cur.cat} ×10</span></div>
     <div class="ds">${cur.ds}</div>
+    <div class="ln" style="color:var(--jade)">当前区域：${zn.nm}（稀有 ${zn.lo}-${zn.hi}）</div>
     <div class="ln">可得：${pool.map(m=>m.name).join("、")}</div>
   </div>`;
+  // 地区下拉菜单（等级解锁）
+  const znRow=document.createElement("div");znRow.style.cssText="margin:7px 0 2px;font-size:12px;color:var(--ink-dim);display:flex;align-items:center;gap:6px";
+  znRow.appendChild(document.createTextNode("🗺️ 采集区域："));
+  const sel=document.createElement("select");sel.style.cssText="padding:5px 8px;border-radius:7px;font-size:12px;background:var(--panel2);color:var(--ink);border:1px solid var(--line)";
+  ["外","中","内"].forEach(z=>{
+    const o=document.createElement("option");o.value=z;o.textContent=ZONES[z].nm+"（稀有 "+ZONES[z].lo+"-"+ZONES[z].hi+"）"+(S.realm>=ZONES[z].unlock?"":" · "+REALMS[ZONES[z].unlock].full+"解锁");
+    o.disabled=S.realm<ZONES[z].unlock;
+    if(zn===ZONES[z]) o.selected=true;
+    sel.appendChild(o);
+  });
+  sel.addEventListener("change",()=>{ setZone(cur.cid, sel.value); render(); });
+  znRow.appendChild(sel);
+  item.querySelector(".body").appendChild(znRow);
   const wr=document.createElement("div");wr.className="btnRow";
   const blocked=S.yunning||!!S.making;
   const cdLeft=Math.max(0,Math.ceil((S.collectCd-Date.now())/1000));
@@ -1048,6 +1093,40 @@ function renderCai(body){
   });
 }
 let zaoCat="制符";
+let cycQtyId=null;
+function openCycQty(rId){
+  cycQtyId=rId; const r=REC_BY_ID[rId];
+  const t=(S.cycle&&S.cycle.rId===rId)?S.cycle.target:1;
+  $("cycQtyTitle").textContent="— 循环制造目标 —";
+  $("cycQtyInfo").innerHTML="「"+(r?r.name:rId)+"」达到目标件数后自动停止循环。";
+  const q=$("cycQty"); q.min=1; q.value=t;
+  $("cycQtyOverlay").classList.add("show");
+}
+function closeCycQty(){ cycQtyId=null; $("cycQtyOverlay").classList.remove("show"); }
+function setCycQty(){
+  if(!cycQtyId) return;
+  let t=parseInt($("cycQty").value)||1; if(t<1) t=1;
+  if(S.cycle && S.cycle.rId===cycQtyId){ S.cycle.target=t; if(S.cycle.made>S.cycle.target) S.cycle.made=S.cycle.target; logEvent("循环目标调整为 "+t+" 件",'sys'); }
+  else { S.cycle={rId:cycQtyId, target:t, made:0}; startCycleFirst(); }
+  closeCycQty(); render(); save();
+}
+function startCycleFirst(){
+  const cr=REC_BY_ID[S.cycle.rId];
+  if(S.yunning){ S.yunning=false; S.critBoost=false; logEvent("循环制造开始，已停止运功"); }
+  for(const c in S.collect){ if(S.collect[c]!==undefined){ delete S.collect[c]; logEvent("循环制造开始，已停止挂机采集"); break; } }
+  if(!cr) return;
+  logEvent("开启循环制造：「"+cr.name+"」，目标 "+S.cycle.target+" 件",'sys');
+  banner("循环制造开启：目标 "+S.cycle.target+" 件");
+  if(!S.making && !S.yunning){
+    let ok3=true; for(const k in cr.need){ if((S.mats[k]||0)<cr.need[k]){ ok3=false; break; } }
+    if(ok3){ craftItem(cr); S.cycle.made++; }
+  }
+}
+function toggleCycle(rId){
+  if(S.cycle && S.cycle.rId===rId){ S.cycle=null; logEvent("已停止循环制造"); return; }
+  S.cycle={rId:rId, target:1, made:0};
+  startCycleFirst();
+}
 function renderZao(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 制造 —";body.appendChild(st);
@@ -1060,6 +1139,7 @@ function renderZao(body){
     bar.appendChild(b);
   });
   const cur=CRAFT.find(c=>c.cat===zaoCat)||CRAFT[0];
+  if(S.cycle){ const hc=document.createElement("div");hc.className="hint";const hr=REC_BY_ID[S.cycle.rId];hc.innerHTML='<b style="color:var(--jade)">🔄 循环制造中：「'+(hr?hr.name:S.cycle.rId)+'」</b> · 目标 <b>'+S.cycle.target+'</b> 件 · 已制 <b>'+S.cycle.made+'</b> 件（达到目标或材料不足自动停止）';body.appendChild(hc); }
   const stC=document.createElement("div");stC.className="sectionTitle";stC.textContent=cur.ic+" — "+cur.cat+" · "+cur.ds+" —";body.appendChild(stC);
   cur.rec.forEach(r=>{
     const item=document.createElement("div");item.className="item";
@@ -1075,6 +1155,21 @@ function renderZao(body){
     </div>`;
     const busy=S.making&&S.making.rId===r.id; const mkTxt=busy?("炼制中 "+Math.max(0,Math.ceil((S.making.end-Date.now())/1000))+"s"):"合成";
     item.appendChild(buyBtn(can,()=>{craftItem(r);render();},mkTxt));
+    // 循环制造：滑块开关 + 目标数量（点击目标弹出对话框填写）
+    const cycOn=!!(S.cycle&&S.cycle.rId===r.id);
+    const cycRow=document.createElement("div");cycRow.style.cssText="display:flex;align-items:center;gap:8px;margin-top:7px;font-size:12px";
+    const sw=document.createElement("label");sw.className="sw";sw.title="循环制造开关";
+    const cb=document.createElement("input");cb.type="checkbox";cb.checked=cycOn;
+    cb.addEventListener("change",()=>{ toggleCycle(r.id); render(); });
+    const sl=document.createElement("span");sl.className="sl";sw.appendChild(cb);sw.appendChild(sl);
+    cycRow.appendChild(sw);
+    const cycTxt=document.createElement("span");
+    cycTxt.textContent=cycOn?("目标 "+S.cycle.target+" 件 · 已制 "+S.cycle.made):"循环制造（目标 1 件）";
+    cycTxt.style.cursor="pointer";cycTxt.style.color=cycOn?"var(--jade)":"var(--ink-dim)";
+    cycTxt.title=cycOn?"点击修改目标数量":"开启循环后点击可修改目标数量";
+    cycTxt.addEventListener("click",()=>{ if(S.cycle&&S.cycle.rId===r.id) openCycQty(r.id); });
+    cycRow.appendChild(cycTxt);
+    item.querySelector(".body").appendChild(cycRow);
     body.appendChild(item);
   });
 }
@@ -1228,6 +1323,13 @@ function renderEqp(body){
     body.appendChild(item);
   });
 }
+let xumiFold={tres:true,equip:true,mat:true,matBeast:true,matOre:true,matHerb:true};
+function xuSec(body,title,key){
+  const d=document.createElement("div");d.className="sectionTitle fold";d.style.cursor="pointer";
+  d.textContent=(xumiFold[key]?"▾ ":"▸ ")+title;
+  d.addEventListener("click",()=>{ xumiFold[key]=!xumiFold[key]; render(); });
+  body.appendChild(d); return xumiFold[key];
+}
 function renderXu(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 须弥空间 · 背包 —";body.appendChild(st);
@@ -1237,8 +1339,7 @@ function renderXu(body){
   const eqIds=Array.from(new Set((S.equip||[]).map(x=>x.id)));
   if(ids.length===0 && !hasMat && !eqIds.length){ const e=document.createElement("div");e.className="hint";e.textContent="背包空空如也，前往「制造」合成物品或「采集」获取材料。";body.appendChild(e); return; }
   // 制造物品
-  if(ids.length){
-    const stT=document.createElement("div");stT.className="sectionTitle";stT.textContent="— 制造物品 —";body.appendChild(stT);
+  if(ids.length && xuSec(body,"制造物品","tres")){
     ids.forEach(id=>{
       const r=REC_BY_ID[id]; if(!r) return;
       let catName=""; for(const c of CRAFT){ if(c.rec.some(x=>x.id===r.id)){ catName=c.cat; break; } }
@@ -1255,8 +1356,7 @@ function renderXu(body){
     });
   }
   // 装备
-  if(eqIds.length){
-    const stE=document.createElement("div");stE.className="sectionTitle";stE.textContent="— 装备 —";body.appendChild(stE);
+  if(eqIds.length && xuSec(body,"装备","equip")){
     eqIds.forEach(id=>{
       const r=REC_BY_ID[id]; if(!r) return;
       const item=document.createElement("div");item.className="item";
@@ -1269,12 +1369,11 @@ function renderXu(body){
     });
   }
   // 采集材料：按分类归类，显示持有数量
-  if(hasMat){
-    const stM=document.createElement("div");stM.className="sectionTitle";stM.textContent="— 材料（采集） —";body.appendChild(stM);
+  if(hasMat && xuSec(body,"材料（采集）","mat")){
     ["妖兽材料","矿石","草药"].forEach(cat=>{
       const list=MATS.filter(m=>m.cat===cat && (S.mats[m.id]||0)>0);
       if(!list.length) return;
-      const stC=document.createElement("div");stC.className="sectionTitle";stC.textContent="— "+cat+" —";body.appendChild(stC);
+      if(!xuSec(body,cat,cat==="妖兽材料"?"matBeast":cat==="矿石"?"matOre":"matHerb")) return;
       list.forEach(m=>{
         const row=document.createElement("div");row.className="exchRow";
         row.innerHTML=`<span class="ex-n">${m.ic} ${m.name} · 持有 <b>${fmt(S.mats[m.id]||0)}</b></span>`;
@@ -1764,7 +1863,8 @@ function renderTut(){
   if(tutStep===-2){
     $("tutTitle").textContent="— 新手指引 —";
     $("tutBody").innerHTML="你即将重生在一个<b>修仙异世界</b>：百族林立、宗门如云，凡人唯有踏上仙途方能超脱生死。<br><br>是否开启<b>新手指引</b>，快速了解如何修炼、采集制造与驱使仆人？";
-    $("tutNameWrap").style.display="none"; $("tutSkip").style.display="none";
+    $("tutNameWrap").style.display="none";
+    $("tutSkip").style.display="inline-block"; $("tutSkip").textContent="直接开始";
     $("tutNext").textContent="开始指引";
     return;
   }
@@ -1829,6 +1929,8 @@ $("tutName").addEventListener("keydown",e=>{ if(e.key==="Enter") tutNext(); });
 $("rrKeep").addEventListener("click",()=>rrKeep());
 $("sellOk").addEventListener("click",()=>{ if(sellRef){ const q=parseInt($("sellQty").value)||0; sellTres(q); } closeSell(); });
 $("sellCancel").addEventListener("click",closeSell);
+$("cycQtyOk").addEventListener("click",()=>{ setCycQty(); });
+$("cycQtyCancel").addEventListener("click",closeCycQty);
 $("rrAgain").addEventListener("click",()=>rrAgain());
 
 /* ================================================================
@@ -1868,7 +1970,12 @@ $("rebirthBtn").addEventListener("click",()=>{
    ================================================================ */
 document.querySelectorAll(".menu-item").forEach(m=>m.addEventListener("click",()=>switchTab(m.dataset.tab)));
 $("breakBtn").addEventListener("click",()=>doBreak());
-$("yunBtn").addEventListener("click",()=>startYun());
+$("yunBtn").addEventListener("click",()=>{
+  // 兜底：引导/灵根弹窗若残留（定根后未正常关闭）先移除，确保点击必响应
+  if(S.root && $("rrOverlay").classList.contains("show")) $("rrOverlay").classList.remove("show");
+  if((S.tut==="done"||S.tut==="skip") && $("tutOverlay").classList.contains("show")) $("tutOverlay").classList.remove("show");
+  startYun();
+});
 $("stopYunBtn").addEventListener("click",()=>stopYun());
 $("rollBtn").addEventListener("click",()=>{ if(S.root && S.freeRolls<=0){ banner("灵根已定，可用重生重置"); } else openReroll(); });
 $("mBtn").addEventListener("click",()=>$("overlay").classList.remove("show"));
@@ -1941,6 +2048,19 @@ function gameTick(now){
   if(S.making && Date.now()>=S.making.end){
     const rid=S.making.rId, r=REC_BY_ID[rid]; S.making=null;
     if(r){ if(isEquip(r.id)){ S.equip.push({uid:++S.uid,id:r.id}); } else { S.tres[rid]=(S.tres[rid]||0)+1; } sound(660,.2); logEvent("炼成「"+r.name+"」",'sys'); banner("炼成「"+r.name+"」"); }
+    // 循环制造续作：目标未达成且材料足够则自动下一炉，否则停止
+    if(S.cycle && !S.yunning){
+      const cr=REC_BY_ID[S.cycle.rId];
+      let ok2=!!cr;
+      if(ok2){ for(const k in cr.need){ if((S.mats[k]||0)<cr.need[k]){ ok2=false; break; } } }
+      if(ok2 && S.cycle.made<S.cycle.target){ craftItem(cr); S.cycle.made++; }
+      else if(!ok2 || S.cycle.made>=S.cycle.target){
+        const done=S.cycle.made>=S.cycle.target;
+        logEvent(done?("循环制造完成：共炼制 "+S.cycle.made+" 件「"+(cr?cr.name:S.cycle.rId)+"」"):"循环制造已停止：材料不足",'warn');
+        banner(done?"循环制造完成":"循环制造已停止：材料不足");
+        S.cycle=null;
+      }
+    }
     if(activeTab==="zao") renderTab();
   }
   // 仆人自动采集 / 制造
@@ -2009,6 +2129,9 @@ window.addEventListener("resize",sizeBg);
    启动
    ================================================================ */
 function render(){
+  // 弹窗自愈：定根后残留灵根弹窗 / 引导完成后残留引导弹窗 → 自动关闭，避免遮挡点击
+  if(S.root && $("rrOverlay").classList.contains("show")) $("rrOverlay").classList.remove("show");
+  if((S.tut==="done"||S.tut==="skip") && $("tutOverlay").classList.contains("show")) $("tutOverlay").classList.remove("show");
   renderStats();
   renderLog();
   if(activeTab!=="cult") renderTab();
