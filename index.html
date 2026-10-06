@@ -123,6 +123,7 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 <canvas id="bg"></canvas>
 <div id="app">
   <div id="topbar">
+    <div class="stat"><div class="lbl">道号</div><div class="val gold" id="playerNm">无名散修</div></div>
     <div class="stat"><div class="lbl">灵力（修炼）</div><div class="val jade" id="essenceVal">0</div><div style="font-size:11px;color:var(--ink-dim)" id="essenceRate">0/s</div></div>
     <div class="stat"><div class="lbl">当前境界</div><div class="val" id="realmName">炼气</div></div>
     <div class="stat"><div class="lbl">灵根</div><div class="val mystic" id="rootName">未定</div></div>
@@ -444,7 +445,7 @@ const CRAFT = [
     {id:"dingling",     name:"定灵珠",   ic:"🔮", slot:"t", brk:15, value:2500, need:{gold:1,bing:1,skin:1}, ds:"定灵之珠，稳固根基。"},
     {id:"zhenhunling",  name:"镇魂铃",   ic:"🔔", slot:"t", crit:12, value:3000, need:{gold:1,jiao:1,zishen:1}, ds:"铃声镇魂，会心大增。"},
   ]},
-  {cat:"阵法", ic:"🔯", ds:"布置法阵", rec:[
+  {cat:"阵法", ic:"⛩️", ds:"布置法阵", rec:[
     {id:"juling",   name:"聚灵阵图",   ic:"🌀", value:60,   need:{iron:1,herb:1},          eff:"ess_flat", val:25, durMin:30, maxStack:5, ds:"布聚灵之阵，聚拢灵气。"},
     {id:"wuxingzhen",name:"五行阵图", ic:"🎨", value:400,  need:{iron:1,tong:1,herb:1},   eff:"ess_pct",  val:10,  durMin:60,  maxStack:4, ds:"五行流转，灵气增益。"},
     {id:"taiji",   name:"太极阵",   ic:"☯️", value:900,  need:{qing:1,han:1,lingzhi:1}, eff:"brk",      val:15,  durMin:60,  maxStack:3, ds:"太极两仪，突破增益。"},
@@ -544,19 +545,19 @@ function realmAt(n){ return REALMS[Math.min(n, REALMS.length-1)]; }
 const ACHS = [
   {id:"root1", nm:"天生仙骨",   ds:"拥有单灵根",        ic:"🌟", rw:1000, cond:s=>s.root&&s.root.type==="single"},
   {id:"root2", nm:"万中无一",   ds:"拥有变异灵根",      ic:"💎", rw:5000, cond:s=>s.root&&s.root.type==="mut"},
-  {id:"c1",    nm:"运功入道",   ds:"累计运功 100 次",    ic:"🧘", rw:50,  cond:s=>s.clicks>=100},
-  {id:"c2",    nm:"勤劳之手",   ds:"累计运功 1000 次",   ic:"🖐️", rw:500, cond:s=>s.clicks>=1000},
+  {id:"c1",    nm:"运功入道",   ds:"每累计运功 100 次可领一次", ic:"🧘", rw:50, multi:true, step:100, max:20, prog:s=>s.clicks, cond:s=>s.clicks>=100},
+  {id:"c2",    nm:"勤劳之手",   ds:"每累计运功 1000 次可领一次", ic:"🖐️", rw:500, multi:true, step:1000, max:10, prog:s=>s.clicks, cond:s=>s.clicks>=1000},
   {id:"r1",    nm:"筑基有成",   ds:"突破至筑基期",      ic:"🏮", rw:200,  cond:s=>s.realm>=1},
   {id:"r2",    nm:"金丹大成",   ds:"突破至金丹期",      ic:"🪙", rw:2000, cond:s=>s.realm>=2},
   {id:"r3",    nm:"元婴出窍",   ds:"突破至元婴期",      ic:"👶", rw:20000,cond:s=>s.realm>=3},
   {id:"r4",    nm:"化神可期",   ds:"突破至化神期",      ic:"🌫️", rw:200000,cond:s=>s.realm>=4},
-  {id:"g1",    nm:"阵起九转",   ds:"拥有 10 座聚灵阵",   ic:"🌀", rw:100,  cond:s=>s.fa[0]>=10},
-  {id:"g2",    nm:"灵兽成群",   ds:"拥有 25 只灵兽",     ic:"🐉", rw:1000, cond:s=>s.fa[1]>=25},
+  {id:"g1",    nm:"阵起九转",   ds:"每拥有 10 座聚灵阵可领一次", ic:"🌀", rw:100, multi:true, step:10, max:20, prog:s=>s.fa[0], cond:s=>s.fa[0]>=10},
+  {id:"g2",    nm:"灵兽成群",   ds:"每拥有 25 只灵兽可领一次",   ic:"🐉", rw:1000, multi:true, step:25, max:20, prog:s=>s.fa[1], cond:s=>s.fa[1]>=25},
   {id:"p1",    nm:"灵气如潮",   ds:"运功时灵气产量达到 1K/秒",  ic:"💨", rw:1000, cond:()=>prodPerSec()>=1e3},
   {id:"p2",    nm:"气吞山河",   ds:"运功时灵气产量达到 1M/秒",  ic:"🌊", rw:100000, cond:()=>prodPerSec()>=1e6},
   {id:"d1",    nm:"一朝飞升",   ds:"完成第一次飞升",    ic:"🦢", rw:0,   cond:s=>s.ascensions>=1},
-  {id:"d2",    nm:"道韵盈身",   ds:"累计获得 100 道韵",  ic:"💫", rw:0,   cond:s=>s.daoTotal>=100},
-  {id:"d3",    nm:"问道长生",   ds:"累计获得 1000 道韵", ic:"🌠", rw:0,   cond:s=>s.daoTotal>=1000},
+  {id:"d2",    nm:"道韵盈身",   ds:"每累计 100 道韵可领一次",   ic:"💫", rw:1000, multi:true, step:100, max:20, prog:s=>s.daoTotal, cond:s=>s.daoTotal>=100},
+  {id:"d3",    nm:"问道长生",   ds:"每累计 1000 道韵可领一次",  ic:"🌠", rw:10000, multi:true, step:1000, max:10, prog:s=>s.daoTotal, cond:s=>s.daoTotal>=1000},
 ];
 
 /* 随机事件 */
@@ -587,12 +588,13 @@ function newState(){
     fa:FAC.map(()=>0), ups:Object.fromEntries(UPS.map(u=>[u.id,0])),
     mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0,
     shen:[], shenProd:0, shenBreak:0, shenCrit:0, shenOffline:0, shenDaoProd:0,
-    ach:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(),
+    ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(),
     settings:{sound:true,theme:"dark",lang:"zh"},
   };
 }
 function normalizeState(){
   S.fa=(S.fa||FAC.map(()=>0)); while(S.fa.length<FAC.length)S.fa.push(0);
+  S.achGot=S.achGot||{}; S.achPending=S.achPending||[];
   S.mats=S.mats||{}; S.tres=S.tres||{}; S.collect=S.collect||{};
   S.equip=S.equip||[]; S.equipped=S.equipped||{}; S.uid=S.uid||0;
   for(const k in S.tres){ if(isEquip(k)&&(S.tres[k]||0)>0){ for(let i=0;i<S.tres[k];i++) S.equip.push({uid:++S.uid,id:k}); delete S.tres[k]; } }
@@ -875,12 +877,27 @@ function useTres(r){
 }
 
 /* 成就 */
+function claimableTimes(a){
+  if(a.multi){ const can=Math.floor((a.prog? a.prog(S):0)/a.step); return Math.min(can, a.max||999); }
+  return (a.cond(S) && !S.ach.includes(a.id))? 1 : 0;
+}
 function checkAchievements(){
   ACHS.forEach(a=>{
-    if(S.ach.includes(a.id)) return;
-    if(a.cond(S)){ S.ach.push(a.id); if(a.rw>0) S.stoneL+=a.rw; logEvent("达成成就「"+a.nm+"」，奖励 "+a.rw+" 下品灵石",'sys'); banner("成就达成："+a.nm); }
+    const got=(S.achGot[a.id]||0) + (a.multi?0:(S.ach.includes(a.id)?1:0));
+    if(got>=claimableTimes(a)) return;
+    if(!S.achPending.includes(a.id)) S.achPending.push(a.id);
   });
   updateBadges();
+}
+function claimAch(a){
+  const can=claimableTimes(a);
+  const got=(S.achGot[a.id]||0) + (a.multi?0:(S.ach.includes(a.id)?1:0));
+  if(got>=can) return;
+  if(a.multi) S.achGot[a.id]=got+1; else S.ach.push(a.id);
+  S.achPending=S.achPending.filter(x=>x!==a.id);
+  if(a.rw>0){ S.stoneL+=a.rw; logEvent("领取成就「"+a.nm+"」奖励 "+a.rw+" 下品灵石",'sys'); banner("领取成就："+a.nm+" +"+a.rw); }
+  else { logEvent("达成成就「"+a.nm+"」",'sys'); banner("成就达成："+a.nm); }
+  sound(620,.15); updateBadges(); save(); render();
 }
 function triggerEvent(){
   const e=EVENTS[Math.floor(Math.random()*EVENTS.length)];
@@ -916,9 +933,10 @@ function renderLog(){
    渲染
    ================================================================ */
 function updateBadges(){
-  const b=$("achBadge"); if(b){ b.style.display=S.ach.length?"":"none"; b.textContent=S.ach.length; }
+  const b=$("achBadge"); if(b){ const n=S.achPending?S.achPending.length:0; b.style.display=n?"":"none"; b.textContent=n; }
 }
 function renderStats(){
+  const pn=$("playerNm"); if(pn) pn.textContent=S.name||"无名散修";
   $("essenceVal").textContent=fmt(S.essence);
   $("essenceRate").textContent = S.yunning? fmt(prodPerSec())+"/s" : "0/s · 待机";
   $("realmName").textContent=realm().full;
@@ -1547,7 +1565,7 @@ function renderShop(body){
 }
 function renderExch(body){
   const st2=document.createElement("div");st2.className="sectionTitle";st2.textContent="— 坊市 · 灵石兑换（手续费1%）—";body.appendChild(st2);
-  const p2=document.createElement("div");p2.className="hint";p2.textContent="兑换比：1神品=100极品=1万上品=100万中品=1亿下品=100亿灵晶。兑换收取固定 1% 手续费：低→高支付多付（如 100 下品→1 中品扣 101），高→低所得扣减（如 1 中品→100 下品得 99）。「兑换」每次 1 份，「×100」一次兑换 100 份。";body.appendChild(p2);
+  const p2=document.createElement("div");p2.className="hint";p2.textContent="兑换比：1神品=100极品=1万上品=100万中品=1亿下品=100亿灵晶。兑换收取固定 1% 手续费：低→高支付多付（如 100 下品→1 中品扣 101），高→低所得扣减（如 1 中品→100 下品得 99）。「兑换」每次 1 份，「×50」一次 50 份，「×100」一次 100 份。";body.appendChild(p2);
   const EXCH=[
     {n:"灵晶 → 下品",from:"crystal",to:"stoneL",fa:100,ta:1},
     {n:"下品 → 中品",from:"stoneL",to:"stoneM",fa:100,ta:1},
@@ -1564,10 +1582,12 @@ function renderExch(body){
     const cost=e.fa>1?Math.ceil(e.fa*1.01):e.fa;
     const gain=e.fa>1?e.ta:Math.floor(e.ta*0.99);
     const ok=(S[e.from]||0)>=cost;
+    const ok50=(S[e.from]||0)>=cost*50;
     const ok100=(S[e.from]||0)>=cost*100;
     row.innerHTML=`<span class="ex-n">${e.n}（${cost}:${gain} 含1%）${ok?"":"<span style='color:#e05555;font-size:11px'>（不足"+cost+"）</span>"}</span>`;
     const btns=document.createElement("div");btns.style.display="flex";btns.style.gap="6px";
     btns.appendChild(buyBtn(ok,()=>{doExch(e);render();},"兑换"));
+    btns.appendChild(buyBtn(ok50,()=>{doExch(e,50);render();},"×50"));
     btns.appendChild(buyBtn(ok100,()=>{doExch(e,100);render();},"×100"));
     row.appendChild(btns);
     body.appendChild(row);
@@ -1828,15 +1848,22 @@ function renderExpLoot(){
 function renderAchs(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 证道成就 —";body.appendChild(st);
+  const p=document.createElement("div");p.className="hint";p.textContent="成就达成后奖励不会自动发放，需在下方手动点击「领取」。部分累计型成就（运功/设施/道韵）可多次领取。";body.appendChild(p);
   ACHS.forEach(a=>{
-    const got=S.ach.includes(a.id);
+    const pend=S.achPending.includes(a.id);
+    const got=(S.achGot[a.id]||0) + (a.multi?0:(S.ach.includes(a.id)?1:0));
+    const can=claimableTimes(a);
+    const done=got>=can && can>0;
     const item=document.createElement("div");
-    item.className="item"+(got?"":" locked");
+    item.className="item"+(pend?" afford":"")+(done?"":" locked");
+    const progLine = a.multi ? `<div class="ln">已领 <b>${got}</b> / ${can} 次${can>=a.max?"（已满）":""}</div>` : (done?`<div class="ln">已领取</div>`:`<div class="ln">${a.cond(S)?"已达成，待领取":"未达成"}</div>`);
     item.innerHTML=`<div class="ic">${a.ic}</div><div class="body">
-      <div class="nm">${a.nm}${got?' <span style="color:var(--jade)">✔</span>':''}</div>
+      <div class="nm">${a.nm}${done?' <span style="color:var(--jade)">✔</span>':''}</div>
       <div class="ds">${a.ds}</div>
       <div class="cost">奖励 ${a.rw>0?fmt(a.rw)+" 下品灵石":"无"}</div>
+      ${progLine}
     </div>`;
+    if(pend && !done) item.appendChild(buyBtn(true,()=>{claimAch(a);},"领取"));
     body.appendChild(item);
   });
 }
@@ -1859,7 +1886,11 @@ function skipTut(){ S.tut="skip"; $("tutOverlay").classList.remove("show"); soun
 function tutNext(){
   if(tutStep===-2){ startTut(); return; }
   const st=TUT_STEPS[tutStep];
-  if(st && st.input){ const nm=$("tutName").value.trim().slice(0,12); if(nm) S.name=nm; }
+  if(st && st.input){
+    const nm=$("tutName").value.trim().slice(0,12);
+    if(!nm){ $("tutName").style.borderColor="#e05555"; $("tutName").placeholder="请输入道号后再继续…"; return; }
+    $("tutName").style.borderColor=""; S.name=nm;
+  }
   tutStep++;
   if(tutStep>=TUT_STEPS.length){ finishTut(); return; }
   renderTut();
@@ -2148,7 +2179,7 @@ if(!S.root){ if(S.tut==="done"||S.tut==="skip") openReroll(); else openTutAsk();
 sizeBg();
 updateBadges();
 render();
-setInterval(autoLoop,100);
+setInterval(autoLoop,1000);
 setInterval(()=>{ if(S.root && S.realm>=1 && Date.now()>=evt.nextAt) triggerEvent(); },60000);
 // 中列已改为按需刷新（点击/采集产出/坊市刷新），移除高频自动重建以避免按钮闪烁与单击丢失
 window.addEventListener("beforeunload",()=>save());
