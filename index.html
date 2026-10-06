@@ -144,17 +144,17 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
   </div>
   <nav id="leftMenu">
     <div class="menu-item active" data-tab="cult">修炼</div>
-    <div class="menu-item" data-tab="qiang">强化</div>
-    <div class="menu-item" data-tab="eqp">装备</div>
     <div class="menu-item" data-tab="xu">须弥空间</div>
-    <div class="menu-item" data-tab="pu">傀儡</div>
+    <div class="menu-item" data-tab="eqp">装备</div>
     <div class="menu-item" data-tab="ls">灵兽</div>
-    <div class="menu-item" data-tab="gong">功法</div>
-    <div class="menu-item" data-tab="shen">神通</div>
+    <div class="menu-item" data-tab="shop">坊市</div>
+    <div class="menu-item" data-tab="pu">傀儡</div>
     <div class="menu-item" data-tab="cai">采集</div>
     <div class="menu-item" data-tab="zao">制造</div>
-    <div class="menu-item" data-tab="shop">坊市</div>
+    <div class="menu-item" data-tab="gong">功法</div>
+    <div class="menu-item" data-tab="shen">神通</div>
     <div class="menu-item" data-tab="battle">探索<span class="badge badge-wip">开发中</span></div>
+    <div class="menu-item" data-tab="qiang">强化</div>
     <div class="menu-item" data-tab="ach">成就<span class="badge" id="achBadge" style="display:none">1</span></div>
   </nav>
   <div id="centerPanel">
@@ -615,7 +615,7 @@ function normalizeState(){
   for(const k in S.tres){ if(isEquip(k)&&(S.tres[k]||0)>0){ for(let i=0;i<S.tres[k];i++) S.equip.push({uid:++S.uid,id:k}); delete S.tres[k]; } }
   S.making=S.making||null; S.collectCd=S.collectCd||0; S.cycle=S.cycle||null; S.collectZone=S.collectZone||{beast:"外",ore:"外",herb:"外"};
   if(!S.servants || !S.servants.length) S.servants=[{lv:"丁",task:null,prog:0,curR:null}];
-  S.servants.forEach(s=>{ s.lv=s.lv||"丁"; s.task=s.task||null; s.prog=s.prog||0; s.curR=s.curR||null; });
+  S.servants.forEach(s=>{ s.lv=s.lv||"丁"; s.task=s.task||null; if(s.task&&s.task.kind==="cai"&&!s.task.zone)s.task.zone="外"; s.prog=s.prog||0; s.curR=s.curR||null; });
   if(!S.pets||!Array.isArray(S.pets)) S.pets=[];
   for(const k in S.collect){ if(!["beast","ore","herb"].includes(k)) delete S.collect[k]; }
   S.ups=S.ups||Object.fromEntries(UPS.map(u=>[u.id,0]));
@@ -669,7 +669,7 @@ function load(){
         if(!sv.task||sv.task.kind!=="cai") continue;
         const eff2=SV_EFF[sv.lv]||0.4, iv2=8/eff2;
         const n2=Math.floor(sec/iv2);
-        for(let i=0;i<n2;i++){ const m=randMatOfCat(sv.task.t); S.mats[m.id]=(S.mats[m.id]||0)+1; }
+        for(let i=0;i<n2;i++){ const m=randMatOfCat(sv.task.t, sv.task.zone); S.mats[m.id]=(S.mats[m.id]||0)+1; }
         sv.prog=Math.max(0,sec-n2*iv2);
       }
       if(away>10) showModal("闭关归来","离开期间挂机采得若干材料。\n（灵气产出默认暂停，未运功不产灵气）\n离线时长 "+fmt(sec)+" 秒 · 采集效率 "+Math.round(eff*100)+"%");
@@ -843,9 +843,9 @@ function setZone(cid,z){
   logEvent("采集区域切换至"+ZONES[z].nm+"（"+ (cid==="beast"?"狩猎":cid==="ore"?"挖矿":"采药") +"）",'sys');
   save();
 }
-function randMatOfCat(cid){
+function randMatOfCat(cid, z){
   const cat = cid==="beast"?"妖兽材料":cid==="ore"?"矿石":"草药";
-  const zn=zoneOf(cid);
+  const zn = z ? (ZONES[z]||ZONES.外) : zoneOf(cid);
   const pool=MATS.filter(m=>m.cat===cat && m.rarity>=zn.lo && m.rarity<=zn.hi);
   return pool[Math.floor(Math.random()*pool.length)];
 }
@@ -1233,7 +1233,7 @@ function renderPu(body){
     const effTxt=Math.round(SV_EFF[s.lv]*100)+"%";
     let taskTxt="空闲";
     if(s.task){
-      if(s.task.kind==="cai") taskTxt = s.task.t==="beast"?"狩猎":s.task.t==="ore"?"挖矿":"采药";
+      if(s.task.kind==="cai") taskTxt = (s.task.t==="beast"?"狩猎":s.task.t==="ore"?"挖矿":"采药")+(s.task.zone&&ZONES[s.task.zone]?("·"+ZONES[s.task.zone].nm):"");
       else taskTxt = "制造·"+s.task.t+(s.task.rId ? (REC_BY_ID[s.task.rId]?"（"+REC_BY_ID[s.task.rId].name+"）":"（"+s.task.rId+"）") : "（随机配方）");
     }
     let progTxt="";
@@ -1267,10 +1267,16 @@ function renderPu(body){
       full.forEach(r=>{ const op=document.createElement("option");op.value=r.id;op.textContent=r.name;sel2.appendChild(op); });
       sel2.value=(s.task&&s.task.kind==="zao"&&s.task.rId)?s.task.rId:"";
     }
+    const sel3Wrap=document.createElement("div");sel3Wrap.style.cssText="display:"+(cur.startsWith("cai:")?"flex":"none")+";gap:6px;align-items:center;";
+    const sel3=document.createElement("select");sel3.style.cssText=selStyle;
+    [["外","外围区域（稀有1-4）"],["中","中部区域（稀有3-6）"],["内","核心区域（稀有4-8）"]].forEach(z=>{ const op=document.createElement("option");op.value=z[0];op.textContent=z[1]; if(S.realm<ZONES[z[0]].unlock){ op.disabled=true; op.textContent+="（需"+REALMS[ZONES[z[0]].unlock].full+"）"; } sel3.appendChild(op); });
+    sel3.value=(s.task&&s.task.kind==="cai"&&s.task.zone)?s.task.zone:"外";
+    sel3Wrap.appendChild(sel3);
     fillRecipes();
-    sel.addEventListener("change",()=>{ if(sel.value.startsWith("zao:")){ fillRecipes(); sel2Wrap.style.display="flex"; } else sel2Wrap.style.display="none"; });
+    sel.addEventListener("change",()=>{ const v=sel.value; if(v.startsWith("zao:")){ fillRecipes(); sel2Wrap.style.display="flex"; sel3Wrap.style.display="none"; } else if(v.startsWith("cai:")){ sel2Wrap.style.display="none"; sel3Wrap.style.display="flex"; } else { sel2Wrap.style.display="none"; sel3Wrap.style.display="none"; } });
     wr.appendChild(sel);
     wr.appendChild(sel2Wrap);
+    wr.appendChild(sel3Wrap);
     if(s.task){
       const stopBtn=buyBtn(true,()=>{ s.task=null; s.prog=0; s.curR=null; logEvent((LV_NM[s.lv]||s.lv)+"傀停止任务",'dim'); render(); },"停止");
       stopBtn.style.background="linear-gradient(135deg,#d9534f,#b03a35)"; stopBtn.style.color="#fff";
@@ -1282,7 +1288,7 @@ function renderPu(body){
         else {
           const parts=v.split(":");
           const rId=parts[0]==="zao"?(sel2.value||null):null;
-          s.task={kind:parts[0],t:parts[1],rId:rId};
+          s.task={kind:parts[0],t:parts[1],rId:rId, zone:parts[0]==="cai"?(sel3.value||"外"):undefined};
           s.prog=0; s.curR=null;
           const nm=parts[0]==="cai"?(parts[1]==="beast"?"狩猎":parts[1]==="ore"?"挖矿":"采药"):"制造·"+parts[1]+(rId?(REC_BY_ID[rId]?"（"+REC_BY_ID[rId].name+"）":""):"（随机）");
           logEvent("指派"+(LV_NM[s.lv]||s.lv)+"傀「"+nm+"」",'sys'); banner((LV_NM[s.lv]||s.lv)+"傀开始"+nm);
@@ -2195,7 +2201,7 @@ function gameTick(now){
     if(s.task.kind==="cai"){
       const iv=8/eff;
       s.prog+=dt;
-      while(s.prog>=iv){ s.prog-=iv; const m=randMatOfCat(s.task.t); S.mats[m.id]=(S.mats[m.id]||0)+1; svProduced=true; }
+      while(s.prog>=iv){ s.prog-=iv; const m=randMatOfCat(s.task.t, s.task.zone); S.mats[m.id]=(S.mats[m.id]||0)+1; svProduced=true; }
     } else {
       const cat=s.task.t;
       const full=(CRAFT.find(c=>c.cat===cat)||{rec:[]}).rec;
