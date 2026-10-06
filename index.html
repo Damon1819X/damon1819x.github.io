@@ -1772,6 +1772,8 @@ function genExpMap(floor, area){
   for(let i=0;i<6;i++)pool.push("dan");
   for(let i=0;i<6;i++)pool.push("fu");
   rest.forEach(c=>{ cells[c[0]+","+c[1]]={q:c[0],r:c[1],t:pool[Math.floor(Math.random()*pool.length)],used:false,revealed:false}; });
+  // 初始揭示起点相邻一圈，保证开局可走
+  [[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]].forEach(n=>{ const nc=cells[n[0]+","+n[1]]; if(nc) nc.revealed=true; });
   const isFinal=floor>=10;
   if(isFinal){ cells[sp[0]+","+sp[1]]={q:sp[0],r:sp[1],t:Math.random()<0.5?"boss":"exit",used:false,revealed:false}; }
   else { cells[sp[0]+","+sp[1]]={q:sp[0],r:sp[1],t:"down",used:false,revealed:false}; }
@@ -1908,7 +1910,7 @@ function renderExpPanel(){
     txt.setAttribute("x",xy[0]); txt.setAttribute("y",xy[1]+4); txt.setAttribute("text-anchor","middle"); txt.setAttribute("font-size",c.revealed===false?"12":"11");
     txt.textContent=c.used?(c.t==="start"?"🧍":"🦶"):(c.revealed===false?"❓":expCellIcon(c.t));
     g.appendChild(txt);
-    if(c.revealed!==false&&c.t!=="start"){ g.style.cursor="pointer"; g.addEventListener("click",()=>expMove(c.q,c.r)); }
+    if(c.t!=="start"){ g.style.cursor="pointer"; g.addEventListener("click",()=>expMove(c.q,c.r)); }
     svg.appendChild(g);
   }
 }
@@ -2201,7 +2203,7 @@ function gameTick(now){
     if(s.task.kind==="cai"){
       const iv=8/eff;
       s.prog+=dt;
-      while(s.prog>=iv){ s.prog-=iv; const m=randMatOfCat(s.task.t, s.task.zone); S.mats[m.id]=(S.mats[m.id]||0)+1; svProduced=true; }
+      while(s.prog>=iv){ s.prog-=iv; const m=randMatOfCat(s.task.t, s.task.zone); S.mats[m.id]=(S.mats[m.id]||0)+1; logEvent((LV_NM[s.lv]||s.lv)+"傀采集到「"+m.name+"」×1",'sys'); svProduced=true; }
     } else {
       const cat=s.task.t;
       const full=(CRAFT.find(c=>c.cat===cat)||{rec:[]}).rec;
@@ -2212,7 +2214,7 @@ function gameTick(now){
       if(!s.curR || !pool.some(p=>p.id===s.curR.id)) s.curR=pool[Math.floor(Math.random()*pool.length)];
       const r=s.curR, iv=craftTime(r)/eff;
       s.prog+=dt;
-      while(s.prog>=iv){ s.prog-=iv; s.curR=null; for(const k in r.need) S.mats[k]-=r.need[k]; if(isEquip(r.id)){ S.equip.push({uid:++S.uid,id:r.id}); } else { S.tres[r.id]=(S.tres[r.id]||0)+1; } svProduced=true; }
+      while(s.prog>=iv){ s.prog-=iv; s.curR=null; for(const k in r.need) S.mats[k]-=r.need[k]; if(isEquip(r.id)){ S.equip.push({uid:++S.uid,id:r.id}); logEvent((LV_NM[s.lv]||s.lv)+"傀炼制出「"+r.name+"」",'sys'); } else { S.tres[r.id]=(S.tres[r.id]||0)+1; logEvent((LV_NM[s.lv]||s.lv)+"傀制成「"+r.name+"」×1",'sys'); } svProduced=true; }
     }
   });
   if(svProduced && activeTab==="pu") renderTab();
