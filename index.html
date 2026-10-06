@@ -66,7 +66,7 @@ body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft 
 .item button{flex-shrink:0;padding:7px 14px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;background:linear-gradient(135deg,var(--gold),#b8912a);color:#1a1406;transition:.15s;}
 .item button:hover{filter:brightness(1.1);}
 .item button:disabled{background:var(--panel2);color:var(--ink-dim);cursor:not-allowed;}
-.btnRow{display:flex;gap:8px;flex-shrink:0;align-items:center;}
+.btnRow{display:flex;gap:8px;flex-shrink:0;align-items:center;flex-wrap:wrap;}
 .btnRow button.on{background:var(--jade);color:#04151b;}
 .exchRow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;margin-bottom:7px;}
 .exchRow .ex-n{font-size:12px;color:var(--ink);}
@@ -411,39 +411,39 @@ const TRES_BY_ID={}; TRES.forEach(t=>TRES_BY_ID[t.id]=t);
 const CRAFT = [
   {cat:"制符", ic:"🧧", ds:"以材料炼制符箓", rec:[
     {id:"jufu",   name:"聚灵符",   ic:"🧧", value:60,   need:{herb:2,bone:1},   eff:"ess_flat", val:20,  durMin:30,  maxStack:5, ds:"吸纳灵气，增益修行。"},
-    {id:"yuhuo",  name:"御火符",   ic:"🔥", value:90,   need:{huoshi:1,skin:1}, eff:"combat",   val:8,   durMin:30,  maxStack:3, ds:"引火护身，战力提升。"},
-    {id:"ningshen",name:"凝神符",  ic:"🧠", value:150,  need:{zishen:1,herb:1}, eff:"crit",     val:10,  durMin:30,  maxStack:3, ds:"凝神静心，会心增益。"},
-    {id:"qingxin", name:"清心符",  ic:"🌊", value:120,  need:{longxian:1,herb:1}, eff:"ess_pct", val:8,  durMin:30,  maxStack:5, ds:"清心明性，灵气增益。"},
-    {id:"leiyin",  name:"雷音符",   ic:"⚡", value:200,  need:{lei:1,bone:1},     eff:"combat",   val:12,  durMin:60,  maxStack:2, ds:"雷音震荡，先声夺人。"},
-    {id:"dundi",   name:"遁地符",   ic:"🌀", value:220,  need:{han:1,herb:1},     eff:"dmg_reduce", val:15, durMin:60, maxStack:2, ds:"土遁藏形，探险减伤。"},
-    {id:"jingang", name:"金刚符",   ic:"🛡️", value:260,  need:{iron:1,bone:1},    eff:"dmg_reduce", val:25, durMin:60, maxStack:2, ds:"金刚护体，坚不可摧。"},
-    {id:"xuanbing",name:"玄冰符",   ic:"❄️", value:240,  need:{bing:1,xie:1},     eff:"crit",     val:15,  durMin:60,  maxStack:2, ds:"玄冰封冻，会心大增。"},
-    {id:"duzhang", name:"毒瘴符",   ic:"☠️", value:280,  need:{dihuo:1,core:1},   eff:"combat",   val:15,  durMin:60,  maxStack:2, ds:"毒瘴弥漫，战力提升。"},
-    {id:"pojun",   name:"破军符",   ic:"⚔️", value:300,  need:{gold:1,zhu:1},     eff:"combat",   val:20,  durMin:60,  maxStack:2, ds:"破军之势，攻伐凌厉。"},
+    {id:"yuhuo",  name:"御火符",   ic:"🔥", value:250,  need:{huoshi:1,skin:1}, eff:"combat",   val:8,   durMin:30,  maxStack:3, ds:"引火护身，战力提升。"},
+    {id:"ningshen",name:"凝神符",  ic:"🧠", value:180,  need:{zishen:1,herb:1}, eff:"crit",     val:10,  durMin:30,  maxStack:3, ds:"凝神静心，会心增益。"},
+    {id:"qingxin", name:"清心符",  ic:"🌊", value:60,   need:{longxian:1,herb:1}, eff:"ess_pct", val:8,  durMin:30,  maxStack:5, ds:"清心明性，灵气增益。"},
+    {id:"leiyin",  name:"雷音符",   ic:"⚡", value:470,  need:{lei:1,tort:1},     eff:"combat",   val:12,  durMin:60,  maxStack:2, ds:"雷音震荡，先声夺人。"},
+    {id:"dundi",   name:"遁地符",   ic:"🌀", value:60,   need:{han:1,herb:1},     eff:"dmg_reduce", val:15, durMin:60, maxStack:2, ds:"土遁藏形，探险减伤。"},
+    {id:"jingang", name:"金刚符",   ic:"🛡️", value:20,   need:{iron:1,bone:1},    eff:"dmg_reduce", val:25, durMin:60, maxStack:2, ds:"金刚护体，坚不可摧。"},
+    {id:"xuanbing",name:"玄冰符",   ic:"❄️", value:330,  need:{bing:1,xie:1},     eff:"crit",     val:15,  durMin:60,  maxStack:2, ds:"玄冰封冻，会心大增。"},
+    {id:"duzhang", name:"毒瘴符",   ic:"☠️", value:850,  need:{dihuo:1,core:1,hansui:1}, eff:"combat", val:15, durMin:60, maxStack:2, ds:"毒瘴弥漫，战力提升。"},
+    {id:"pojun",   name:"破军符",   ic:"⚔️", value:380,  need:{gold:1,tiger:1},   eff:"combat",   val:20,  durMin:60,  maxStack:2, ds:"破军之势，攻伐凌厉。"},
   ]},
   {cat:"炼丹", ic:"⚗️", ds:"以草药妖兽精华炼丹药", rec:[
-    {id:"juqi",   name:"聚气丹",   ic:"💊", value:80,   need:{lingzhi:2,herb:1},     eff:"ess_flat", val:30,  durMin:30,  maxStack:5, heal:10, ds:"聚气入体，修炼加速，兼可回血。"},
-    {id:"zhuji",  name:"筑基丹",   ic:"🫙", value:220,  need:{heshouwu:1,core:1},   eff:"brk",      val:20,  durMin:60,  maxStack:3, ds:"稳固根基，突破增益。"},
-    {id:"peiyuan",name:"培元丹",   ic:"🌱", value:100,  need:{herb:2,lingzhi:1},   eff:"ess_pct",  val:10,  durMin:30,  maxStack:5, heal:20, ds:"培元固本，灵气增益，兼可回血。"},
-    {id:"yangshen",name:"养神丹",  ic:"💆", value:260,  need:{zishen:1,longxian:1}, eff:"crit",    val:15,  durMin:60,  maxStack:3, ds:"养神定魄，会心增益。"},
-    {id:"huiling",name:"回灵丹",   ic:"✨", value:320,  need:{jiuye:1,herb:1},     eff:"ess_flat", val:50,  durMin:60,  maxStack:5, heal:30, ds:"回灵归元，灵气大涨，兼可回血。"},
-    {id:"heqi",   name:"合气丹",   ic:"💫", value:360,  need:{xuanyang:1,lingzhi:1}, eff:"ess_pct", val:12, durMin:60, maxStack:4, ds:"合气归元，灵气大增。"},
-    {id:"pojing", name:"破境丹",   ic:"💠", value:400,  need:{xuanyang:1,dihuo:1,core:1}, eff:"brk", val:30, durMin:60, maxStack:2, ds:"破境之丹，突破大增。"},
-    {id:"xisui",  name:"洗髓丹",   ic:"🦴", value:300,  need:{heshouwu:1,han:1},    eff:"brk",      val:15,  durMin:60,  maxStack:3, heal:10, ds:"洗髓伐脉，突破增益，兼可回血。"},
-    {id:"tianyuan",name:"天元丹",  ic:"🔆", value:600,  need:{niepan:1,core:1},     eff:"brk",      val:40,  durMin:60,  maxStack:1, ds:"天元一气，突破剧增。"},
-    {id:"jiuzhuan",name:"九转还魂丹", ic:"♻️", value:800, need:{jiuye:1,peng:1,core:1}, eff:"dmg_reduce", val:20, durMin:120, maxStack:1, heal:60, ds:"九转还魂，气血大补，探险减伤。"},
+    {id:"juqi",   name:"聚气丹",   ic:"💊", value:70,   need:{lingzhi:2,herb:1},     eff:"ess_flat", val:30,  durMin:30,  maxStack:5, heal:10, ds:"聚气入体，修炼加速，兼可回血。"},
+    {id:"zhuji",  name:"筑基丹",   ic:"🫙", value:410,  need:{heshouwu:1,core:1},   eff:"brk",      val:20,  durMin:60,  maxStack:3, ds:"稳固根基，突破增益。"},
+    {id:"peiyuan",name:"培元丹",   ic:"🌱", value:40,   need:{herb:2,lingzhi:1},   eff:"ess_pct",  val:10,  durMin:30,  maxStack:5, heal:20, ds:"培元固本，灵气增益，兼可回血。"},
+    {id:"yangshen",name:"养神丹",  ic:"💆", value:220,  need:{zishen:1,longxian:1}, eff:"crit",    val:15,  durMin:60,  maxStack:3, ds:"养神定魄，会心增益。"},
+    {id:"huiling",name:"回灵丹",   ic:"✨", value:970,  need:{jiuye:1,herb:1},     eff:"ess_flat", val:50,  durMin:60,  maxStack:5, heal:30, ds:"回灵归元，灵气大涨，兼可回血。"},
+    {id:"heqi",   name:"合气丹",   ic:"💫", value:340,  need:{xuanyang:1,lingzhi:1}, eff:"ess_pct", val:12, durMin:60, maxStack:4, ds:"合气归元，灵气大增。"},
+    {id:"pojing", name:"破境丹",   ic:"💠", value:820,  need:{xuanyang:1,dihuo:1,core:1}, eff:"brk", val:30, durMin:60, maxStack:2, ds:"破境之丹，突破大增。"},
+    {id:"xisui",  name:"洗髓丹",   ic:"🦴", value:320,  need:{heshouwu:1,han:1},    eff:"brk",      val:15,  durMin:60,  maxStack:3, heal:10, ds:"洗髓伐脉，突破增益，兼可回血。"},
+    {id:"tianyuan",name:"天元丹",  ic:"🔆", value:21000, need:{niepan:1,longxue:1,taichu:1,hundung:1}, eff:"brk", val:40, durMin:60, maxStack:1, ds:"天元一气，突破剧增。"},
+    {id:"jiuzhuan",name:"九转还魂丹", ic:"♻️", value:28000, need:{jiuye:1,peng:1,xianhe:1,jiuyang:1,chuangshil:1}, eff:"dmg_reduce", val:20, durMin:120, maxStack:1, heal:60, ds:"九转还魂，气血大补，探险减伤。"},
   ]},
   {cat:"炼器", ic:"⚒️", ds:"炼器成装备，穿戴生效", rec:[
     {id:"liangtianchi", name:"量天尺",   ic:"📏", slot:"w", atk:10, value:1500, need:{qing:1,xuanhuang:1}, ds:"丈量周天，攻伐之兵。"},
-    {id:"yinyangjing",  name:"阴阳镜",   ic:"☯️", slot:"w", atk:18, value:6000, need:{xuanhuang:1,han:1,core:1}, ds:"照见阴阳，斩敌无形。"},
-    {id:"haotianjing",  name:"昊天镜",   ic:"🌕", slot:"w", atk:25, value:15000,need:{xuanhuang:2,peng:1,jiuye:1}, ds:"昊天在上，镜照万敌。"},
+    {id:"yinyangjing",  name:"阴阳镜",   ic:"☯️", slot:"w", atk:18, value:6000, need:{xuanhuang:1,han:1,core:1,yinyangh:1}, ds:"照见阴阳，斩敌无形。"},
+    {id:"haotianjing",  name:"昊天镜",   ic:"🌕", slot:"w", atk:25, value:52000,need:{xuanhuang:2,peng:1,zhulongm:1,fenghuangy:1,hundun:1,changsheng:1}, ds:"昊天在上，镜照万敌。"},
     {id:"qiandunding",  name:"乾坤鼎",   ic:"🏺", slot:"a", hp:12, value:4000, need:{myst:1,han:1,xuanyang:1}, ds:"鼎纳乾坤，护体如岳。"},
-    {id:"xingtian",     name:"星辰鉴",   ic:"🌠", slot:"a", hp:15, value:8000, need:{myst:1,peng:1,xuanhuang:1}, ds:"映照星斗，坚不可摧。"},
+    {id:"xingtian",     name:"星辰鉴",   ic:"🌠", slot:"a", hp:15, value:32000, need:{myst:1,peng:1,qilinj:1,xuanwubei:1,zulongy:1}, ds:"映照星斗，坚不可摧。"},
     {id:"fusuaunso",    name:"缚妖索",   ic:"🪢", slot:"a", dmgR:15, value:3000, need:{tong:1,jiao:1,bone:1}, ds:"捆仙缚妖，卸力化劲。"},
     {id:"qinglian",     name:"青莲宝座", ic:"🪷", slot:"t", ess:10, value:1600, need:{iron:2,herb:1}, ds:"青莲宝座，纳灵养气。"},
     {id:"zihulu",       name:"紫金葫芦", ic:"🧡", slot:"t", ess:8,  value:1000, need:{gold:1,tong:1}, ds:"紫金葫芦，灵气自聚。"},
-    {id:"dingling",     name:"定灵珠",   ic:"🔮", slot:"t", brk:15, value:2500, need:{gold:1,bing:1,skin:1}, ds:"定灵之珠，稳固根基。"},
-    {id:"zhenhunling",  name:"镇魂铃",   ic:"🔔", slot:"t", crit:12, value:3000, need:{gold:1,jiao:1,zishen:1}, ds:"铃声镇魂，会心大增。"},
+    {id:"dingling",     name:"定灵珠",   ic:"🔮", slot:"t", brk:15, value:2500, need:{gold:1,bing:1,xlangz:1}, ds:"定灵之珠，稳固根基。"},
+    {id:"zhenhunling",  name:"镇魂铃",   ic:"🔔", slot:"t", crit:12, value:3000, need:{gold:1,hwl:1,zishen:1}, ds:"铃声镇魂，会心大增。"},
   ]},
   {cat:"阵法", ic:"⛩️", ds:"布置法阵", rec:[
     {id:"juling",   name:"聚灵阵图",   ic:"🌀", value:60,   need:{iron:1,herb:1},          eff:"ess_flat", val:25, durMin:30, maxStack:5, ds:"布聚灵之阵，聚拢灵气。"},
@@ -451,14 +451,14 @@ const CRAFT = [
     {id:"taiji",   name:"太极阵",   ic:"☯️", value:900,  need:{qing:1,han:1,lingzhi:1}, eff:"brk",      val:15,  durMin:60,  maxStack:3, ds:"太极两仪，突破增益。"},
     {id:"jingxin", name:"静心阵",   ic:"🧘", value:300,  need:{herb:2,zishen:1},        eff:"ess_pct",  val:8,   durMin:60,  maxStack:4, ds:"静心凝神，灵气增益。"},
     {id:"jianzhen",name:"剑阵图",   ic:"🗡️", value:700,  need:{iron:1,gold:1},          eff:"combat",   val:12,  durMin:60,  maxStack:2, ds:"剑光如林，战力提升。"},
-    {id:"hudun",   name:"护盾阵",   ic:"🛰️", value:1200, need:{gold:1,bing:1,han:1},    eff:"dmg_reduce", val:30, durMin:60, maxStack:2, ds:"护盾如壁，探险减伤。"},
-    {id:"tiangang", name:"天罡北斗阵", ic:"🌌", value:600,  need:{qing:1,lei:1,bone:1},   eff:"combat",   val:15,  durMin:60,  maxStack:2, ds:"北斗列阵，战力提升。"},
-    {id:"fengshen",name:"封神阵",   ic:"🏯", value:3000, need:{xuanhuang:1,lei:1,bone:1}, eff:"dmg_reduce", val:25, durMin:120, maxStack:1, ds:"封神锁魔，探险减伤。"},
-    {id:"zhuxian",  name:"诛仙剑阵",   ic:"⚔️", value:6000, need:{xuanhuang:1,lei:1,zhu:1}, eff:"combat",   val:25,  durMin:120, maxStack:1, ds:"诛仙之阵，势不可挡。"},
-    {id:"wanjian", name:"万剑阵",   ic:"🌠", value:9000, need:{xuanhuang:1,myst:1,fea:1}, eff:"combat",   val:35,  durMin:120, maxStack:1, ds:"万剑齐发，势不可挡。"},
+    {id:"hudun",   name:"护盾阵",   ic:"🛰️", value:1200, need:{gold:1,bing:1,han:1,liuli:1}, eff:"dmg_reduce", val:30, durMin:60, maxStack:2, ds:"护盾如壁，探险减伤。"},
+    {id:"tiangang", name:"天罡北斗阵", ic:"🌌", value:5200, need:{qing:1,lei:1,bone:1,chiyan:1,zixiaot:1}, eff:"combat", val:15, durMin:60, maxStack:2, ds:"北斗列阵，战力提升。"},
+    {id:"fengshen",name:"封神阵",   ic:"🏯", value:18000, need:{xuanhuang:1,lei:1,bone:1,tianwai:1,biluoy:1,hunyuan:1}, eff:"dmg_reduce", val:25, durMin:120, maxStack:1, ds:"封神锁魔，探险减伤。"},
+    {id:"zhuxian",  name:"诛仙剑阵",   ic:"⚔️", value:38000, need:{xuanhuang:1,lei:1,zhu:1,xinghui:1,wanfuf:1,taotieg:1,hunjing:1}, eff:"combat", val:25, durMin:120, maxStack:1, ds:"诛仙之阵，势不可挡。"},
+    {id:"wanjian", name:"万剑阵",   ic:"🌠", value:42000, need:{xuanhuang:1,myst:1,fea:1,zijinm:1,yinglongl:1,hongmengj:1,chuangshij:1}, eff:"combat", val:35, durMin:120, maxStack:1, ds:"万剑齐发，势不可挡。"},
   ]},
 ];
-const REC_RARE={jufu:2,yuhuo:2,qingxin:2,ningshen:3,leiyin:3,dundi:3,jingang:3,xuanbing:3,duzhang:4,pojun:4,juqi:2,peiyuan:2,zhuji:3,yangshen:3,huiling:3,heqi:3,xisui:3,pojing:4,tianyuan:5,jiuzhuan:5,qinglian:3,zihulu:3,dingling:4,qiandunding:4,liangtianchi:4,zhenhunling:4,fusuaunso:4,yinyangjing:5,xingtian:5,haotianjing:5,juling:2,jingxin:2,tiangang:3,wuxingzhen:3,taiji:3,jianzhen:3,fengshen:4,hudun:4,zhuxian:5,wanjian:5};
+const REC_RARE={jufu:2,yuhuo:2,qingxin:2,ningshen:3,leiyin:3,dundi:3,jingang:3,xuanbing:3,duzhang:4,pojun:4,juqi:2,peiyuan:2,zhuji:3,yangshen:3,huiling:3,heqi:3,xisui:3,pojing:4,tianyuan:6,jiuzhuan:6,qinglian:3,zihulu:3,dingling:4,qiandunding:4,liangtianchi:4,zhenhunling:4,fusuaunso:4,yinyangjing:6,xingtian:6,haotianjing:7,juling:2,jingxin:2,tiangang:5,wuxingzhen:3,taiji:3,jianzhen:3,fengshen:7,hudun:5,zhuxian:8,wanjian:9};
 const REC_BY_ID={}; CRAFT.forEach(c=>c.rec.forEach(r=>{ r.rarity=REC_RARE[r.id]||1; REC_BY_ID[r.id]=r; }));
 function effText(r){
   const suf = (r.maxStack>1)? "，可叠加至 "+r.maxStack+" 层" : "";
@@ -588,13 +588,13 @@ function newState(){
     fa:FAC.map(()=>0), ups:Object.fromEntries(UPS.map(u=>[u.id,0])),
     mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0,
     shen:[], shenProd:0, shenBreak:0, shenCrit:0, shenOffline:0, shenDaoProd:0,
-    ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(),
+    ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, buffWarned:{}, buffEnded:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(),
     settings:{sound:true,theme:"dark",lang:"zh"},
   };
 }
 function normalizeState(){
   S.fa=(S.fa||FAC.map(()=>0)); while(S.fa.length<FAC.length)S.fa.push(0);
-  S.achGot=S.achGot||{}; S.achPending=S.achPending||[];
+  S.achGot=S.achGot||{}; S.achPending=S.achPending||[]; S.buffWarned=S.buffWarned||{}; S.buffEnded=S.buffEnded||{};
   S.mats=S.mats||{}; S.tres=S.tres||{}; S.collect=S.collect||{};
   S.equip=S.equip||[]; S.equipped=S.equipped||{}; S.uid=S.uid||0;
   for(const k in S.tres){ if(isEquip(k)&&(S.tres[k]||0)>0){ for(let i=0;i<S.tres[k];i++) S.equip.push({uid:++S.uid,id:k}); delete S.tres[k]; } }
@@ -863,6 +863,7 @@ function useTres(r){
   const b=S.buffs[r.id];
   b.stack=Math.min(r.maxStack||1, b.stack+1);
   b.until=now + (r.durMin||1)*60000;
+  S.buffWarned[r.id]=0; S.buffEnded[r.id]=0;
   logEvent("使用「"+r.name+"」："+effText(r)+(b.stack>1?"（叠层 "+b.stack+"/"+r.maxStack+"）":""));
   banner("使用「"+r.name+"」"); sound(680,.15);
   checkAchievements(); save(); render();
@@ -1077,25 +1078,26 @@ function renderCai(body){
   const auto = S.collect[cur.cid]!==undefined;
   const zn=zoneOf(cur.cid);
   const pool=MATS.filter(m=>m.cat===cur.cat && m.rarity>=zn.lo && m.rarity<=zn.hi);
-  const item=document.createElement("div");item.className="item";
-  item.innerHTML=`<div class="ic">${cur.ic}</div><div class="body">
-    <div class="nm">${cur.nm}<span class="cat">${cur.cat} ×10</span></div>
-    <div class="ds">${cur.ds}</div>
-    <div class="ln" style="color:var(--jade)">当前区域：${zn.nm}（稀有 ${zn.lo}-${zn.hi}）</div>
-    <div class="ln" style="display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;color:var(--ink-dim)">${pool.length?pool.map(m=>"<span>"+m.name+"</span>").join(""):"<span style='grid-column:1/3'>此区域暂无产出，请解锁更高区域或切换采集分类</span>"}</div>
-  </div>`;
-  // 地区下拉菜单（等级解锁）
-  const znRow=document.createElement("div");znRow.style.cssText="margin:7px 0 2px;font-size:12px;color:var(--ink-dim);display:flex;align-items:center;gap:6px";
-  znRow.appendChild(document.createTextNode("🗺️ 采集区域："));
-  const sel=document.createElement("select");sel.style.cssText="padding:5px 8px;border-radius:7px;font-size:12px;background:var(--panel2);color:var(--ink);border:1px solid var(--line)";
+  // 二级下拉：区域选择（分类按钮下方独立一行，随分类联动）
+  const zbar=document.createElement("div");zbar.style.cssText="display:flex;align-items:center;gap:8px;margin:2px 0 8px;font-size:12px;color:var(--ink-dim);flex-wrap:wrap;";
+  zbar.appendChild(document.createTextNode("🗺️ 采集区域："));
+  const zsel=document.createElement("select");zsel.style.cssText="padding:5px 8px;border-radius:7px;font-size:12px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);max-width:230px";
   ["外","中","内"].forEach(z=>{
     const o=document.createElement("option");o.value=z;o.textContent=ZONES[z].nm+"（稀有 "+ZONES[z].lo+"-"+ZONES[z].hi+"）"+(S.realm>=ZONES[z].unlock?"":" · "+REALMS[ZONES[z].unlock].full+"解锁");
     o.disabled=S.realm<ZONES[z].unlock;
     if(zn===ZONES[z]) o.selected=true;
-    sel.appendChild(o);
+    zsel.appendChild(o);
   });
-  sel.addEventListener("change",()=>{ setZone(cur.cid, sel.value); render(); });
-  znRow.appendChild(sel);
+  zsel.addEventListener("change",()=>{ setZone(cur.cid, zsel.value); render(); });
+  zbar.appendChild(zsel); body.appendChild(zbar);
+  const item=document.createElement("div");item.className="item";
+  item.innerHTML=`<div class="ic">${cur.ic}</div><div class="body">
+    <div class="nm">${cur.nm}<span class="cat">${cur.cat} ×10</span></div>
+    <div class="ds">${cur.ds}</div>
+    <div class="ln" style="display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;color:var(--ink-dim)">${pool.length?pool.map(m=>"<span>"+m.name+"</span>").join(""):"<span style='grid-column:1/3'>此区域暂无产出，请解锁更高区域或切换采集分类</span>"}</div>
+  </div>`;
+  const znRow=document.createElement("div");znRow.style.cssText="margin:7px 0 2px;font-size:12px;color:var(--jade)";
+  znRow.textContent="当前区域："+zn.nm+"（稀有 "+zn.lo+"-"+zn.hi+"）";
   item.querySelector(".body").appendChild(znRow);
   const wr=document.createElement("div");wr.className="btnRow";
   const blocked=S.yunning||!!S.making;
@@ -1200,7 +1202,7 @@ function renderPu(body){
   const p=document.createElement("div");p.className="hint";p.innerHTML="仆人以玩家效率（100%）的比例代你采集 / 制造：<b>甲 90%</b>、乙 75%、丙 60%、<b>丁 40%</b>（甲最快、丁最慢）。指派任务后自动持续产出，无需手动操作；仆人产出与玩家状态（运功 / 采集 / 制造）互不干扰。制造任务可细分到<b>具体配方</b>（也可选「随机配方」），材料不足时自动等待重试。指派后按钮变为红色「停止」，点击即可停止任务。";body.appendChild(p);
   if(!S.servants.length){ const e=document.createElement("div");e.className="hint";e.textContent="尚无仆人。";body.appendChild(e); return; }
   const taskOpts=[["","— 无任务 —"],["cai:beast","狩猎（兽类材料）"],["cai:ore","挖矿（矿石）"],["cai:herb","采药（草药）"],["zao:制符","制造·制符"],["zao:炼丹","制造·炼丹"],["zao:炼器","制造·炼器"],["zao:阵法","制造·阵法"]];
-  const selStyle="padding:6px 8px;border-radius:7px;font-size:12px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);";
+  const selStyle="padding:6px 8px;border-radius:7px;font-size:12px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);max-width:180px;";
   S.servants.forEach((s,i)=>{
     const item=document.createElement("div");item.className="item";
     const effTxt=Math.round(SV_EFF[s.lv]*100)+"%";
@@ -1224,7 +1226,7 @@ function renderPu(body){
       <div class="nm">${s.lv}级仆人 <span class="cat">效率 ${effTxt}</span></div>
       <div class="ds">任务：${taskTxt}${progTxt}</div>
     </div>`;
-    const wr=document.createElement("div");wr.className="btnRow";
+    const wr=document.createElement("div");wr.className="btnRow";wr.style.cssText="width:100%;flex-wrap:wrap;";
     const sel=document.createElement("select");sel.style.cssText=selStyle;
     taskOpts.forEach(o=>{ const op=document.createElement("option");op.value=o[0];op.textContent=o[1];sel.appendChild(op); });
     const cur=s.task?(s.task.kind+":"+s.task.t):"";
@@ -1263,7 +1265,7 @@ function renderPu(body){
         render();
       },"指派"));
     }
-    item.appendChild(wr);
+    item.querySelector(".body").appendChild(wr);
     body.appendChild(item);
   });
 }
@@ -2037,7 +2039,14 @@ let lastTick=performance.now();
 let lastAucTick=0;
 function gameTick(now){
   const dt=(now-lastTick)/1000; lastTick=now;
-  for(const id in S.buffs){ if(S.buffs[id].until<=Date.now()) delete S.buffs[id]; }
+  const _bnow=Date.now();
+  for(const id in S.buffs){
+    const b=S.buffs[id]; if(!b) continue;
+    const left=b.until-_bnow;
+    const nm=(REC_BY_ID[id]&&REC_BY_ID[id].name)||id;
+    if(left<=0){ if(!S.buffEnded[id]){ S.buffEnded[id]=1; logEvent("「"+nm+"」效果已结束",'dim'); } delete S.buffs[id]; continue; }
+    if(left<=5000 && !S.buffWarned[id]){ S.buffWarned[id]=1; logEvent("「"+nm+"」即将失效（5 秒内）",'warn'); }
+  }
   if(!S.shop.until || now>=S.shop.until){ refreshShop(now); if(activeTab==="shop") renderTab(); }
   if(!S.auctionNext) S.auctionNext=nextAuctionTime(Date.now());
   if(Date.now()>=S.auctionNext){ refreshAuction(Date.now()); if(activeTab==="shop") renderTab(); }
