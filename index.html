@@ -147,7 +147,8 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
     <div class="menu-item" data-tab="qiang">强化</div>
     <div class="menu-item" data-tab="eqp">装备</div>
     <div class="menu-item" data-tab="xu">须弥空间</div>
-    <div class="menu-item" data-tab="pu">仆人</div>
+    <div class="menu-item" data-tab="pu">傀儡</div>
+    <div class="menu-item" data-tab="ls">灵兽</div>
     <div class="menu-item" data-tab="gong">功法</div>
     <div class="menu-item" data-tab="shen">神通</div>
     <div class="menu-item" data-tab="cai">采集</div>
@@ -285,7 +286,7 @@ function showModal(t,body,cb){ $("mTitle").textContent=t; $("mBody").textContent
 /* 强化设施（原功法迁入强化，统一产灵气）：cost 为下品灵石，out 为灵气/秒 */
 const FAC = [
   {id:"array",  name:"聚灵阵",   ic:"🌀", cost:20,    out:2,     costM:1.15, outM:1.10, unlock:0, ds:"吸纳四方灵气，每秒凝聚灵气。"},
-  {id:"beast",  name:"灵兽",     ic:"🐉", cost:150,   out:12,    costM:1.15, outM:1.10, unlock:0, ds:"灵兽吐息，吐纳灵气。"},
+  {id:"beast",  name:"驭兽台",   ic:"🐉", cost:150,   out:12,    costM:1.15, outM:1.10, unlock:0, ds:"驭兽台上百兽驯服，灵气自聚。"},
   {id:"cave",   name:"洞府",     ic:"🏔️", cost:1800,  out:120,   costM:1.16, outM:1.10, unlock:1, ds:"洞天福地，汇聚灵气。"},
   {id:"pill",   name:"丹药炉",   ic:"⚗️", cost:20000, out:1500,  costM:1.16, outM:1.10, unlock:2, ds:"丹火不息，炼化灵气。"},
   {id:"field",  name:"仙田",     ic:"🌾", cost:280000,out:190,   costM:1.17, outM:1.10, unlock:2, ds:"种植仙草，萌发灵气。"},
@@ -407,6 +408,19 @@ const TRES = [
 ];
 const MATS_BY_ID={}; MATS.forEach(m=>MATS_BY_ID[m.id]=m);
 const TRES_BY_ID={}; TRES.forEach(t=>TRES_BY_ID[t.id]=t);
+const BEAS=[
+  {id:"qingniao", name:"青鸟",   ic:"🐦", rarity:1,  atk:0,  ess:2,  crit:0, brk:0, dmgR:0,  ds:"青羽灵禽，纳灵养气。"},
+  {id:"linghu",   name:"灵狐",   ic:"🦊", rarity:2,  atk:0,  ess:0,  crit:3, brk:0, dmgR:0,  ds:"灵性通幽，会心偶至。"},
+  {id:"xuang",    name:"玄龟",   ic:"🐢", rarity:3,  atk:0,  ess:0,  crit:0, brk:0, dmgR:4,  ds:"玄甲厚重，卸力化劫。"},
+  {id:"chiyanshi",name:"赤焰狮", ic:"🦁", rarity:4,  atk:5,  ess:0,  crit:0, brk:0, dmgR:0,  ds:"赤焰焚天，攻伐之兽。"},
+  {id:"bishuijiao",name:"碧水蛟",ic:"🐉", rarity:5,  atk:0,  ess:6,  crit:0, brk:0, dmgR:0,  ds:"碧水化蛟，灵气自涌。"},
+  {id:"leiying",  name:"雷鹰",   ic:"🦅", rarity:6,  atk:8,  ess:0,  crit:2, brk:0, dmgR:0,  ds:"雷翼展空，迅捷暴烈。"},
+  {id:"jinyipeng",name:"金翅鹏", ic:"🪶", rarity:7,  atk:10, ess:0,  crit:0, brk:0, dmgR:0,  ds:"金翅垂天，翱翔万里。"},
+  {id:"jiuweihu", name:"九尾狐", ic:"🦊", rarity:8,  atk:0,  ess:8,  crit:5, brk:0, dmgR:0,  ds:"九尾通灵，魅惑众生。"},
+  {id:"qilin",    name:"麒麟",   ic:"🦌", rarity:9,  atk:0,  ess:12, crit:0, brk:0, dmgR:6,  ds:"瑞兽麒麟，祥瑞加身。"},
+  {id:"zhenlong", name:"真龙",   ic:"🐲", rarity:10, atk:15, ess:10, crit:0, brk:0, dmgR:8,  ds:"五爪真龙，傲视九天。"},
+];
+const BEAS_BY_ID={}; BEAS.forEach(x=>BEAS_BY_ID[x.id]=x);
 
 /* 制造配方库（制符 / 炼丹 / 炼器 / 阵法） */
 const CRAFT = [
@@ -553,7 +567,7 @@ const ACHS = [
   {id:"r3",    nm:"元婴出窍",   ds:"突破至元婴期",      ic:"👶", rw:20000,cond:s=>s.realm>=3},
   {id:"r4",    nm:"化神可期",   ds:"突破至化神期",      ic:"🌫️", rw:200000,cond:s=>s.realm>=4},
   {id:"g1",    nm:"阵起九转",   ds:"每拥有 10 座聚灵阵可领一次", ic:"🌀", rw:100, multi:true, step:10, max:20, prog:s=>s.fa[0], cond:s=>s.fa[0]>=10},
-  {id:"g2",    nm:"灵兽成群",   ds:"每拥有 25 只灵兽可领一次",   ic:"🐉", rw:1000, multi:true, step:25, max:20, prog:s=>s.fa[1], cond:s=>s.fa[1]>=25},
+  {id:"g2",    nm:"兽潮涌动",   ds:"每拥有 25 头驭兽可领一次",   ic:"🐉", rw:1000, multi:true, step:25, max:20, prog:s=>s.fa[1], cond:s=>s.fa[1]>=25},
   {id:"p1",    nm:"灵气如潮",   ds:"运功时灵气产量达到 1K/秒",  ic:"💨", rw:1000, cond:()=>prodPerSec()>=1e3},
   {id:"p2",    nm:"气吞山河",   ds:"运功时灵气产量达到 1M/秒",  ic:"🌊", rw:100000, cond:()=>prodPerSec()>=1e6},
   {id:"d1",    nm:"一朝飞升",   ds:"完成第一次飞升",    ic:"🦢", rw:0,   cond:s=>s.ascensions>=1},
@@ -587,7 +601,7 @@ function newState(){
     realm:0, essence:0, lifetime:0, clicks:0, dao:0, daoTotal:0, hp:100, hpMax:100,
     crystal:0, stoneL:0, stoneM:0, stoneH:0, stoneT:0, stoneG:0,
     fa:FAC.map(()=>0), ups:Object.fromEntries(UPS.map(u=>[u.id,0])),
-    mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0, servants:[{lv:"丁",task:null,prog:0,curR:null}],
+    mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0, servants:[{lv:"丁",task:null,prog:0,curR:null}], pets:[],
     shen:[], shenProd:0, shenBreak:0, shenCrit:0, shenOffline:0, shenDaoProd:0,
     ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, buffWarned:{}, buffEnded:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(),
     settings:{sound:true,theme:"dark",lang:"zh"},
@@ -602,6 +616,7 @@ function normalizeState(){
   S.making=S.making||null; S.collectCd=S.collectCd||0; S.cycle=S.cycle||null; S.collectZone=S.collectZone||{beast:"外",ore:"外",herb:"外"};
   if(!S.servants || !S.servants.length) S.servants=[{lv:"丁",task:null,prog:0,curR:null}];
   S.servants.forEach(s=>{ s.lv=s.lv||"丁"; s.task=s.task||null; s.prog=s.prog||0; s.curR=s.curR||null; });
+  if(!S.pets||!Array.isArray(S.pets)) S.pets=[];
   for(const k in S.collect){ if(!["beast","ore","herb"].includes(k)) delete S.collect[k]; }
   S.ups=S.ups||Object.fromEntries(UPS.map(u=>[u.id,0]));
   S.shen=S.shen||[]; S.ach=S.ach||[];
@@ -737,20 +752,20 @@ function essencePerSec(){
   if(S.root) m = CFG.huangBase * rootSpeed() * realm().mult * prodUpMult() * daoMult();
   m += facEssSec();
   m += buffEffSum("ess_flat");
-  if(m>0) m *= (1 + buffEffSum("ess_pct")/100 + eqSum("ess")/100);
+  if(m>0) m *= (1 + buffEffSum("ess_pct")/100 + eqSum("ess")/100 + petSum("ess")/100);
   return m;
 }
 function yunEffMult(){ return 1 + UPS[0].fx(S.ups.click); }
 function yunOutPerSec(){ return S.yunning ? essencePerSec()*yunEffMult()*(S.critBoost?3:1) : 0; }
 function prodPerSec(){ return yunOutPerSec(); }
-function critChance(){ return Math.min(0.50, UPS[2].fx(S.ups.crit) + buffEffSum("crit")) + rootCritBonus() + eqSum("crit"); }
+function critChance(){ return Math.min(0.50, UPS[2].fx(S.ups.crit) + buffEffSum("crit")) + rootCritBonus() + eqSum("crit") + petSum("crit"); }
 function realmNeed(){
   const n = Math.min(S.realm+1, REALMS.length-1);
   return REALMS[n].req * rootReqMult();
 }
 function breakChance(){
   let base = rootBreakCap() + UPS[3].fx(S.ups.break) + buffEffSum("brk"); // 灵根×10% + 突破升级 + 丹药buff，上限80%
-  base += eqSum("brk");
+  base += eqSum("brk") + petSum("brk");
   if(evt.breakBoost>Date.now()) base += 0.30;
   return Math.min(0.80, base);
 }
@@ -834,7 +849,9 @@ function randMatOfCat(cid){
   const pool=MATS.filter(m=>m.cat===cat && m.rarity>=zn.lo && m.rarity<=zn.hi);
   return pool[Math.floor(Math.random()*pool.length)];
 }
-const SV_EFF={甲:0.9,乙:0.75,丙:0.6,丁:0.4}; // 仆人效率 = 玩家效率（100%）的比例
+const SV_EFF={甲:0.9,乙:0.75,丙:0.6,丁:0.4}; // 傀儡效率 = 玩家效率（100%）的比例
+const SV_AV={甲:"💎",乙:"⚙️",丙:"🗿",丁:"🪵"}; // 傀儡头像：玉傀 / 铁傀 / 石傀 / 木傀
+const LV_NM={甲:"玉",乙:"铁",丙:"石",丁:"木"}; // 傀儡等级显示名
 function craftTime(r){ const v=r.value||1; if(v<200)return 10; if(v<1000)return 20; if(v<5000)return 40; if(v<20000)return 90; return 180; }
 function collectByCat(cid){
   const m=randMatOfCat(cid);
@@ -991,7 +1008,7 @@ function switchTab(tab){
   document.querySelectorAll(".menu-item").forEach(m=>m.classList.toggle("active", m.dataset.tab===tab));
   renderTab();
 }
-const RENDERERS={qiang:renderQiang,eqp:renderEqp,xu:renderXu,pu:renderPu,gong:renderGong,shen:renderShen,cai:renderCai,zao:renderZao,shop:renderShop,battle:renderBattle,ach:renderAchs};
+const RENDERERS={qiang:renderQiang,eqp:renderEqp,xu:renderXu,pu:renderPu,ls:renderPets,gong:renderGong,shen:renderShen,cai:renderCai,zao:renderZao,shop:renderShop,battle:renderBattle,ach:renderAchs};
 function renderTab(){
   const cult = activeTab==="cult";
   $("mainPanel").classList.toggle("hide", !cult);
@@ -1206,9 +1223,9 @@ function renderZao(body){
 }
 function renderPu(body){
   body.innerHTML="";
-  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 仆人 —";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="仆人以玩家效率（100%）的比例代你采集 / 制造：<b>甲 90%</b>、乙 75%、丙 60%、<b>丁 40%</b>（甲最快、丁最慢）。指派任务后自动持续产出，无需手动操作；仆人产出与玩家状态（运功 / 采集 / 制造）互不干扰。制造任务可细分到<b>具体配方</b>（也可选「随机配方」），材料不足时自动等待重试。指派后按钮变为红色「停止」，点击即可停止任务。";body.appendChild(p);
-  if(!S.servants.length){ const e=document.createElement("div");e.className="hint";e.textContent="尚无仆人。";body.appendChild(e); return; }
+  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 傀儡 —";body.appendChild(st);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="傀儡以玩家效率（100%）的比例代你采集 / 制造：<b>玉 90%</b>、铁 75%、石 60%、<b>木 40%</b>（玉傀最快、木傀最慢）。指派任务后自动持续产出，无需手动操作；傀儡产出与玩家状态（运功 / 采集 / 制造）互不干扰。制造任务可细分到<b>具体配方</b>（也可选「随机配方」），材料不足时自动等待重试。指派后按钮变为红色「停止」，点击即可停止任务。";body.appendChild(p);
+  if(!S.servants.length){ const e=document.createElement("div");e.className="hint";e.textContent="尚无傀儡。";body.appendChild(e); return; }
   const taskOpts=[["","— 无任务 —"],["cai:beast","狩猎（兽类材料）"],["cai:ore","挖矿（矿石）"],["cai:herb","采药（草药）"],["zao:制符","制造·制符"],["zao:炼丹","制造·炼丹"],["zao:炼器","制造·炼器"],["zao:阵法","制造·阵法"]];
   const selStyle="padding:6px 8px;border-radius:7px;font-size:12px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);max-width:180px;";
   S.servants.forEach((s,i)=>{
@@ -1231,7 +1248,7 @@ function renderPu(body){
       progTxt=' · 进度 <span id="svProg'+i+'">'+s.prog.toFixed(1)+"/"+iv.toFixed(1)+"s</span>";
     }
     item.innerHTML=`<div class="ic">👤</div><div class="body">
-      <div class="nm">${s.lv}级仆人 <span class="cat">效率 ${effTxt}</span></div>
+      <div class="nm">${SV_AV[s.lv]||"🪵"} ${LV_NM[s.lv]||s.lv}傀 <span class="cat">效率 ${effTxt}</span></div>
       <div class="ds">任务：${taskTxt}${progTxt}</div>
     </div>`;
     const wr=document.createElement("div");wr.className="btnRow";wr.style.cssText="width:100%;flex-wrap:wrap;";
@@ -1255,20 +1272,20 @@ function renderPu(body){
     wr.appendChild(sel);
     wr.appendChild(sel2Wrap);
     if(s.task){
-      const stopBtn=buyBtn(true,()=>{ s.task=null; s.prog=0; s.curR=null; logEvent(s.lv+"级仆人停止任务",'dim'); render(); },"停止");
+      const stopBtn=buyBtn(true,()=>{ s.task=null; s.prog=0; s.curR=null; logEvent((LV_NM[s.lv]||s.lv)+"傀停止任务",'dim'); render(); },"停止");
       stopBtn.style.background="linear-gradient(135deg,#d9534f,#b03a35)"; stopBtn.style.color="#fff";
       wr.appendChild(stopBtn);
     } else {
       wr.appendChild(buyBtn(true,()=>{
         const v=sel.value;
-        if(!v){ s.task=null; s.prog=0; s.curR=null; logEvent(s.lv+"级仆人停止任务",'dim'); }
+        if(!v){ s.task=null; s.prog=0; s.curR=null; logEvent((LV_NM[s.lv]||s.lv)+"傀停止任务",'dim'); }
         else {
           const parts=v.split(":");
           const rId=parts[0]==="zao"?(sel2.value||null):null;
           s.task={kind:parts[0],t:parts[1],rId:rId};
           s.prog=0; s.curR=null;
           const nm=parts[0]==="cai"?(parts[1]==="beast"?"狩猎":parts[1]==="ore"?"挖矿":"采药"):"制造·"+parts[1]+(rId?(REC_BY_ID[rId]?"（"+REC_BY_ID[rId].name+"）":""):"（随机）");
-          logEvent("指派"+s.lv+"级仆人「"+nm+"」",'sys'); banner(s.lv+"级仆人开始"+nm);
+          logEvent("指派"+(LV_NM[s.lv]||s.lv)+"傀「"+nm+"」",'sys'); banner((LV_NM[s.lv]||s.lv)+"傀开始"+nm);
         }
         render();
       },"指派"));
@@ -1292,6 +1309,7 @@ function eqText(r){
 }
 function equippedItems(){ const o=[]; for(const sl in S.equipped){ const uid=S.equipped[sl]; if(uid!=null){ const it=(S.equip||[]).find(x=>x.uid===uid); if(it)o.push(it); } } return o; }
 function eqSum(key){ return equippedItems().reduce((a,it)=>{ const r=REC_BY_ID[it.id]; return a+(r&&r[key]?r[key]:0); },0); }
+function petSum(key){ return (S.pets||[]).reduce((a,it)=>{ const b=BEAS_BY_ID[it.id]; if(!b) return a; const v=b[key]||0; return a+v*(1+0.1*(it.lv-1)); },0); }
 function wearEquip(id){
   const r=REC_BY_ID[id]; if(!r||!r.slot) return;
   const it=(S.equip||[]).find(x=>x.id===id && !(x.uid===S.equipped[r.slot]));
@@ -1321,6 +1339,54 @@ function dropEquip(id){
   logEvent("丢弃装备「"+r.name+"」",'warn'); sound(200,.1); save(); render();
 }
 function equipCount(id){ return (S.equip||[]).filter(x=>x.id===id).length; }
+function petCost(){ return floorPriceL(80); }
+function petFeedCost(lv){ return floorPriceL(40*lv); }
+function findPet(){
+  const p=petCost(); if(!canPayL(p)){ banner("灵石不足"); return; }
+  payL(p);
+  let wsum=0; BEAS.forEach(x=>wsum+=1/x.rarity);
+  let r=Math.random()*wsum, pick=BEAS[0];
+  for(const x of BEAS){ r-=1/x.rarity; if(r<=0){ pick=x; break; } }
+  const have=S.pets.find(q=>q.id===pick.id);
+  if(have){ have.lv++; logEvent("灵兽「"+pick.name+"」再度现身，进阶至 Lv"+have.lv,'sys'); banner("灵兽进阶 Lv"+have.lv); }
+  else { S.pets.push({uid:++S.uid,id:pick.id,lv:1}); logEvent("结缘灵兽「"+pick.name+"」（稀"+pick.rarity+"）",'sys'); banner("获得灵兽 "+pick.name); }
+  renderTab(); save();
+}
+function feedPet(i){
+  const it=S.pets[i]; if(!it) return;
+  const p=petFeedCost(it.lv); if(!canPayL(p)){ banner("灵石不足"); return; }
+  payL(p); it.lv++; const b=BEAS_BY_ID[it.id]; logEvent("灵兽「"+b.name+"」升至 Lv"+it.lv,'sys'); renderTab(); save();
+}
+function renderPetsList(box){
+  if(!S.pets.length){ box.innerHTML='<div class="hint">尚无灵兽，先「寻兽」结缘一只。</div>'; return; }
+  box.innerHTML="";
+  S.pets.forEach((it,i)=>{
+    const b=BEAS_BY_ID[it.id]; if(!b) return;
+    const m=(lv)=>1+0.1*(lv-1);
+    const parts=[];
+    if(b.atk)parts.push("战力+"+Math.round(b.atk*m(it.lv))+"%"); if(b.ess)parts.push("灵气+"+Math.round(b.ess*m(it.lv))+"%");
+    if(b.crit)parts.push("会心+"+Math.round(b.crit*m(it.lv))+"%"); if(b.brk)parts.push("突破+"+Math.round(b.brk*m(it.lv))+"%");
+    if(b.dmgR)parts.push("减伤+"+Math.round(b.dmgR*m(it.lv))+"%");
+    const item=document.createElement("div");item.className="item";
+    item.innerHTML=`<div class="ic">${b.ic}</div><div class="body">
+      <div class="nm">${b.name} <span class="cat">稀${b.rarity}</span> <span style="font-size:11px;color:var(--mystic)">Lv ${it.lv}</span></div>
+      <div class="ds">${b.ds}</div>
+      <div class="ln">${parts.join(" · ")||"—"}</div>
+    </div>`;
+    item.appendChild(buyBtn(canPayL(petFeedCost(it.lv)),()=>{feedPet(i);},"喂食 · "+priceLText(petFeedCost(it.lv))));
+    box.appendChild(item);
+  });
+}
+function renderPets(body){
+  body.innerHTML="";
+  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 灵兽库（后台数据库 · 共 10 种）—";body.appendChild(st);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="灵兽系统：寻兽消耗 <b>80 下品灵石</b> 结缘一只灵兽，稀有度越高越难相遇（青鸟 / 灵狐 / 玄龟 / 赤焰狮 / 碧水蛟 / 雷鹰 / 金翅鹏 / 九尾狐 / 麒麟 / 真龙）。重复相遇自动<b>进阶 +1 级</b>；喂食灵石升级（每级 <b>+10%</b> 基础加成），加成实时并入战力 / 灵气 / 会心 / 突破 / 探索减伤。";body.appendChild(p);
+  const row=document.createElement("div");row.style.cssText="display:flex;gap:10px;align-items:center;margin:10px 0;";
+  row.appendChild(buyBtn(canPayL(petCost()),()=>{findPet();},"寻兽 · 80 下品灵石"));
+  body.appendChild(row);
+  const dl=document.createElement("div");dl.id="petList";body.appendChild(dl);
+  renderPetsList(dl);
+}
 function renderEqp(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 装备 · 穿戴 —";body.appendChild(st);
@@ -1640,7 +1706,7 @@ const EXP_AREAS={
   kj:{nm:"跨界空间", lv:"九死一生", power:700}
 };
 function hpMaxFor(n){ return Math.floor(100*Math.pow(1.45,Math.max(0,n))*(1+eqSum("hp")/100)); }
-function playerPower(){ return Math.floor(100*(1+S.realm*0.45)*(1+(S.root?S.root.combat:0))*(1+buffEffSum("combat")/100)*(1+eqSum("atk")/100)); }
+function playerPower(){ return Math.floor(100*(1+S.realm*0.45)*(1+(S.root?S.root.combat:0))*(1+buffEffSum("combat")/100)*(1+(eqSum("atk")+petSum("atk"))/100)); }
 /* v12：区域难度绑定境界段——洞天福地=筑基/金丹/元婴，原始禁区=化神/炼虚/合体，
    上古战场=大乘/渡劫/真仙，跨界空间=真仙及以上（九死一生，怪强度系数更高）。
    普通怪≈对应境界玩家战力×(50%~70%)，精英=该层普通×1.5（守门），BOSS≈境界战力×危险系数（可挑战）。 */
@@ -1754,7 +1820,7 @@ function expRevealNearby(){
   const pick=Math.min(2,nb.length);
   for(let i=0;i<pick;i++){ const c=nb.splice(Math.floor(Math.random()*nb.length),1)[0]; c.revealed=true; }
 }
-function expDmg(base){ const r=Math.max(0,1-(buffEffSum("dmg_reduce")+eqSum("dmgR"))/100); return Math.max(1,Math.ceil(base*r)); }
+function expDmg(base){ const r=Math.max(0,1-(buffEffSum("dmg_reduce")+eqSum("dmgR")+petSum("dmgR"))/100); return Math.max(1,Math.ceil(base*r)); }
 function expMove(q,r){
   const exp=S.exp; if(!exp||exp.over) return;
   const dq=q-exp.pos.q, dr=r-exp.pos.r;
@@ -1891,7 +1957,7 @@ const TUT_STEPS=[
   {t:"— 仙途伊始 · 三 —", b:"临行前，为自己取一个行走修仙界的名号吧。这个名字将伴随你从炼气到飞升，被世间道友传颂。", input:true},
   {t:"— 修炼 —", b:"点击修炼页的『盘膝打坐 · 开始运功』即可开始积累灵气，灵气满额后可尝试『突破』冲击更高境界。<br><br>注意：灵气产出默认暂停，仅在运功时产出；运功与采集 / 制造互斥，停止运功即停止产出。"},
   {t:"— 采集与制造 —", b:"『采集』可狩猎 / 挖矿 / 采药，随机获得妖兽材料、矿石与草药；『制造』以材料合成符箓、丹药、装备与阵法。所有材料与成品都存放在『须弥空间』，可随时使用或出售。"},
-  {t:"— 仆人 —", b:"『仆人』可替你自动采集或制造：甲级效率最高（玩家 90%），丁级最低（40%）。指派任务后自动持续产出，点击红色『停止』按钮即可随时停止。"},
+  {t:"— 傀儡 —", b:"『傀儡』可替你自动采集或制造：玉傀效率最高（玩家 90%），木傀最低（40%）。指派任务后自动持续产出，点击红色『停止』按钮即可随时停止。"},
 ];
 let tutStep=-2; // -2 询问态
 function openTutAsk(){ tutStep=-2; renderTut(); $("tutOverlay").classList.add("show"); }
@@ -1913,7 +1979,7 @@ function tutNext(){
 function renderTut(){
   if(tutStep===-2){
     $("tutTitle").textContent="— 新手指引 —";
-    $("tutBody").innerHTML="你即将重生在一个<b>修仙异世界</b>：百族林立、宗门如云，凡人唯有踏上仙途方能超脱生死。<br><br>是否开启<b>新手指引</b>，快速了解如何修炼、采集制造与驱使仆人？";
+    $("tutBody").innerHTML="你即将重生在一个<b>修仙异世界</b>：百族林立、宗门如云，凡人唯有踏上仙途方能超脱生死。<br><br>是否开启<b>新手指引</b>，快速了解如何修炼、采集制造与驱使傀儡？";
     $("tutNameWrap").style.display="none";
     $("tutSkip").style.display="inline-block"; $("tutSkip").textContent="直接开始";
     $("tutNext").textContent="开始指引";
@@ -2121,7 +2187,7 @@ function gameTick(now){
     }
     if(activeTab==="zao") renderTab();
   }
-  // 仆人自动采集 / 制造
+  // 傀儡自动采集 / 制造
   let svProduced=false;
   S.servants.forEach(s=>{
     if(!s.task) return;
@@ -2144,7 +2210,7 @@ function gameTick(now){
     }
   });
   if(svProduced && activeTab==="pu") renderTab();
-  // 仆人任务进度：轻量更新倒计时文本（不重建中列避免闪烁）
+  // 傀儡任务进度：轻量更新倒计时文本（不重建中列避免闪烁）
   if(activeTab==="pu"){
     S.servants.forEach((s,i)=>{
       if(!s.task) return;
