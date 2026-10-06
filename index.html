@@ -270,6 +270,7 @@ function fmt(n){
   if(n>=1e9) return (n/1e9).toFixed(2)+"B";
   if(n>=1e6) return (n/1e6).toFixed(2)+"M";
   if(n>=1e4) return (n/1e3).toFixed(1)+"K";
+  if(n<100) return (Math.floor(n*10)/10).toString();
   return Math.floor(n).toString();
 }
 function sound(f){ try{ const a=new AudioContext(); const o=a.createOscillator(); const g=a.createGain(); o.frequency.value=f; o.connect(g); g.connect(a.destination); g.gain.setValueAtTime(0.12,a.currentTime); g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.15); o.start(); o.stop(a.currentTime+0.15);}catch(e){} }
@@ -586,7 +587,7 @@ function newState(){
     realm:0, essence:0, lifetime:0, clicks:0, dao:0, daoTotal:0, hp:100, hpMax:100,
     crystal:0, stoneL:0, stoneM:0, stoneH:0, stoneT:0, stoneG:0,
     fa:FAC.map(()=>0), ups:Object.fromEntries(UPS.map(u=>[u.id,0])),
-    mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0,
+    mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0, servants:[{lv:"丁",task:null,prog:0,curR:null}],
     shen:[], shenProd:0, shenBreak:0, shenCrit:0, shenOffline:0, shenDaoProd:0,
     ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, buffWarned:{}, buffEnded:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(),
     settings:{sound:true,theme:"dark",lang:"zh"},
@@ -1295,8 +1296,9 @@ function wearEquip(id){
 function unequipEquip(sl){ if(S.equipped[sl]==null) return; const uid=S.equipped[sl]; S.equipped[sl]=null; const it=(S.equip||[]).find(x=>x.uid===uid); logEvent("卸下「"+(it?REC_BY_ID[it.id].name:"装备")+"」",'dim'); save(); render(); }
 function sellEquip(id){
   const r=REC_BY_ID[id]; if(!r) return;
-  const idx=(S.equip||[]).findIndex(x=>x.id===id);
-  if(idx<0) return;
+  const worn=Object.values(S.equipped||{}).filter(u=>u!=null);
+  const idx=(S.equip||[]).findIndex(x=>x.id===id && !worn.includes(x.uid));
+  if(idx<0){ banner("已穿戴的装备不可出售，请先卸下"); return; }
   const uid=S.equip[idx].uid; S.equip.splice(idx,1);
   for(const sl in S.equipped){ if(S.equipped[sl]===uid) S.equipped[sl]=null; }
   S.stoneL+=r.value;
@@ -1304,8 +1306,9 @@ function sellEquip(id){
 }
 function dropEquip(id){
   const r=REC_BY_ID[id]; if(!r) return;
-  const idx=(S.equip||[]).findIndex(x=>x.id===id);
-  if(idx<0) return;
+  const worn=Object.values(S.equipped||{}).filter(u=>u!=null);
+  const idx=(S.equip||[]).findIndex(x=>x.id===id && !worn.includes(x.uid));
+  if(idx<0){ banner("已穿戴的装备不可丢弃，请先卸下"); return; }
   const uid=S.equip[idx].uid; S.equip.splice(idx,1);
   for(const sl in S.equipped){ if(S.equipped[sl]===uid) S.equipped[sl]=null; }
   logEvent("丢弃装备「"+r.name+"」",'warn'); sound(200,.1); save(); render();
@@ -1359,7 +1362,9 @@ function renderXu(body){
   const p=document.createElement("div");p.className="hint";p.innerHTML="存放制造物品与采集材料，按分类归类。物品可使用 / 丢弃 / 出售（弹窗选数量）；使用物品不受运功 / 采集 / 制造 / 战斗状态限制，随时可用。";body.appendChild(p);
   const ids=Object.keys(S.tres).filter(id=>(S.tres[id]||0)>0);
   const hasMat=MATS.some(m=>(S.mats[m.id]||0)>0);
-  const eqIds=Array.from(new Set((S.equip||[]).map(x=>x.id)));
+  const wornUids=Object.values(S.equipped||{}).filter(u=>u!=null);
+  const unwornEq=(S.equip||[]).filter(x=>!wornUids.includes(x.uid));
+  const eqIds=Array.from(new Set(unwornEq.map(x=>x.id)));
   if(ids.length===0 && !hasMat && !eqIds.length){ const e=document.createElement("div");e.className="hint";e.textContent="背包空空如也，前往「制造」合成物品或「采集」获取材料。";body.appendChild(e); return; }
   // 制造物品
   if(ids.length && xuSec(body,"制造物品","tres")){
@@ -1385,7 +1390,7 @@ function renderXu(body){
     eqIds.forEach(id=>{
       const r=REC_BY_ID[id]; if(!r) return;
       const item=document.createElement("div");item.className="item";
-      item.innerHTML=`<div class="ic">${r.ic}</div><div class="body"><div class="nm">${r.name}<span class="cat">${SLOT_NAMES[r.slot]}</span></div><div class="ln">持有 <b>${equipCount(id)}</b></div></div>`;
+      item.innerHTML=`<div class="ic">${r.ic}</div><div class="body"><div class="nm">${r.name}<span class="cat">${SLOT_NAMES[r.slot]}</span></div><div class="ln">持有 <b>${unwornEq.filter(x=>x.id===id).length}</b></div></div>`;
       bindTip(item,`<b>${r.name}</b>（稀有${r.rarity} · ${SLOT_NAMES[r.slot]}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${eqText(r)}</span>`);
       item.appendChild(buyBtn(true,()=>wearEquip(id),"穿戴"));
       item.appendChild(buyBtn(true,()=>sellEquip(id),"出售"));
@@ -1884,7 +1889,7 @@ const TUT_STEPS=[
 let tutStep=-2; // -2 询问态
 function openTutAsk(){ tutStep=-2; renderTut(); $("tutOverlay").classList.add("show"); }
 function startTut(){ tutStep=0; renderTut(); }
-function skipTut(){ S.tut="skip"; $("tutOverlay").classList.remove("show"); sound(520,.1); if(!S.root) openReroll(); }
+function skipTut(){ S.tut="skip"; tutStep=TUT_STEPS.findIndex(s=>s.input); renderTut(); }
 function tutNext(){
   if(tutStep===-2){ startTut(); return; }
   const st=TUT_STEPS[tutStep];
@@ -1892,6 +1897,7 @@ function tutNext(){
     const nm=$("tutName").value.trim().slice(0,12);
     if(!nm){ $("tutName").style.borderColor="#e05555"; $("tutName").placeholder="请输入道号后再继续…"; return; }
     $("tutName").style.borderColor=""; S.name=nm;
+    if(S.tut==="skip"){ finishTut(); return; }
   }
   tutStep++;
   if(tutStep>=TUT_STEPS.length){ finishTut(); return; }
