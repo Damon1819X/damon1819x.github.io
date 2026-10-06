@@ -132,7 +132,6 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
     <div class="cur"><span>上品灵石</span><b class="mystic" id="cH">0</b></div>
     <div class="cur"><span>极品灵石</span><b style="color:#f0cf6b" id="cT">0</b></div>
     <div class="cur"><span>神品灵石</span><b style="color:#e070c0" id="cG">0</b></div>
-    <div class="cur"><span>材料</span><b style="color:var(--jade)" id="matTotal">0</b></div>
     <div class="cur"><span>气血</span><b style="color:var(--jade)" id="cHP">100/100</b></div>
     <div class="cur" style="margin-left:auto"><span>灵气产出</span><b style="color:var(--jade)" id="cPerSec">0/s</b></div>
   </div>
@@ -165,7 +164,7 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
       <div style="font-size:13px;color:var(--ink)" id="essenceProg">0 / 0</div>
       <button class="bigBtn" id="breakBtn" disabled>灵力不足，继续积累</button>
       <button class="bigBtn" id="rollBtn">点击刷取灵根</button>
-      <div style="font-size:12px;color:var(--ink-dim);margin-top:4px">开局免费刷 10 次 · 单灵根修炼最快 / 突破最易（最高10%）· 变异灵根各有加成</div>
+      <div id="rollTip" style="font-size:12px;color:var(--ink-dim);margin-top:4px">开局免费刷 10 次 · 单灵根修炼最快 / 突破最易（最高10%）· 变异灵根各有加成</div>
       <button class="bigBtn" id="yunBtn">盘膝打坐 · 开始运功</button>
       <button class="bigBtn" id="stopYunBtn" style="display:none;background:linear-gradient(135deg,#e05555,#a02f2f);color:#fff">停止运功</button>
       <div style="font-size:12px;color:var(--ink-dim);margin-top:4px">灵气产出默认暂停，仅运功时产出。运功与采集 / 制造互斥（切换时自动停止另一方），运功无时长上限。</div>
@@ -188,6 +187,18 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
       <button id="rrAgain" disabled>再刷一次</button>
     </div>
     <div id="rrHint" style="font-size:12px;color:var(--ink-dim);margin-top:8px"></div>
+  </div>
+</div>
+
+<div class="overlay" id="tutOverlay">
+  <div class="modal" id="tutModal">
+    <h3 id="tutTitle">— 新手指引 —</h3>
+    <div class="mbody" id="tutBody" style="min-height:110px;line-height:1.8"></div>
+    <div style="margin:10px 0;display:none" id="tutNameWrap"><input id="tutName" maxlength="12" placeholder="输入你在修仙界的名字" style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:14px"></div>
+    <div class="btnPair">
+      <button id="tutSkip" style="display:none">跳过指引</button>
+      <button id="tutNext">下一步</button>
+    </div>
   </div>
 </div>
 
@@ -554,7 +565,7 @@ let S=null;
 function newState(){
   return {
     version:VERSION, root:null, freeRolls:CFG.freeRerolls, paidRolls:0,
-    realm:0, essence:0, lifetime:0, clicks:0, dao:0, daoTotal:0,
+    realm:0, essence:0, lifetime:0, clicks:0, dao:0, daoTotal:0, hp:100, hpMax:100,
     crystal:0, stoneL:0, stoneM:0, stoneH:0, stoneT:0, stoneG:0,
     fa:FAC.map(()=>0), ups:Object.fromEntries(UPS.map(u=>[u.id,0])),
     mats:{}, tres:{}, collect:{}, equip:[], equipped:{}, uid:0,
@@ -670,7 +681,6 @@ function priceLText(p){ const parts=[]; if(p.g)parts.push(fmt(p.g)+" 神品灵�
 function canPayL(p){ return S.stoneG>=p.g && S.stoneT>=p.t && S.stoneH>=p.h && S.stoneM>=p.m && S.stoneL>=p.l; }
 function payL(p){ if(!canPayL(p)) return false; S.stoneG-=p.g; S.stoneT-=p.t; S.stoneH-=p.h; S.stoneM-=p.m; S.stoneL-=p.l; return true; }
 function addL(p){ S.stoneG+=p.g; S.stoneT+=p.t; S.stoneH+=p.h; S.stoneM+=p.m; S.stoneL+=p.l; }
-function matTotal(){ let n=0; for(const k in S.mats) n+=S.mats[k]; return n; }
 
 /* ================================================================
    灵根加成
@@ -897,7 +907,8 @@ function renderStats(){
   $("stopYunBtn").style.display = S.yunning? "" : "none";
   const acts=Object.keys(S.buffs).filter(id=>S.buffs[id].until>Date.now());
   $("buffLine").innerHTML = acts.length ? ("生效："+acts.map(id=>{const r=REC_BY_ID[id];const b=S.buffs[id];return `<span style="margin:0 4px">${r.ic}${r.name}×${b.stack} ${Math.ceil((b.until-Date.now())/60000)}分</span>`;}).join("")) : "";
-  $("matTotal").textContent=fmt(matTotal());
+  const rb=$("rollBtn"); if(rb) rb.style.display=S.root?"none":"";
+  const rt=$("rollTip"); if(rt) rt.style.display=S.root?"none":"";
   $("realmDesc").textContent=realm().desc;
   $("metaMult").textContent="×"+fmt(realm().mult);
   $("metaChance").textContent=Math.round(breakChance()*100)+"%";
@@ -1091,7 +1102,7 @@ function renderPu(body){
         const r0=s.curR||(s.task.rId?full.find(r=>r.id===s.task.rId):full[0]);
         if(r0) iv=craftTime(r0)/eff;
       }
-      progTxt=" · 进度 "+s.prog.toFixed(1)+"/"+iv.toFixed(1)+"s";
+      progTxt=' · 进度 <span id="svProg'+i+'">'+s.prog.toFixed(1)+"/"+iv.toFixed(1)+"s</span>";
     }
     item.innerHTML=`<div class="ic">👤</div><div class="body">
       <div class="nm">${s.lv}级仆人 <span class="cat">效率 ${effTxt}</span></div>
@@ -1727,6 +1738,54 @@ function renderAchs(body){
 }
 
 /* ================================================================
+   新手指引（v18.4）
+   ================================================================ */
+const TUT_STEPS=[
+  {t:"— 仙途伊始 · 一 —", b:"混沌初开，天地灵气沉浮。你的一缕真灵穿越虚空，坠入这方修仙世界——百族林立，宗门如云，凡人寿不过百，唯有踏入仙途，方可超脱生死轮回。"},
+  {t:"— 仙途伊始 · 二 —", b:"你自荒山野岭中醒来，衣衫褴褛，周身灵气稀薄，却隐隐感到体内灵根暗藏、气机勃发。这是你的新生，也是你问道长生的起点。"},
+  {t:"— 仙途伊始 · 三 —", b:"临行前，为自己取一个行走修仙界的名号吧。这个名字将伴随你从炼气到飞升，被世间道友传颂。", input:true},
+  {t:"— 修炼 —", b:"点击修炼页的『盘膝打坐 · 开始运功』即可开始积累灵气，灵气满额后可尝试『突破』冲击更高境界。<br><br>注意：灵气产出默认暂停，仅在运功时产出；运功与采集 / 制造互斥，停止运功即停止产出。"},
+  {t:"— 采集与制造 —", b:"『采集』可狩猎 / 挖矿 / 采药，随机获得妖兽材料、矿石与草药；『制造』以材料合成符箓、丹药、装备与阵法。所有材料与成品都存放在『须弥空间』，可随时使用或出售。"},
+  {t:"— 仆人 —", b:"『仆人』可替你自动采集或制造：甲级效率最高（玩家 90%），丁级最低（40%）。指派任务后自动持续产出，点击红色『停止』按钮即可随时停止。"},
+];
+let tutStep=-2; // -2 询问态
+function openTutAsk(){ tutStep=-2; renderTut(); $("tutOverlay").classList.add("show"); }
+function startTut(){ tutStep=0; renderTut(); }
+function skipTut(){ S.tut="skip"; $("tutOverlay").classList.remove("show"); sound(520,.1); if(!S.root) openReroll(); }
+function tutNext(){
+  if(tutStep===-2){ startTut(); return; }
+  const st=TUT_STEPS[tutStep];
+  if(st && st.input){ const nm=$("tutName").value.trim().slice(0,12); if(nm) S.name=nm; }
+  tutStep++;
+  if(tutStep>=TUT_STEPS.length){ finishTut(); return; }
+  renderTut();
+}
+function renderTut(){
+  if(tutStep===-2){
+    $("tutTitle").textContent="— 新手指引 —";
+    $("tutBody").innerHTML="你即将重生在一个<b>修仙异世界</b>：百族林立、宗门如云，凡人唯有踏上仙途方能超脱生死。<br><br>是否开启<b>新手指引</b>，快速了解如何修炼、采集制造与驱使仆人？";
+    $("tutNameWrap").style.display="none"; $("tutSkip").style.display="none";
+    $("tutNext").textContent="开始指引";
+    return;
+  }
+  const st=TUT_STEPS[tutStep];
+  $("tutTitle").textContent=st.t;
+  $("tutBody").innerHTML=st.b;
+  $("tutNameWrap").style.display=st.input?"block":"none";
+  $("tutSkip").style.display=st.input?"none":"inline-block";
+  $("tutNext").textContent=(tutStep===TUT_STEPS.length-1)?"完成":"下一步";
+}
+function finishTut(){
+  const nm=S.name||"无名散修"; S.name=nm;
+  S.tut="done";
+  $("tutOverlay").classList.remove("show");
+  sound(700,.2); banner("欢迎来到修仙界，"+nm+"！");
+  logEvent("道友「"+nm+"」踏入仙途，新手指引完成",'sys');
+  if(!S.root) openReroll();
+  save(); render();
+}
+
+/* ================================================================
    刷灵根弹窗
    ================================================================ */
 function randomRoot(){ return ROOTS[Math.floor(Math.random()*ROOTS.length)]; }
@@ -1764,6 +1823,9 @@ function rrAgain(){
   rrCand=randomRoot();
   renderRr(); sound(430,.1);
 }
+$("tutNext").addEventListener("click",()=>tutNext());
+$("tutSkip").addEventListener("click",()=>skipTut());
+$("tutName").addEventListener("keydown",e=>{ if(e.key==="Enter") tutNext(); });
 $("rrKeep").addEventListener("click",()=>rrKeep());
 $("sellOk").addEventListener("click",()=>{ if(sellRef){ const q=parseInt($("sellQty").value)||0; sellTres(q); } closeSell(); });
 $("sellCancel").addEventListener("click",closeSell);
@@ -1904,6 +1966,22 @@ function gameTick(now){
     }
   });
   if(svProduced && activeTab==="pu") renderTab();
+  // 仆人任务进度：轻量更新倒计时文本（不重建中列避免闪烁）
+  if(activeTab==="pu"){
+    S.servants.forEach((s,i)=>{
+      if(!s.task) return;
+      const el=$("svProg"+i); if(!el) return;
+      const eff2=SV_EFF[s.lv]||0.4;
+      let iv2=8/eff2;
+      if(s.task.kind==="zao"){
+        const full=(CRAFT.find(c=>c.cat===s.task.t)||{rec:[]}).rec;
+        const r0=s.curR||(s.task.rId?full.find(r=>r.id===s.task.rId):full[0]);
+        if(r0) iv2=craftTime(r0)/eff2;
+      }
+      const t=s.prog.toFixed(1)+"/"+iv2.toFixed(1)+"s";
+      if(el.textContent!==t) el.textContent=t;
+    });
+  }
   checkAchievements();
   renderStats();
   // 中列不再于 100ms 循环重建，避免按钮闪烁 / 单击丢失；仅采集产出与坊市刷新时按需渲染
@@ -1938,7 +2016,7 @@ function render(){
 load();
 applyTheme(S.settings.theme||"dark");
 renderLog();
-if(!S.root){ openReroll(); }
+if(!S.root){ if(S.tut==="done"||S.tut==="skip") openReroll(); else openTutAsk(); }
 sizeBg();
 updateBadges();
 render();
