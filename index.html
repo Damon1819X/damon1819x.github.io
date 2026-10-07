@@ -173,7 +173,6 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
       <div class="metaRow">
         <div class="mb">境界倍率<b id="metaMult">×1</b></div>
         <div class="mb">突破成功率<b id="metaChance">0%</b></div>
-        <div class="mb">累计运功<b id="metaClicks">0</b></div>
       </div>
       <div class="rootLine" id="rootLine">未定灵根</div>
       <div class="metaRow">
@@ -579,8 +578,6 @@ function realmAt(n){ return REALMS[Math.min(n, REALMS.length-1)]; }
 const ACHS = [
   {id:"root1", nm:"天生仙骨",   ds:"拥有单灵根",        ic:"🌟", rw:1000, cond:s=>s.root&&s.root.type==="single"},
   {id:"root2", nm:"万中无一",   ds:"拥有变异灵根",      ic:"💎", rw:5000, cond:s=>s.root&&s.root.type==="mut"},
-  {id:"c1",    nm:"运功入道",   ds:"每累计运功 100 次可领一次", ic:"🧘", rw:50, multi:true, step:100, max:20, prog:s=>s.clicks, cond:s=>s.clicks>=100},
-  {id:"c2",    nm:"勤劳之手",   ds:"每累计运功 1000 次可领一次", ic:"🖐️", rw:500, multi:true, step:1000, max:10, prog:s=>s.clicks, cond:s=>s.clicks>=1000},
   {id:"r1",    nm:"筑基有成",   ds:"突破至筑基期",      ic:"🏮", rw:200,  cond:s=>s.realm>=1},
   {id:"r2",    nm:"金丹大成",   ds:"突破至金丹期",      ic:"🪙", rw:2000, cond:s=>s.realm>=2},
   {id:"r3",    nm:"元婴出窍",   ds:"突破至元婴期",      ic:"👶", rw:20000,cond:s=>s.realm>=3},
@@ -1024,7 +1021,6 @@ function renderStats(){
   $("realmDesc").textContent=realm().desc;
   $("metaMult").textContent="×"+fmt(realm().mult);
   $("metaChance").textContent=Math.round(breakChance()*100)+"%";
-  $("metaClicks").textContent=fmt(S.clicks);
   if(S.root){
     $("rootName").textContent=S.root.name;
     $("rootLine").innerHTML=S.root.name+' <span class="rootChip">修炼 ×'+S.root.speed+'</span><span class="rootChip">突破上限 '+Math.round(S.root.breakCap*100)+'%</span><span class="rootChip">突破灵力 ×'+S.root.reqMult+'</span>';
@@ -1240,7 +1236,7 @@ function renderZao(body){
   const stC=document.createElement("div");stC.className="sectionTitle";stC.textContent=cur.ic+" — "+cur.cat+" · "+cur.ds+" —";body.appendChild(stC);
   cur.rec.forEach(r=>{
     const item=document.createElement("div");item.className="item";
-    const needTxt=Object.keys(r.need).map(k=>{ const m=MATS_BY_ID[k]; return (m?m.name:k)+"×"+r.need[k]; }).join(" + ");
+    const needTxt=Object.keys(r.need).map(k=>{ const m=MATS_BY_ID[k]; return (m?m.name:k)+"×"+r.need[k]+"（持有 "+(S.mats[k]||0)+"）"; }).join(" + ");
     let can=true; for(const k in r.need){ if((S.mats[k]||0)<r.need[k]){ can=false; break; } }
     can = can && !S.yunning && !S.making; // 运功/制造中禁止制造
     item.innerHTML=`<div class="ic">${r.ic}</div><div class="body">
@@ -1968,7 +1964,7 @@ function renderExpLoot(){
 function renderAchs(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 证道成就 —";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.textContent="成就达成后奖励不会自动发放，需在下方手动点击「领取」。部分累计型成就（运功/设施/大道碎片）可多次领取。";body.appendChild(p);
+  const p=document.createElement("div");p.className="hint";p.textContent="成就达成后奖励不会自动发放，需在下方手动点击「领取」。部分累计型成就（设施/大道碎片）可多次领取。";body.appendChild(p);
   ACHS.forEach(a=>{
     const pend=S.achPending.includes(a.id);
     const got=(S.achGot[a.id]||0) + (a.multi?0:(S.ach.includes(a.id)?1:0));
