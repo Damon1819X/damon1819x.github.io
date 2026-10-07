@@ -326,14 +326,14 @@ const UPS = [
 
 /* 功法库（只产灵气、非神通的功法数据） */
 const GONGFAS = [
-  {id:"yj",  name:"黄庭经",   ic:"📖", tier:"入门", ess:1.0,  ds:"筑基心法，温养丹田，基础灵气产出。"},
-  {id:"lz",  name:"炼气真经", ic:"📜", tier:"入门", ess:2.0,  ds:"凝炼天地灵气，炼气期修行根基。"},
-  {id:"qq",  name:"青莲剑歌", ic:"🌿", tier:"下品", ess:4.0,  ds:"剑意化莲，灵气如歌。"},
-  {id:"tz",  name:"太乙玄功", ic:"☯️", tier:"下品", ess:8.0,  ds:"阴阳流转，吐纳不息。"},
-  {id:"cs",  name:"长春不老功",ic:"🌸", tier:"中品", ess:16.0, ds:"生生不息，灵气绵长。"},
-  {id:"hd",  name:"混元一气", ic:"🌀", tier:"中品", ess:32.0, ds:"抱元守一，灵气暴涨。"},
-  {id:"wf",  name:"万物生息诀",ic:"🌳", tier:"上品", ess:64.0, ds:"与万物共鸣，灵气不绝。"},
-  {id:"jh",  name:"九转玄功", ic:"✨", tier:"上品", ess:128.0,ds:"九转归一，吞吐如海。"},
+  {id:"yj",  name:"黄庭经",   ic:"📖", tier:"入门", ess:1.0,  rarity:2, value:200,  ds:"筑基心法，温养丹田，基础灵气产出。"},
+  {id:"lz",  name:"炼气真经", ic:"📜", tier:"入门", ess:2.0,  rarity:2, value:260,  ds:"凝炼天地灵气，炼气期修行根基。"},
+  {id:"qq",  name:"青莲剑歌", ic:"🌿", tier:"下品", ess:4.0,  rarity:3, value:800,  ds:"剑意化莲，灵气如歌。"},
+  {id:"tz",  name:"太乙玄功", ic:"☯️", tier:"下品", ess:8.0,  rarity:3, value:1000, ds:"阴阳流转，吐纳不息。"},
+  {id:"cs",  name:"长春不老功",ic:"🌸", tier:"中品", ess:16.0, rarity:4, value:2500, ds:"生生不息，灵气绵长。"},
+  {id:"hd",  name:"混元一气", ic:"🌀", tier:"中品", ess:32.0, rarity:4, value:3200, ds:"抱元守一，灵气暴涨。"},
+  {id:"wf",  name:"万物生息诀",ic:"🌳", tier:"上品", ess:64.0, rarity:5, value:8000, ds:"与万物共鸣，灵气不绝。"},
+  {id:"jh",  name:"九转玄功", ic:"✨", tier:"上品", ess:128.0,rarity:5, value:10000,ds:"九转归一，吞吐如海。"},
 ];
 
 /* 材料库（妖兽材料 / 矿石 / 草药，各 10 种） */
@@ -1551,10 +1551,10 @@ function sellTres(qty){
   sound(520,.15); save(); render();
 }const SHOP_W={1:16,2:8,3:4,4:2,5:1,6:0.5}; // 稀有度→刷新权重（越稀有越低，坊市仅 1~6）
 const SHOP_STOCK={1:10,2:8,3:5,4:3,5:1,6:1}; // 稀有度→库存（越稀有越少，最多10最少1）
-function shopPool(){ const a=[]; MATS.forEach(m=>{if(m.rarity<=6)a.push({kind:"mat",obj:m});}); CRAFT.forEach(c=>c.rec.forEach(r=>{if(r.rarity<=6&&!r.slot)a.push({kind:"tres",obj:r});})); return a; }
+function shopPool(){ const a=[]; MATS.forEach(m=>{if(m.rarity<=6)a.push({kind:"mat",obj:m});}); CRAFT.forEach(c=>c.rec.forEach(r=>{if(r.rarity<=6&&!r.slot)a.push({kind:"tres",obj:r});})); GONGFAS.forEach(g=>{if(g.rarity<=6)a.push({kind:"gong",obj:g});}); return a; }
 function weightedShopPick(pool){ let total=0; pool.forEach(p=>total+=(SHOP_W[p.obj.rarity]||1)); let rnd=Math.random()*total; for(const p of pool){ rnd-=(SHOP_W[p.obj.rarity]||1); if(rnd<=0) return p; } return pool[0]; }
 function refreshShop(now){ const pool=shopPool(); const chosen=new Set(); const list=[]; for(let i=0;i<10 && chosen.size<pool.length;i++){ let pick=weightedShopPick(pool); let guard=0; while(chosen.has(pick.obj.id) && guard<300){ pick=weightedShopPick(pool); guard++; } if(chosen.has(pick.obj.id)) continue; chosen.add(pick.obj.id); list.push({kind:pick.kind, id:pick.obj.id, stock:(SHOP_STOCK[pick.obj.rarity]||1)}); } S.shop={list, until:now+10*60*1000}; }
-function shopItem(id){ const m=MATS_BY_ID[id]; if(m) return {kind:"mat",obj:m}; const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r}; return null; }
+function shopItem(id){ const m=MATS_BY_ID[id]; if(m) return {kind:"mat",obj:m}; const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g}; const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r}; return null; }
 function buyShop(entry){ if(!entry||entry.stock<=0) return; const it=shopItem(entry.id); if(!it) return; const p=splitPriceL(it.obj.value); if(!canPayL(p)){ logEvent("灵石不足，无法购买「"+it.obj.name+"」。",'warn'); return; } payL(p); entry.stock--; if(it.kind==="mat"){ S.mats[entry.id]=(S.mats[entry.id]||0)+1; } else { S.tres[entry.id]=(S.tres[entry.id]||0)+1; } logEvent("于坊市购入「"+it.obj.name+"」（-"+priceLText(p)+"）",'sys','trade'); sound(520,.15); save(); render(); }/* ============ 拍卖会（坊市子项）============ */
 let shopCat="shop"; // "shop" 坊市 / "auction" 拍卖会
 function auctionPool(minR,maxR){
@@ -1562,10 +1562,12 @@ function auctionPool(minR,maxR){
   MATS.forEach(m=>{ if(m.rarity>=minR&&m.rarity<=maxR) a.push({kind:"mat",obj:m}); });
   TRES.forEach(t=>{ if(t.rarity>=minR&&t.rarity<=maxR && !REC_BY_ID[t.id]) a.push({kind:"tres",obj:t}); });
   CRAFT.forEach(c=>c.rec.forEach(r=>{ if(r.rarity>=minR&&r.rarity<=maxR && !r.slot) a.push({kind:"tres",obj:r}); }));
+  GONGFAS.forEach(g=>{ if(g.rarity>=minR&&g.rarity<=maxR) a.push({kind:"gong",obj:g}); });
   return a;
 }
 function auctionItem(kind,id){
   if(kind==="mat"){ const m=MATS_BY_ID[id]; return m?{kind:"mat",obj:m}:null; }
+  const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g};
   const t=TRES.find(x=>x.id===id); if(t) return {kind:"tres",obj:t};
   const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r};
   return null;
@@ -1679,7 +1681,7 @@ function renderShop(body){
 }
 function renderExch(body){
   const st2=document.createElement("div");st2.className="sectionTitle";st2.textContent="— 坊市 · 灵石兑换（手续费1%）—";body.appendChild(st2);
-  const p2=document.createElement("div");p2.className="hint";p2.textContent="兑换比：1神品=100极品=1万上品=100万中品=1亿下品=100亿灵晶。兑换收取固定 1% 手续费：低→高支付多付（如 100 下品→1 中品扣 101），高→低所得扣减（如 1 中品→100 下品得 99）。「兑换」每次 1 份，「×50」一次 50 份，「×100」一次 100 份。";body.appendChild(p2);
+  const p2=document.createElement("div");p2.className="hint";p2.textContent="兑换比：1神品=100极品=1万上品=100万中品=1亿下品=100亿灵晶。兑换收取固定 1% 手续费：低→高支付多付（如 100 下品→1 中品扣 101），高→低所得扣减（如 1 中品→100 下品得 99）。「×10」一次 10 份，「×50」一次 50 份，「×100」一次 100 份。";body.appendChild(p2);
   const EXCH=[
     {n:"灵晶 → 下品",from:"crystal",to:"stoneL",fa:100,ta:1},
     {n:"下品 → 中品",from:"stoneL",to:"stoneM",fa:100,ta:1},
@@ -1696,11 +1698,12 @@ function renderExch(body){
     const cost=e.fa>1?Math.ceil(e.fa*1.01):e.fa;
     const gain=e.fa>1?e.ta:Math.floor(e.ta*0.99);
     const ok=(S[e.from]||0)>=cost;
+    const ok10=(S[e.from]||0)>=cost*10;
     const ok50=(S[e.from]||0)>=cost*50;
     const ok100=(S[e.from]||0)>=cost*100;
     row.innerHTML=`<span class="ex-n">${e.n}（${cost}:${gain} 含1%）${ok?"":"<span style='color:#e05555;font-size:11px'>（不足"+cost+"）</span>"}</span>`;
     const btns=document.createElement("div");btns.style.display="flex";btns.style.gap="6px";
-    btns.appendChild(buyBtn(ok,()=>{doExch(e);render();},"兑换"));
+    btns.appendChild(buyBtn(ok10,()=>{doExch(e,10);render();},"×10"));
     btns.appendChild(buyBtn(ok50,()=>{doExch(e,50);render();},"×50"));
     btns.appendChild(buyBtn(ok100,()=>{doExch(e,100);render();},"×100"));
     row.appendChild(btns);
