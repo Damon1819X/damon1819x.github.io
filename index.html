@@ -1875,15 +1875,19 @@ const EXP_AREAS={
 };
 function hpMaxFor(n){ return Math.floor(100*Math.pow(1.45,Math.max(0,n))*(1+eqSum("hp")/100)); }
 function playerPower(){ return Math.floor(100*(1+S.realm*0.45)*(1+(S.root?S.root.combat:0))*(1+buffEffSum("combat")/100)*(1+(eqSum("atk")+petSum("atk"))/100)); }
-/* v12：区域难度绑定境界段——洞天福地=筑基/金丹/元婴，原始禁区=化神/炼虚/合体，
+/* v18.49：按「玩家全装+全buff+有回血丹药」基准重新设计难度。
+   区域难度绑定境界段——洞天福地=筑基/金丹/元婴，原始禁区=化神/炼虚/合体，
    上古战场=大乘/渡劫/真仙，跨界空间=真仙及以上（九死一生，怪强度系数更高）。
-   普通怪≈对应境界玩家战力×(50%~70%)，精英=该层普通×1.5（守门），BOSS≈境界战力×危险系数（可挑战）。 */
+   全装+全buff 典型战力倍率 = 灵根战斗加成 × 满配装备攻击 × 战斗符箓/丹药叠加 ≈ 2.0；
+   普通怪 = 全装战力基准 ×(50%~70%)（全装玩家可轻松取胜），精英 = 该层普通 ×1.35（守门，势均力敌），
+   BOSS = 全装战力基准 × 危险系数（洞天 1.15 / 禁区 1.25 / 战场 1.35 / 跨界 1.5，需装备与回血丹药方可挑战）。 */
 function enemyPower(floor, area, boss){
   const SEG={dt:[1,2,3],yl:[4,5,6],sg:[7,8,9],kj:[9,9,9]};
-  const MUL={dt:1.0,yl:1.25,sg:1.35,kj:1.2};
+  const MUL={dt:1.15,yl:1.25,sg:1.35,kj:1.5};
+  const FULLKIT=2.0;
   const seg=floor<=3?0:(floor<=7?1:2);
   const r=SEG[area][seg];
-  const pw=100*(1+r*0.45);
+  const pw=100*(1+r*0.45)*FULLKIT;
   const rate=(area==="kj")?(0.65+Math.random()*0.2):(0.5+Math.random()*0.2);
   let p=pw*rate;
   if(boss) p=pw*MUL[area];
