@@ -151,6 +151,18 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 .eqPickRow{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border-radius:8px;padding:7px 9px;border:1px solid rgba(255,255,255,.08)}
 .eqPickRow .nm{flex:1;font-size:13px}
 .eqPickRow .sub{font-size:11px;color:var(--ink-dim,#999)}
+.whTop{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0}
+.whStat{font-size:12px;color:var(--ink-dim);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.whSearch{flex:1;min-width:140px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
+.whFilter{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 8px}
+.whRow{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin-bottom:5px;cursor:pointer}
+.whRow:hover{border-color:var(--gold);background:var(--panel)}
+.whInfo{flex:1;min-width:0}
+.whName{font-size:13px;color:var(--ink);font-weight:600}
+.whName .cat{font-size:10px;color:var(--ink-dim);margin-left:6px;font-weight:400}
+.whSub{font-size:11px;color:var(--ink-dim);margin-top:2px}
+.whActs{display:flex;gap:5px;flex:none}
+.gcount{font-size:11px;color:var(--ink-dim);font-weight:400;margin-left:auto}
 </style>
 </head>
 <body>
@@ -187,7 +199,7 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
     <div class="menu-item" data-tab="zao">制造</div>
     <div class="menu-item" data-tab="gong">功法</div>
     <div class="menu-item" data-tab="shen">神通</div>
-    <div class="menu-item" data-tab="battle">探索<span class="badge badge-wip">开发中</span></div>
+    <div class="menu-item" data-tab="battle">探索</div>
     <div class="menu-item" data-tab="qiang">强化</div>
     <div class="menu-item" data-tab="ach">成就<span class="badge" id="achBadge" style="display:none">1</span></div>
   </nav>
@@ -289,20 +301,19 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v5.1
+   修仙挂机 · 问道长生  v18.48
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v7.0";
+const VERSION = "v18.48";
 const CFG = {
-  saveKey: "xiuxianIdle_save_v5",
+  saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
   freeRerolls: 10,
   rerollBaseCost: 100,
   rerollCostM: 1.5,
   yunBaseMs: 4000,
   offlineCapHours: 12,
-  baseBreakStart: 0.05,
   breakFailLoss: 0.40,
 };
 
@@ -649,7 +660,7 @@ function newState(){
     mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0, servants:[{lv:"丁",task:null,prog:0,curR:null}], pets:[], gongs:["yj"], activeGong:"yj",
     shen:[], shenProd:0, shenBreak:0, shenCrit:0, shenOffline:0, shenDaoProd:0,
     ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, buffWarned:{}, buffEnded:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(),
-    settings:{sound:true,theme:"dark",lang:"zh"},
+    settings:{theme:"dark",lang:"zh"},
   };
 }
 function normalizeState(){
@@ -668,7 +679,7 @@ function normalizeState(){
   for(const k in S.collect){ if(!["beast","ore","herb"].includes(k)) delete S.collect[k]; }
   S.ups=S.ups||Object.fromEntries(UPS.map(u=>[u.id,0]));
   S.shen=S.shen||[]; S.ach=S.ach||[];
-  S.settings=S.settings||{sound:true}; if(S.settings.theme===undefined)S.settings.theme="dark"; if(S.settings.lang===undefined)S.settings.lang="zh";
+  S.settings=S.settings||{}; if(S.settings.theme===undefined)S.settings.theme="dark"; if(S.settings.lang===undefined)S.settings.lang="zh";
   if(!Array.isArray(S.log))S.log=[];
   S.crystal=S.crystal||0; S.stoneL=S.stoneL||0; S.stoneM=S.stoneM||0; S.stoneH=S.stoneH||0; S.stoneT=S.stoneT||0; S.stoneG=S.stoneG||0;
   if(S.freeRolls===undefined)S.freeRolls=CFG.freeRerolls;
@@ -710,7 +721,9 @@ function load(){
       // 灵气默认暂停：未运功不产灵气；离线仅补发挂机采集的材料
       for(const c in S.collect){
         if(S.collect[c]===undefined||!["beast","ore","herb"].includes(c)) continue;
-        const n=Math.floor(S.collect[c]/8*eff*sec);
+        const totalSec=S.collect[c]+sec;
+        const n=Math.floor(totalSec*eff/8);
+        S.collect[c]=totalSec-n*8/eff;
         for(let i=0;i<n;i++){ const m=randMatOfCat(c); S.mats[m.id]=(S.mats[m.id]||0)+1; }
       }
       for(const sv of S.servants){
@@ -732,27 +745,6 @@ function load(){
 /* ================================================================
    货币
    ================================================================ */
-function stoneValueCrystal(){ return S.crystal + S.stoneL*100 + S.stoneM*1e4 + S.stoneH*1e6 + S.stoneT*1e8 + S.stoneG*1e10; }
-function canPayCrystal(v){ return stoneValueCrystal() >= v; }
-function payCrystal(v){
-  if(!canPayCrystal(v)) return false;
-  let rem=Math.round(v); // 灵晶余额不足整百余量时用下品灵石补足，避免灵晶为负
-  const g=Math.floor(rem/1e10), ug=Math.min(S.stoneG,g); S.stoneG-=ug; rem-=ug*1e10;
-  const t=Math.floor(rem/1e8), ut=Math.min(S.stoneT,t); S.stoneT-=ut; rem-=ut*1e8;
-  const h=Math.floor(rem/1e6), uh=Math.min(S.stoneH,h); S.stoneH-=uh; rem-=uh*1e6;
-  const m=Math.floor(rem/1e4), um=Math.min(S.stoneM,m); S.stoneM-=um; rem-=um*1e4;
-  const l=Math.floor(rem/100), ul=Math.min(S.stoneL,l); S.stoneL-=ul; rem-=ul*100;
-  if(rem > S.crystal){ // 灵晶余量超过当前灵晶，改用下品灵石补足（100 灵晶=1 下品）
-    const needL=Math.ceil((rem-S.crystal)/100);
-    const useL=Math.min(S.stoneL, needL);
-    S.stoneL-=useL; rem-=useL*100;
-  }
-  S.crystal-=rem; // rem>=0 且不超过 crystal，灵晶不会为负
-  return true;
-}
-function upCostCrystal(id){ const u=UPS.find(x=>x.id===id); return u.cost*Math.pow(u.costM,S.ups[id])*100; }
-function facCostCrystal(i){ const g=FAC[i]; return g.cost*Math.pow(g.costM,S.fa[i])*100; }
-function rerollCostCrystal(){ return CFG.rerollBaseCost*Math.pow(CFG.rerollCostM,S.paidRolls)*100; }
 /* 下品灵石计价：价格满 100 自动进位成「高品+低品」混合显示；支付必须持有对应各品组合（不自动兑换） */
 function facCostL(i){ const g=FAC[i]; return Math.ceil(g.cost*Math.pow(g.costM,S.fa[i])); }
 function upCostL(id){ const u=UPS.find(x=>x.id===id); return Math.ceil(u.cost*Math.pow(u.costM,S.ups[id])); }
@@ -926,13 +918,6 @@ function collectByCat(cid){
   S.collectCd=Date.now()+8000; // 采集耗时 8 秒（玩家效率 100%）
   sound(520,.1); logEvent("采集到「"+m.name+"」×1",'','collect');
   checkAchievements(); render();
-}
-function sellMat(id){
-  const m=MATS_BY_ID[id];
-  if(!m||(S.mats[id]||0)<1) return;
-  S.mats[id]--; S.stoneL += m.value;
-  sound(620,.12); logEvent("出售「"+m.name+"」得 "+m.value+" 下品灵石",'','trade');
-  render();
 }
 function craftItem(r){
   if(!r || S.making) return;
@@ -1580,66 +1565,95 @@ function openEquipPick(sl){
   document.body.appendChild(mask);
 }
 let xumiFold={tres:true,equip:true,mat:true,matBeast:true,matOre:true,matHerb:true};
-function xuSec(body,title,key){
-  const d=document.createElement("div");d.className="sectionTitle fold";d.style.cursor="pointer";
-  d.textContent=(xumiFold[key]?"▾ ":"▸ ")+title;
+function xuSec(body,title,key,count){
+  const d=document.createElement("div");d.className="sectionTitle fold";d.style.cursor="pointer";d.style.display="flex";d.style.alignItems="center";d.style.gap="6px";
+  d.innerHTML=(xumiFold[key]?"▾ ":"▸ ")+title+(count?`<span class="gcount">${count}种</span>`:"");
   d.addEventListener("click",()=>{ xumiFold[key]=!xumiFold[key]; render(); });
   body.appendChild(d); return xumiFold[key];
 }
+function whRow(infoHtml,tipHtml,acts){
+  const row=document.createElement("div");row.className="whRow";
+  const inf=document.createElement("div");inf.className="whInfo";inf.innerHTML=infoHtml;
+  row.appendChild(inf);
+  const ac=document.createElement("div");ac.className="whActs";
+  (acts||[]).forEach(a=>{ const b=buyBtn(a[0],a[1],a[2]); ac.appendChild(b); });
+  row.appendChild(ac);
+  if(tipHtml) bindTip(row,tipHtml);
+  return row;
+}
+let xuFilter="all", xuKw="";
 function renderXu(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 须弥空间 · 背包 —";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="存放制造物品与采集材料，按分类归类。物品可使用 / 出售（弹窗选数量）；使用物品不受运功 / 采集 / 制造 / 战斗状态限制，随时可用。";body.appendChild(p);
-  const ids=Object.keys(S.tres).filter(id=>(S.tres[id]||0)>0);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="物品可使用 / 出售（弹窗选数量），使用不受运功 / 采集 / 制造 / 探索状态限制。";body.appendChild(p);
+  const tresIds=Object.keys(S.tres).filter(id=>(S.tres[id]||0)>0);
   const hasMat=MATS.some(m=>(S.mats[m.id]||0)>0);
   const wornUids=Object.values(S.equipped||{}).filter(u=>u!=null);
   const unwornEq=(S.equip||[]).filter(x=>!wornUids.includes(x.uid));
   const eqIds=Array.from(new Set(unwornEq.map(x=>x.id)));
-  if(ids.length===0 && !hasMat && !eqIds.length){ const e=document.createElement("div");e.className="hint";e.textContent="背包空空如也，前往「制造」合成物品或「采集」获取材料。";body.appendChild(e); return; }
-  // 制造物品
-  if(ids.length && xuSec(body,"制造物品","tres")){
-    ids.forEach(id=>{
-      let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return;
-      let catName=TRES_BY_ID[id]?"奇珍":""; if(!catName&&GONGFAS.some(g=>g.id===id)) catName="功法"; if(!catName){ for(const c of CRAFT){ if(c.rec.some(x=>x.id===r.id)){ catName=c.cat; break; } } }
-      const useable=!!(r.eff||r.heal);
-      const gIs=GONGFAS.some(g=>g.id===r.id);
-      const item=document.createElement("div");item.className="item";
-      item.innerHTML=`<div class="ic">${r.ic}</div><div class="body">
-        <div class="nm">${r.name}<span class="cat">${catName}</span></div>
-        <div class="ln">持有 <b>${fmt(S.tres[id])}</b></div>
-      </div>`;
-      bindTip(item,`<b>${r.name}</b>（稀有${r.rarity} · ${catName}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${gIs?("功法 · 灵气倍率 ×"+r.ess):(useable?"效果："+effText(r):"珍宝收藏，无可使用效果，可出售")}</span><br>价值 ${r.value} 下品灵石 · 持有 ${fmt(S.tres[id])}`);
-      if(gIs){ const o2=S.gongs.includes(r.id); item.appendChild(o2?(S.activeGong===r.id?buyBtn(false,()=>{},"已激活"):buyBtn(true,()=>{actGong(r.id);},"激活")):buyBtn(true,()=>{studyGong(r.id);},"研习")); }
-      else if(useable) item.appendChild(buyBtn(true,()=>{useTres(r);render();},"使用"));
-      else item.appendChild(buyBtn(true,()=>{banner("「"+r.name+"」为珍宝收藏，无可使用效果");},"珍宝"));
-      item.appendChild(buyBtn(true,()=>{openSell("tres",r);},"出售"));
-      body.appendChild(item);
+  const total=tresIds.length+MATS.filter(m=>(S.mats[m.id]||0)>0).length+eqIds.length;
+  if(total===0){ const e=document.createElement("div");e.className="hint";e.textContent="背包空空如也，前往「制造」合成物品或「采集」获取材料。";body.appendChild(e); return; }
+  // 顶部：统计 + 搜索（仿仓库界面）
+  const top=document.createElement("div");top.className="whTop";
+  const stat=document.createElement("span");stat.className="whStat";stat.textContent=total+" 种 · 无限容量";top.appendChild(stat);
+  const sr=document.createElement("input");sr.className="whSearch";sr.placeholder="搜索物品…";sr.value=xuKw;
+  sr.addEventListener("input",()=>{ xuKw=sr.value.trim(); render(); });
+  top.appendChild(sr); body.appendChild(top);
+  // 分类筛选
+  const fbar=document.createElement("div");fbar.className="whFilter";
+  [["all","全部"],["mat","材料"],["tres","成品"],["gong","功法"],["eq","装备"]].forEach(fl=>{
+    const b=document.createElement("button");b.className="lfBtn"+(xuFilter===fl[0]?" active":"");b.textContent=fl[1];
+    b.onclick=()=>{ xuFilter=fl[0]; render(); }; fbar.appendChild(b);
+  });
+  body.appendChild(fbar);
+  const kf=s=>!xuKw||s.indexOf(xuKw)>=0;
+  const catOf=id=>{ let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return "未知"; if(GONGFAS.some(g=>g.id===id)) return "功法"; if(TRES_BY_ID[id]) return "奇珍"; for(const c of CRAFT){ if(c.rec.some(x=>x.id===r.id)) return c.cat; } return "成品"; };
+  // 成品 / 功法：按分类分组
+  const gmap={};
+  tresIds.forEach(id=>{ const cn=catOf(id); (gmap[cn]=gmap[cn]||[]).push(id); });
+  const GROUP_ORDER=["功法","制符","炼丹","炼器","阵法","奇珍"];
+  const showG=xuFilter==="all"||xuFilter==="gong"||xuFilter==="tres";
+  if(showG){
+    GROUP_ORDER.forEach(cn=>{
+      const gids=gmap[cn]; if(!gids||!gids.length) return;
+      if(xuFilter==="gong"&&cn!=="功法") return;
+      if(xuFilter==="tres"&&cn==="功法") return;
+      gids.sort();
+      if(!xuSec(body,cn,"tres",gids.length)) return;
+      gids.forEach(id=>{
+        let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return;
+        if(!kf(r.name)) return;
+        const useable=!!(r.eff||r.heal); const gIs=GONGFAS.some(g=>g.id===r.id);
+        const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${cn}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${gIs?("功法 · 灵气倍率 ×"+r.ess):(useable?"效果："+effText(r):"珍宝收藏，无可使用效果，可出售")}</span><br>价值 ${r.value} 下品灵石 · 持有 ${fmt(S.tres[id])}`;
+        const acts=[];
+        if(gIs){ const o2=S.gongs.includes(r.id); acts.push([o2?false:true,()=>{o2?(S.activeGong===r.id?banner("已是当前激活功法"):actGong(r.id)):studyGong(r.id);},"已激活"]);
+          if(o2) acts[0]=[S.activeGong!==r.id,()=>{actGong(r.id);},S.activeGong===r.id?"已激活":"激活"]; }
+        else if(useable) acts.push([true,()=>{useTres(r);render();},"使用"]);
+        else acts.push([true,()=>{banner("「"+r.name+"」为珍宝收藏，无可使用效果");},"珍宝"]);
+        acts.push([true,()=>{openSell("tres",r);},"出售"]);
+        body.appendChild(whRow(`<span class="whName"><span class="ic">${r.ic}</span>${r.name}<span class="cat">${cn}</span></span><div class="whSub">持有 ${fmt(S.tres[id])} · 稀有${r.rarity} · 价值 ${r.value}</div>`,tip,acts));
+      });
     });
   }
   // 装备
-  if(eqIds.length && xuSec(body,"装备","equip")){
+  if(eqIds.length && (xuFilter==="all"||xuFilter==="eq") && xuSec(body,"装备","equip",eqIds.length)){
     eqIds.forEach(id=>{
       const r=REC_BY_ID[id]; if(!r) return;
-      const item=document.createElement("div");item.className="item";
-      item.innerHTML=`<div class="ic">${r.ic}</div><div class="body"><div class="nm">${r.name}<span class="cat">${SLOT_NAMES[r.slot]}</span></div><div class="ln">持有 <b>${unwornEq.filter(x=>x.id===id).length}</b></div></div>`;
-      bindTip(item,`<b>${r.name}</b>（稀有${r.rarity} · ${SLOT_NAMES[r.slot]}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${eqText(r)}</span>`);
-      item.appendChild(buyBtn(true,()=>wearEquip(id),"穿戴"));
-      item.appendChild(buyBtn(true,()=>sellEquip(id),"出售"));
-      body.appendChild(item);
+      if(!kf(r.name)) return;
+      const n=unwornEq.filter(x=>x.id===id).length;
+      const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${SLOT_NAMES[r.slot]}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${eqText(r)}</span><br>价值 ${r.value} 下品灵石 · 持有 ${n}`;
+      body.appendChild(whRow(`<span class="whName"><span class="ic">${r.ic}</span>${r.name}<span class="cat">${SLOT_NAMES[r.slot]}</span></span><div class="whSub">持有 ${n} · 稀有${r.rarity} · ${eqText(r)}</div>`,tip,[[true,()=>wearEquip(id),"穿戴"],[true,()=>sellEquip(id),"出售"]]));
     });
   }
-  // 采集材料：按分类归类，显示持有数量
-  if(hasMat && xuSec(body,"材料（采集）","mat")){
+  // 材料：按妖兽材料/矿石/草药分组
+  if(hasMat && (xuFilter==="all"||xuFilter==="mat")){
     ["妖兽材料","矿石","草药"].forEach(cat=>{
-      const list=MATS.filter(m=>m.cat===cat && (S.mats[m.id]||0)>0);
+      const list=MATS.filter(m=>m.cat===cat && (S.mats[m.id]||0)>0 && kf(m.name));
       if(!list.length) return;
-      if(!xuSec(body,cat,cat==="妖兽材料"?"matBeast":cat==="矿石"?"matOre":"matHerb")) return;
+      if(!xuSec(body,cat,cat==="妖兽材料"?"matBeast":cat==="矿石"?"matOre":"matHerb",list.length)) return;
       list.forEach(m=>{
-        const row=document.createElement("div");row.className="exchRow";
-        row.innerHTML=`<span class="ex-n">${m.ic} ${m.name} · 持有 <b>${fmt(S.mats[m.id]||0)}</b></span>`;
-        bindTip(row,`<b>${m.name}</b>（稀有${m.rarity} · ${m.cat}）<br>${m.ds||"无"}<br>单价 ${m.value} 下品灵石 · 持有 ${fmt(S.mats[m.id]||0)}`);
-        row.appendChild(buyBtn(true,()=>{openSell("mat",m);},"出售"));
-        body.appendChild(row);
+        const tip=`<b>${m.name}</b>（稀有${m.rarity} · ${m.cat}）<br>${m.ds||"无"}<br>单价 ${m.value} 下品灵石 · 持有 ${fmt(S.mats[m.id]||0)}`;
+        body.appendChild(whRow(`<span class="whName"><span class="ic">${m.ic}</span>${m.name}<span class="cat">${cat}</span></span><div class="whSub">持有 ${fmt(S.mats[m.id]||0)} · 稀有${m.rarity} · 单价 ${m.value}</div>`,tip,[[true,()=>{openSell("mat",m);},"出售"]]));
       });
     });
   }
@@ -1829,9 +1843,9 @@ function renderExch(body){
 }
 function renderBattle(body){
   body.innerHTML="";
-  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 探索（开发中）—";body.appendChild(st);
+  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 探索 · 秘境 —";body.appendChild(st);
   const p=document.createElement("div");p.className="hint";
-  p.innerHTML="探索体系将在后续版本实装：进入区域遭遇凶险、寻获机缘。届时灵根直接影响战斗数值——五行生克属性克制、灵根越多战力越强（单灵根专精修炼、战力平庸，五灵根战力最强），变异灵根各具战斗特性，神通库中的技能将作为可施展神通。"+(S.root?(" 当前灵根「"+S.root.name+"」战斗加成 +"+Math.round(S.root.combat*100)+"%。"):"");
+  p.innerHTML="进入区域遭遇凶险、寻获机缘：蜂窝秘境共 10 层，难度与奖励逐层递增，最终层或遇 BOSS；气血耗尽将被迫撤离并损失一半收获。灵根直接影响战斗数值——灵根越多战力越强（单灵根专精修炼、战力平庸，五灵根战力最强），变异灵根各具战斗特性，神通库中的技能为可施展神通。"+(S.root?(" 当前灵根「"+S.root.name+"」战斗加成 +"+Math.round(S.root.combat*100)+"%。"):"");
   body.appendChild(p);
   const AREAS=[
     {key:"dt", nm:"洞天福地", lv:"中危", lvC:"#e67e22", ic:"🏞️", ds:"灵气浓郁之地，机缘众多，偶有低阶妖兽与珍稀灵植，适宜稳步积累。"},
@@ -2013,11 +2027,11 @@ function expMove(q,r){
     case "stone":{ const st=areaStone(exp.area,exp.floor); exp.loot.push({kind:"stone",tier:st.tier,qty:st.qty}); logEvent("拾获 "+(st.tier==="L"?"下品":st.tier==="M"?"中品":st.tier==="H"?"上品":st.tier==="T"?"极品":"神品")+"灵石 ×"+st.qty,'sys','trade'); }break;
     case "dan":{ if(Math.random()<0.55){ const r=randRec("炼丹"); if(r){ exp.loot.push({kind:"tres",id:r.id,name:r.name,qty:1}); logEvent("拾获丹药 "+r.name+" ×1",'sys','collect'); } } else logEvent("丹炉残渣，一无所获",'dim'); }break;
     case "fu":{ if(Math.random()<0.55){ const r=randRec("制符"); if(r){ exp.loot.push({kind:"tres",id:r.id,name:r.name,qty:1}); logEvent("拾获符箓 "+r.name+" ×1",'sys','collect'); } } else logEvent("符纸受潮，一无所获",'dim'); }break;
-    case "trap":{ const dmg=expDmg(Math.ceil(S.hpMax*0.06)); S.hp-=dmg; logEvent("触发机关！损失 "+dmg+" 气血",'warn'); if(S.hp<=0) retreat=true; }break;
+    case "trap":{ const dmg=expDmg(Math.ceil(S.hpMax*0.06)); S.hp-=dmg; logEvent("触发机关！损失 "+dmg+" 气血",'warn'); if(S.hp<=0){ S.hp=1; retreat=true; } }break;
     case "fight":{
       const ep=enemyPower(exp.floor,exp.area,false), pp=playerPower();
       if(pp>=ep){ const st=areaStone(exp.area,exp.floor); exp.loot.push({kind:"stone",tier:st.tier,qty:st.qty}); if(Math.random()<0.5){ const m=areaMat(exp.area,exp.floor); exp.loot.push({kind:"mat",id:m.id,name:m.name,qty:1}); logEvent("击败妖兽（"+pp+" vs "+ep+"），缴获灵石与"+m.name,'sys'); } else logEvent("击败妖兽（"+pp+" vs "+ep+"），仅缴获灵石",'sys'); }
-      else { const dmg=expDmg(Math.ceil(S.hp*0.18)); S.hp-=dmg; logEvent("不敌妖兽（"+pp+" vs "+ep+"），损失 "+dmg+" 气血",'warn'); if(S.hp<=0) retreat=true; }
+      else { const dmg=expDmg(Math.ceil(S.hp*0.18)); S.hp-=dmg; logEvent("不敌妖兽（"+pp+" vs "+ep+"），损失 "+dmg+" 气血",'warn'); if(S.hp<=0){ S.hp=1; retreat=true; } }
     }break;
     case "down":{
       const ep=Math.floor(enemyPower(exp.floor,exp.area,false)*1.35), pp=playerPower();
@@ -2027,14 +2041,14 @@ function expMove(q,r){
         else { exp.map=genExpMap(exp.floor,exp.area); exp.pos={q:0,r:0}; logEvent("击败精英守卫（"+pp+" vs "+ep+"）！深入第 "+exp.floor+" 层",'sys'); }
       } else {
         const dmg=expDmg(Math.ceil(S.hp*0.25)); S.hp-=dmg; c.used=false; exp.pos=prev;
-        logEvent("不敌精英守卫（"+pp+" vs "+ep+"），损失 "+dmg+" 气血，可休整后再战",'warn');
-        if(S.hp<=0) retreat=true;
+        logEvent("不敌精英守卫（"+pp+" vs "+ep+"），损失 "+dmg+" 气血",'warn');
+        if(S.hp<=0){ S.hp=1; retreat=true; }
       }
     }break;
     case "boss":{
       const ep=enemyPower(10,exp.area,true), pp=playerPower();
       if(pp>=ep){ logEvent("击败秘境 BOSS（"+pp+" vs "+ep+"）！",'sys'); expFinish(); return; }
-      else { const dmg=expDmg(Math.ceil(S.hp*0.3)); S.hp-=dmg; c.used=false; exp.pos=prev; logEvent("不敌 BOSS（"+pp+" vs "+ep+"），损失 "+dmg+" 气血，可休整后再战",'warn'); if(S.hp<=0) retreat=true; }
+      else { const dmg=expDmg(Math.ceil(S.hp*0.3)); S.hp-=dmg; c.used=false; exp.pos=prev; logEvent("不敌 BOSS（"+pp+" vs "+ep+"），损失 "+dmg+" 气血，被迫撤离",'warn'); if(S.hp<=0){ S.hp=1; retreat=true; } }
     }break;
     case "exit":{
       const st=areaStone(exp.area,exp.floor); exp.loot.push({kind:"stone",tier:st.tier,qty:st.qty});
@@ -2243,7 +2257,7 @@ document.querySelectorAll("#themeBtns button").forEach(b=>b.addEventListener("cl
 $("saveBtn").addEventListener("click",()=>{ save(); banner("已保存"); });
 $("exportBtn").addEventListener("click",()=>{
   const data=JSON.stringify({r:RULESET_ID,s:S});
-  const a=document.createElement("a"); a.href="data:application/json;charset=utf-8,"+encodeURIComponent(data); a.download="xiuxian_v5_save.json"; a.click();
+  const a=document.createElement("a"); a.href="data:application/json;charset=utf-8,"+encodeURIComponent(data); a.download="xiuxian_"+VERSION+"_save.json"; a.click();
 });
 $("importBtn").addEventListener("click",()=>{
   const inp=document.createElement("input"); inp.type="file"; inp.accept=".json";
@@ -2302,7 +2316,7 @@ function gameTick(now){
     if(left<=0){ if(!S.buffEnded[id]){ S.buffEnded[id]=1; logEvent("「"+nm+"」效果已结束",'dim'); } delete S.buffs[id]; continue; }
     if(left<=5000 && !S.buffWarned[id]){ S.buffWarned[id]=1; logEvent("「"+nm+"」即将失效（5 秒内）",'warn'); }
   }
-  if(!S.shop.until || now>=S.shop.until){ refreshShop(now); if(activeTab==="shop") renderTab(); }
+  if(!S.shop.until || Date.now()>=S.shop.until){ refreshShop(Date.now()); if(activeTab==="shop") renderTab(); }
   if(!S.auctionNext) S.auctionNext=nextAuctionTime(Date.now());
   if(Date.now()>=S.auctionNext){ refreshAuction(Date.now()); if(activeTab==="shop") renderTab(); }
   if(S.auction && S.auction.live){
@@ -2317,10 +2331,10 @@ function gameTick(now){
   }
   if(!S.exp && S.hp<S.hpMax){ S.hp=Math.min(S.hpMax, S.hp+S.hpMax*0.00005*dt); }
   let mult=1;
-  if(evt.prodBoost>now) mult*=2;
-  if(evt.prodBoost3>now) mult*=3;
-  if(evt.prodPenalty>now) mult*=0.5;
-  if(evt.prodLow>now) mult*=0.6;
+  if(evt.prodBoost>Date.now()) mult*=2;
+  if(evt.prodBoost3>Date.now()) mult*=3;
+  if(evt.prodPenalty>Date.now()) mult*=0.5;
+  if(evt.prodLow>Date.now()) mult*=0.6;
   const hpPct=Math.max(0.1, S.hp/S.hpMax);
   const eGain=prodPerSec()*mult*hpPct*dt;
   if(eGain>0){ S.essence+=eGain; S.lifetime+=eGain; }
