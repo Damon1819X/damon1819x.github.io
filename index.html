@@ -1779,8 +1779,8 @@ function renderAuction(body){
     const add=Math.max(1,Math.ceil(en.base*0.1));
     const nb=en.bid+add, extra=nb-(en.pPaid||0);
     const row=document.createElement("div");row.className="exchRow";
-    row.innerHTML=`<span class="ex-n">${it.obj.ic} ${it.obj.name} · 稀有${it.obj.rarity} · 底价 ${fmt(en.base)} · 当前 <span id="aucBid${idx}">${fmt(en.bid)}（${who}）</span></span>`;
-    row.appendChild(buyBtn(canPayL(splitPriceL(extra)),()=>{bidAuction(en);},"出价 "+fmt(nb)));
+    row.innerHTML=`<span class="ex-n">${it.obj.ic} ${it.obj.name} · 稀有${it.obj.rarity} · 底价 ${priceLText(splitPriceL(en.base))} · 当前 <span id="aucBid${idx}">${priceLText(splitPriceL(en.bid))}（${who}）</span></span>`;
+    row.appendChild(buyBtn(canPayL(splitPriceL(extra)),()=>{bidAuction(en);},"出价 "+priceLText(splitPriceL(nb))));
     body.appendChild(row);
   });
   else if(!live){ const e=document.createElement("div");e.className="hint";e.textContent="拍卖已结算或等待开场，请稍候。";body.appendChild(e); }
@@ -2021,7 +2021,7 @@ function expMove(q,r){
   if(Math.abs(dq)>1||Math.abs(dr)>1||Math.abs(dq+dr)>1){ banner("只能移动到相邻格子"); return; }
   const c=exp.map.cells[q+","+r];
   if(!c) return;
-  if(c.used){ exp.pos={q,r}; expRevealNearby(); save(); renderExpPanel(); renderStats(); return; }
+  if(c.used){ exp.pos={q,r}; save(); renderExpPanel(); renderStats(); return; }
   const prev={q:exp.pos.q,r:exp.pos.r};
   exp.pos={q,r}; c.used=true; c.revealed=true;
   let retreat=false;
