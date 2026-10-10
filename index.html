@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -478,115 +478,117 @@ const BEAS_BY_ID={}; BEAS.forEach(x=>BEAS_BY_ID[x.id]=x);
 /* 制造配方库（制符/炼丹/炼器/阵法）— v20 四套 88 种 */
 const CRAFT = [
   {cat:"制符", ic:"🧧", ds:"以材料炼制符箓", rec:[
-    {id:"jufu",name:"聚灵符",ic:"🧧",value:624,eff:"ess_flat",val:20,durMin:30,maxStack:5,need:{"herb":24,"bone":18,"skin":12,"gold":6}},
-    {id:"ningshen",name:"凝神符",ic:"🧠",value:2884,eff:"crit",val:10,durMin:30,maxStack:3,need:{"zishen":10,"herb":22,"tort":12,"lingzhi":6,"longxian":4}},
-    {id:"dundi",name:"遁地符",ic:"🌀",value:1358,eff:"dmg_reduce",val:15,durMin:60,maxStack:2,need:{"han":12,"herb":26,"iron":20,"tort":8}},
-    {id:"yuhuo",name:"御火符",ic:"🔥",value:3033,eff:"combat",val:8,durMin:30,maxStack:3,need:{"huoshi":9,"skin":25,"tong":16,"longxian":5,"bone":6}},
-    {id:"pojun",name:"破军符",ic:"⚔️",value:2538,eff:"brk",val:15,durMin:60,maxStack:2,need:{"gold":12,"tiger":4,"skin":28,"iron":22,"lingzhi":8}},
-    {id:"xuanling",name:"玄灵符",ic:"✨",value:17576,eff:"ess_flat",val:50,durMin:60,maxStack:4,need:{"qing":20,"core":18,"myst":10,"jiuye":6,"xie":4}},
-    {id:"zhenfu",name:"镇神符",ic:"🧿",value:15496,eff:"crit",val:12,durMin:60,maxStack:3,need:{"zishen":20,"bing":18,"heshouwu":10,"zhu":4,"xuanhuang":4}},
-    {id:"jiadun",name:"金甲遁地符",ic:"🛡️",value:12376,eff:"dmg_reduce",val:20,durMin:60,maxStack:2,need:{"qing":22,"xie":18,"jiao":10,"tiger":6,"huoshi":6}},
-    {id:"fentian",name:"焚天御火符",ic:"🔥",value:36244,eff:"combat",val:12,durMin:60,maxStack:3,need:{"huoshi":20,"chiyan":16,"zhu":8,"dihuo":6,"fenghuangy":2}},
-    {id:"zixiao",name:"紫霄破阵符",ic:"⚡",value:24492,eff:"brk",val:20,durMin:60,maxStack:2,need:{"lei":18,"bing":18,"xlangz":6,"hansui":10,"peng":4}},
-    {id:"taichufu",name:"太初灵符",ic:"🌀",value:61620,eff:"ess_pct",val:18,durMin:120,maxStack:2,need:{"jiuye":18,"peng":16,"hwl":10,"xinghui":4,"wanfuf":2,"hundung":1}},
-    {id:"dinghun",name:"定魂符",ic:"💀",value:67340,eff:"crit",val:16,durMin:120,maxStack:1,need:{"niepan":18,"xuanhuang":16,"xianhe":10,"jiuyang":2,"yinyangh":2,"biluoy":2}},
-    {id:"hundunfu",name:"混元遁形符",ic:"🌑",value:68562,eff:"dmg_reduce",val:25,durMin:120,maxStack:1,need:{"jiuye":20,"peng":16,"longxue":8,"qilinj":4,"xuanwubei":2,"hunyuan":1}},
-    {id:"jiuyangfu",name:"九阳焚天符",ic:"☀️",value:71552,eff:"combat",val:20,durMin:120,maxStack:1,need:{"niepan":18,"xuanhuang":16,"chiyan":12,"zhulongm":4,"fenghuangy":2,"yinglongl":1}},
-    {id:"zhuxianpo",name:"诛仙破妄符",ic:"⚔️",value:79690,eff:"brk",val:28,durMin:120,maxStack:1,need:{"xuanhuang":18,"jiuye":16,"xlangz":8,"qilinj":4,"tianwai":2,"hongmengj":1,"hundung":1}},
-    {id:"hunyuanqi",name:"混元一气符",ic:"🌌",value:189670,eff:"ess_pct",val:30,durMin:120,maxStack:1,need:{"xinghui":20,"zijinm":14,"fenghuangy":10,"taichu":4,"hongmengj":1,"hundung":1}},
-    {id:"taiyizhen",name:"太一镇神符",ic:"☯️",value:185900,eff:"crit",val:22,durMin:120,maxStack:1,need:{"zixiaot":18,"qilinj":12,"jiuyang":8,"yinyangh":10,"hunjing":1,"taichu":1}},
-    {id:"wujidun",name:"无极遁世符",ic:"🌀",value:205270,eff:"dmg_reduce",val:30,durMin:120,maxStack:1,need:{"wanfuf":18,"xinghui":16,"xuanwubei":8,"biluoy":4,"yinglongl":2,"hunjing":1,"chuangshij":1}},
-    {id:"hundunpo",name:"混沌破天符",ic:"💥",value:218920,eff:"combat",val:30,durMin:120,maxStack:1,need:{"zijinm":18,"zhulongm":14,"fenghuangy":10,"qilinj":6,"hundun":1,"chuangshij":1,"zulongy":1}},
-    {id:"hongmengzheng",name:"鸿蒙证道符",ic:"🪷",value:229320,eff:"brk",val:40,durMin:120,maxStack:1,need:{"qilinj":18,"xinghui":16,"jiuyang":10,"hunyuan":3,"hongmengj":2,"chuangshil":1,"zulongy":1}},
+    {id:"jufu",name:"聚灵符",ic:"🧧",value:624,eff:"ess_flat",val:20,durMin:30,maxStack:5,ds:"聚灵纳气，符光流转，灵气自涌。", need:{"herb":24,"bone":18,"skin":12,"gold":6}},
+    {id:"ningshen",name:"凝神符",ic:"🧠",value:2884,eff:"crit",val:10,durMin:30,maxStack:3,ds:"凝神静气，会心通明，心魔不侵。", need:{"zishen":10,"herb":22,"tort":12,"lingzhi":6,"longxian":4}},
+    {id:"dundi",name:"遁地符",ic:"🌀",value:1358,eff:"dmg_reduce",val:15,durMin:60,maxStack:2,ds:"遁地符成，千山万壑如履平地。", need:{"han":12,"herb":26,"iron":20,"tort":8}},
+    {id:"yuhuo",name:"御火符",ic:"🔥",value:3033,eff:"combat",val:8,durMin:30,maxStack:3,ds:"御火之符，火灵护体，攻伐凌厉。", need:{"huoshi":9,"skin":25,"tong":16,"longxian":5,"bone":6}},
+    {id:"pojun",name:"破军符",ic:"⚔️",value:2538,eff:"brk",val:15,durMin:60,maxStack:2,ds:"破军之势，无坚不摧，突破更易。", need:{"gold":12,"tiger":4,"skin":28,"iron":22,"lingzhi":8}},
+    {id:"xuanling",name:"玄灵符",ic:"✨",value:17576,eff:"ess_flat",val:50,durMin:60,maxStack:4,ds:"玄灵之气，绵绵不绝，福泽自生。", need:{"qing":20,"core":18,"myst":10,"jiuye":6,"xie":4}},
+    {id:"zhenfu",name:"镇神符",ic:"🧿",value:15496,eff:"crit",val:12,durMin:60,maxStack:3,ds:"镇神定魄，会心澄澈，外邪难犯。", need:{"zishen":20,"bing":18,"heshouwu":10,"zhu":4,"xuanhuang":4}},
+    {id:"jiadun",name:"金甲遁地符",ic:"🛡️",value:12376,eff:"dmg_reduce",val:20,durMin:60,maxStack:2,ds:"金甲护体，遁走无形，攻守兼备。", need:{"qing":22,"xie":18,"jiao":10,"tiger":6,"huoshi":6}},
+    {id:"fentian",name:"焚天御火符",ic:"🔥",value:36244,eff:"combat",val:12,durMin:60,maxStack:3,ds:"焚天烈焰，御火成势，战力激增。", need:{"huoshi":20,"chiyan":16,"zhu":8,"dihuo":6,"fenghuangy":2}},
+    {id:"zixiao",name:"紫霄破阵符",ic:"⚡",value:24492,eff:"brk",val:20,durMin:60,maxStack:2,ds:"紫霄神雷，破阵克敌，势如破竹。", need:{"lei":18,"bing":18,"xlangz":6,"hansui":10,"peng":4}},
+    {id:"taichufu",name:"太初灵符",ic:"🌀",value:61620,eff:"ess_pct",val:18,durMin:120,maxStack:2,ds:"太初之气，灵蕴无穷，产出倍增。", need:{"jiuye":18,"peng":16,"hwl":10,"xinghui":4,"wanfuf":2,"hundung":1}},
+    {id:"dinghun",name:"定魂符",ic:"💀",value:67340,eff:"crit",val:16,durMin:120,maxStack:1,ds:"定魂镇魄，魂归本位，会心大增。", need:{"niepan":18,"xuanhuang":16,"xianhe":10,"jiuyang":2,"yinyangh":2,"biluoy":2}},
+    {id:"hundunfu",name:"混元遁形符",ic:"🌑",value:68562,eff:"dmg_reduce",val:25,durMin:120,maxStack:1,ds:"混元一气，遁形无迹，减免伤势。", need:{"jiuye":20,"peng":16,"longxue":8,"qilinj":4,"xuanwubei":2,"hunyuan":1}},
+    {id:"jiuyangfu",name:"九阳焚天符",ic:"☀️",value:71552,eff:"combat",val:20,durMin:120,maxStack:1,ds:"九阳齐出，焚天煮海，战力无双。", need:{"niepan":18,"xuanhuang":16,"chiyan":12,"zhulongm":4,"fenghuangy":2,"yinglongl":1}},
+    {id:"zhuxianpo",name:"诛仙破妄符",ic:"⚔️",value:79690,eff:"brk",val:28,durMin:120,maxStack:1,ds:"诛仙之力，破妄归真，突破无碍。", need:{"xuanhuang":18,"jiuye":16,"xlangz":8,"qilinj":4,"tianwai":2,"hongmengj":1,"hundung":1}},
+    {id:"hunyuanqi",name:"混元一气符",ic:"🌌",value:189670,eff:"ess_pct",val:30,durMin:120,maxStack:1,ds:"混元归一气，道韵自天成，灵气暴涨。", need:{"xinghui":20,"zijinm":14,"fenghuangy":10,"taichu":4,"hongmengj":1,"hundung":1}},
+    {id:"taiyizhen",name:"太一镇神符",ic:"☯️",value:185900,eff:"crit",val:22,durMin:120,maxStack:1,ds:"太一镇神，万邪辟易，会心通神。", need:{"zixiaot":18,"qilinj":12,"jiuyang":8,"yinyangh":10,"hunjing":1,"taichu":1}},
+    {id:"wujidun",name:"无极遁世符",ic:"🌀",value:205270,eff:"dmg_reduce",val:30,durMin:120,maxStack:1,ds:"无极之境，遁世无争，万法不侵。", need:{"wanfuf":18,"xinghui":16,"xuanwubei":8,"biluoy":4,"yinglongl":2,"hunjing":1,"chuangshij":1}},
+    {id:"hundunpo",name:"混沌破天符",ic:"💥",value:218920,eff:"combat",val:30,durMin:120,maxStack:1,ds:"混沌之力，破天裂地，战力滔天。", need:{"zijinm":18,"zhulongm":14,"fenghuangy":10,"qilinj":6,"hundun":1,"chuangshij":1,"zulongy":1}},
+    {id:"hongmengzheng",name:"鸿蒙证道符",ic:"🪷",value:229320,eff:"brk",val:40,durMin:120,maxStack:1,ds:"鸿蒙初开，证道成符，突破如神。", need:{"qilinj":18,"xinghui":16,"jiuyang":10,"hunyuan":3,"hongmengj":2,"chuangshil":1,"zulongy":1}},
   ]},
   {cat:"炼丹", ic:"⚗️", ds:"以草药妖兽精华炼丹药", rec:[
-    {id:"juqi",name:"聚气丹",ic:"💊",value:705,eff:"ess_flat",val:20,durMin:30,maxStack:5,heal:10,need:{"lingzhi":10,"herb":26,"iron":18,"skin":16}},
-    {id:"chuiti",name:"淬体丹",ic:"💪",value:572,eff:"combat",val:8,durMin:30,maxStack:3,need:{"skin":24,"iron":20,"tong":12,"bone":10}},
-    {id:"yangshen",name:"养神丹",ic:"💆",value:2920,eff:"crit",val:10,durMin:30,maxStack:3,need:{"zishen":8,"longxian":12,"herb":24,"lingzhi":8,"tort":10}},
-    {id:"zhuji",name:"筑基丹",ic:"🫙",value:3711,eff:"brk",val:15,durMin:60,maxStack:3,need:{"heshouwu":8,"core":6,"herb":26,"iron":20,"lingzhi":6}},
-    {id:"jinganghu",name:"金刚护体丹",ic:"🛡️",value:1316,eff:"dmg_reduce",val:15,durMin:60,maxStack:2,heal:20,need:{"bone":24,"tort":12,"skin":20,"gold":10}},
-    {id:"huiling",name:"回灵丹",ic:"✨",value:16848,eff:"ess_flat",val:50,durMin:60,maxStack:4,heal:30,need:{"qing":20,"core":18,"myst":8,"jiuye":4,"peng":4}},
-    {id:"huoyuancu",name:"火元淬体丹",ic:"🌋",value:35412,eff:"combat",val:12,durMin:60,maxStack:3,need:{"huoshi":20,"chiyan":16,"zhu":6,"dihuo":6,"fenghuangy":2}},
-    {id:"qiqiao",name:"七窍养神丹",ic:"🧠",value:16432,eff:"crit",val:12,durMin:60,maxStack:3,need:{"zishen":20,"bing":18,"heshouwu":10,"peng":4,"xuanhuang":4}},
-    {id:"pojing",name:"破境丹",ic:"💠",value:15886,eff:"brk",val:20,durMin:60,maxStack:2,need:{"qing":20,"core":16,"lei":6,"xuanyang":10,"dihuo":8}},
-    {id:"xuanguihu",name:"玄龟护体丹",ic:"🐢",value:22568,eff:"dmg_reduce",val:20,durMin:60,maxStack:2,need:{"xie":18,"jiao":18,"tiger":8,"myst":8,"xuanwubei":2}},
-    {id:"tianyuan",name:"天元丹",ic:"🔆",value:62270,eff:"ess_pct",val:18,durMin:120,maxStack:2,need:{"jiuye":18,"peng":16,"xuanhuang":10,"niepan":6,"zijinm":4,"hunyuan":1}},
-    {id:"jiuzhuanlian",name:"九转炼体丹",ic:"💪",value:59904,eff:"combat",val:20,durMin:120,maxStack:1,need:{"xuanhuang":18,"niepan":16,"chiyan":10,"longxue":6,"qilinj":3,"fenghuangy":2}},
-    {id:"taiyiding",name:"太一定神丹",ic:"🧿",value:66040,eff:"crit",val:16,durMin:120,maxStack:1,need:{"jiuye":18,"peng":16,"xianhe":10,"xinghui":4,"jiuyang":2,"yinyangh":2}},
-    {id:"poxudujie",name:"破虚渡劫丹",ic:"🌩️",value:66326,eff:"brk",val:28,durMin:120,maxStack:1,need:{"xuanhuang":18,"niepan":16,"hwl":8,"longxue":4,"qilinj":2,"taichu":1,"hundung":1}},
-    {id:"hundunhu",name:"混元护体丹",ic:"🛡️",value:77870,eff:"dmg_reduce",val:25,durMin:120,maxStack:1,heal:60,need:{"jiuye":20,"peng":16,"liuli":8,"qilinj":3,"xuanwubei":2,"hunyuan":1,"yinglongl":1}},
-    {id:"hundunzaohua",name:"混沌造化丹",ic:"🌌",value:169650,eff:"ess_pct",val:30,durMin:120,maxStack:1,need:{"xinghui":20,"zijinm":14,"jiuyang":10,"wanfuf":6,"hundung":1,"chuangshil":1}},
-    {id:"daoticuihuo",name:"道体淬炼丹",ic:"✨",value:156000,eff:"combat",val:30,durMin:120,maxStack:1,need:{"zijinm":18,"zhulongm":14,"qilinj":10,"jiuyang":8,"fenghuangy":2,"yinglongl":1}},
-    {id:"hongmengding",name:"鸿蒙定魂丹",ic:"🧠",value:147160,eff:"crit",val:22,durMin:120,maxStack:1,need:{"qilinj":16,"zixiaot":14,"xinghui":8,"yinyangh":10,"jiuyang":2,"hongmengj":1}},
-    {id:"jiuzhuanpoxu",name:"九转破虚丹",ic:"💥",value:212420,eff:"brk",val:40,durMin:120,maxStack:1,need:{"qilinj":18,"xinghui":14,"jiuyang":10,"fenghuangy":6,"taichu":1,"hundun":1,"zulongy":1}},
-    {id:"wujijinshen",name:"无极金身丹",ic:"🛡️",value:186160,eff:"dmg_reduce",val:30,durMin:120,maxStack:1,heal:60,need:{"wanfuf":18,"zixiaot":16,"tianwai":10,"biluoy":4,"xuanwubei":2,"taotieg":1,"chuangshij":1}},
+    {id:"juqi",name:"聚气丹",ic:"💊",value:705,eff:"ess_flat",val:20,durMin:30,maxStack:5,heal:10,ds:"聚气归元，灵气充盈，兼能恢复气血。", need:{"lingzhi":10,"herb":26,"iron":18,"skin":16}},
+    {id:"chuiti",name:"淬体丹",ic:"💪",value:572,eff:"combat",val:8,durMin:30,maxStack:3,ds:"淬炼肉身，筋骨如铁，战力提升。", need:{"skin":24,"iron":20,"tong":12,"bone":10}},
+    {id:"yangshen",name:"养神丹",ic:"💆",value:2920,eff:"crit",val:10,durMin:30,maxStack:3,ds:"滋养神魂，神思清明，会心提升。", need:{"zishen":8,"longxian":12,"herb":24,"lingzhi":8,"tort":10}},
+    {id:"zhuji",name:"筑基丹",ic:"🫙",value:3711,eff:"brk",val:15,durMin:60,maxStack:3,ds:"稳固根基，筑基有望，突破更易。", need:{"heshouwu":8,"core":6,"herb":26,"iron":20,"lingzhi":6}},
+    {id:"jinganghu",name:"金刚护体丹",ic:"🛡️",value:1316,eff:"dmg_reduce",val:15,durMin:60,maxStack:2,heal:20,ds:"金刚不坏，减免伤势，兼能恢复气血。", need:{"bone":24,"tort":12,"skin":20,"gold":10}},
+    {id:"huiling",name:"回灵丹",ic:"✨",value:16848,eff:"ess_flat",val:50,durMin:60,maxStack:4,heal:30,ds:"回灵养元，灵气奔涌，兼能恢复气血。", need:{"qing":20,"core":18,"myst":8,"jiuye":4,"peng":4}},
+    {id:"huoyuancu",name:"火元淬体丹",ic:"🌋",value:35412,eff:"combat",val:12,durMin:60,maxStack:3,ds:"火元淬体，百炼成钢，战力大增。", need:{"huoshi":20,"chiyan":16,"zhu":6,"dihuo":6,"fenghuangy":2}},
+    {id:"qiqiao",name:"七窍养神丹",ic:"🧠",value:16432,eff:"crit",val:12,durMin:60,maxStack:3,ds:"七窍通明，神游太虚，会心大增。", need:{"zishen":20,"bing":18,"heshouwu":10,"peng":4,"xuanhuang":4}},
+    {id:"pojing",name:"破境丹",ic:"💠",value:15886,eff:"brk",val:20,durMin:60,maxStack:2,ds:"破境开悟，瓶颈松动，突破更易。", need:{"qing":20,"core":16,"lei":6,"xuanyang":10,"dihuo":8}},
+    {id:"xuanguihu",name:"玄龟护体丹",ic:"🐢",value:22568,eff:"dmg_reduce",val:20,durMin:60,maxStack:2,ds:"玄龟之甲，坚不可摧，减免伤势。", need:{"xie":18,"jiao":18,"tiger":8,"myst":8,"xuanwubei":2}},
+    {id:"tianyuan",name:"天元丹",ic:"🔆",value:62270,eff:"ess_pct",val:18,durMin:120,maxStack:2,ds:"天元之气，生生不息，灵气暴涨。", need:{"jiuye":18,"peng":16,"xuanhuang":10,"niepan":6,"zijinm":4,"hunyuan":1}},
+    {id:"jiuzhuanlian",name:"九转炼体丹",ic:"💪",value:59904,eff:"combat",val:20,durMin:120,maxStack:1,ds:"九转炼体，肉身成圣，战力滔天。", need:{"xuanhuang":18,"niepan":16,"chiyan":10,"longxue":6,"qilinj":3,"fenghuangy":2}},
+    {id:"taiyiding",name:"太一定神丹",ic:"🧿",value:66040,eff:"crit",val:16,durMin:120,maxStack:1,ds:"太一定神，道心稳固，会心通神。", need:{"jiuye":18,"peng":16,"xianhe":10,"xinghui":4,"jiuyang":2,"yinyangh":2}},
+    {id:"poxudujie",name:"破虚渡劫丹",ic:"🌩️",value:66326,eff:"brk",val:28,durMin:120,maxStack:1,ds:"破虚渡劫，天劫不侵，突破如神。", need:{"xuanhuang":18,"niepan":16,"hwl":8,"longxue":4,"qilinj":2,"taichu":1,"hundung":1}},
+    {id:"hundunhu",name:"混元护体丹",ic:"🛡️",value:77870,eff:"dmg_reduce",val:25,durMin:120,maxStack:1,heal:60,ds:"混元护体，万法难伤，兼能恢复气血。", need:{"jiuye":20,"peng":16,"liuli":8,"qilinj":3,"xuanwubei":2,"hunyuan":1,"yinglongl":1}},
+    {id:"hundunzaohua",name:"混沌造化丹",ic:"🌌",value:169650,eff:"ess_pct",val:30,durMin:120,maxStack:1,ds:"混沌造化，灵气如渊，源源不绝。", need:{"xinghui":20,"zijinm":14,"jiuyang":10,"wanfuf":6,"hundung":1,"chuangshil":1}},
+    {id:"daoticuihuo",name:"道体淬炼丹",ic:"✨",value:156000,eff:"combat",val:30,durMin:120,maxStack:1,ds:"道体淬炼，浑然天成，战力无双。", need:{"zijinm":18,"zhulongm":14,"qilinj":10,"jiuyang":8,"fenghuangy":2,"yinglongl":1}},
+    {id:"hongmengding",name:"鸿蒙定魂丹",ic:"🧠",value:147160,eff:"crit",val:22,durMin:120,maxStack:1,ds:"鸿蒙定魂，神念如虹，会心无双。", need:{"qilinj":16,"zixiaot":14,"xinghui":8,"yinyangh":10,"jiuyang":2,"hongmengj":1}},
+    {id:"jiuzhuanpoxu",name:"九转破虚丹",ic:"💥",value:212420,eff:"brk",val:40,durMin:120,maxStack:1,ds:"九转破虚，直指大道，突破无碍。", need:{"qilinj":18,"xinghui":14,"jiuyang":10,"fenghuangy":6,"taichu":1,"hundun":1,"zulongy":1}},
+    {id:"wujijinshen",name:"无极金身丹",ic:"🛡️",value:186160,eff:"dmg_reduce",val:30,durMin:120,maxStack:1,heal:60,ds:"无极金身，金刚不坏，兼能恢复气血。", need:{"wanfuf":18,"zixiaot":16,"tianwai":10,"biluoy":4,"xuanwubei":2,"taotieg":1,"chuangshij":1}},
   ]},
   {cat:"炼器", ic:"⚒️", ds:"炼器成装备，穿戴生效", rec:[
-    {id:"qingfengjian",name:"青锋剑",ic:"🗡️",slot:"w",atk:6,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:819,need:{"iron":24,"gold":10,"skin":18,"bone":12}},
-    {id:"xuantiekui",name:"玄铁盔",ic:"⛑️",slot:"h",atk:0,hp:8,ess:0,crit:0,brk:0,dmgR:0,value:749,need:{"iron":22,"bone":18,"skin":12,"gold":8}},
-    {id:"tielinjia",name:"铁鳞甲",ic:"🛡️",slot:"a",atk:0,hp:0,ess:0,crit:0,brk:0,dmgR:10,value:910,need:{"iron":20,"skin":22,"tort":10,"tong":12}},
-    {id:"xuantiejie",name:"玄铁戒",ic:"💍",slot:"r1",atk:5,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:669,need:{"iron":24,"skin":20,"tong":12,"lingzhi":6}},
-    {id:"feicui",name:"翡翠指环",ic:"💚",slot:"r2",atk:0,hp:0,ess:0,crit:7,brk:0,dmgR:0,value:1020,need:{"gold":10,"herb":24,"iron":18,"tort":8}},
-    {id:"yunling",name:"蕴灵珠串",ic:"📿",slot:"n",atk:0,hp:0,ess:6,crit:0,brk:0,dmgR:0,value:2127,need:{"gold":8,"bing":6,"herb":24,"iron":20,"lingzhi":4}},
-    {id:"zihulu",name:"紫金葫芦",ic:"🧡",slot:"m",atk:0,hp:0,ess:8,crit:0,brk:0,dmgR:0,value:921,need:{"gold":12,"tong":18,"herb":22,"bone":10}},
-    {id:"liangtianchi",name:"量天尺",ic:"📏",slot:"w",atk:10,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:15496,need:{"qing":20,"core":16,"myst":8,"xuanhuang":4,"peng":4}},
-    {id:"zijinguan",name:"紫金冠",ic:"👑",slot:"h",atk:0,hp:14,ess:0,crit:0,brk:0,dmgR:0,value:15236,need:{"qing":20,"core":16,"myst":10,"hansui":6,"zhu":6}},
-    {id:"fuyaosuo",name:"缚妖索",ic:"🪢",slot:"a",atk:0,hp:0,ess:0,crit:0,brk:0,dmgR:15,value:22230,need:{"jiao":18,"xie":16,"qing":18,"tiger":6,"xuanwubei":2}},
-    {id:"chiyanhuan",name:"赤焰环",ic:"🔥",slot:"r1",atk:10,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:36920,need:{"huoshi":18,"chiyan":16,"zhu":6,"dihuo":6,"xuanyang":6,"fenghuangy":2}},
-    {id:"qiankun",name:"乾坤戒",ic:"💍",slot:"r2",atk:0,hp:0,ess:0,crit:12,brk:0,dmgR:0,value:16016,need:{"zishen":18,"bing":18,"myst":8,"heshouwu":8,"xuanhuang":4}},
-    {id:"dingling",name:"定灵珠",ic:"🔮",slot:"n",atk:0,hp:0,ess:0,crit:0,brk:15,dmgR:0,value:17576,need:{"qing":20,"core":14,"bing":18,"myst":8,"xlangz":4}},
-    {id:"qinglian",name:"青莲宝座",ic:"🪷",slot:"m",atk:0,hp:0,ess:12,crit:0,brk:0,dmgR:0,value:16536,need:{"qing":20,"core":16,"myst":8,"jiuye":4,"peng":4}},
-    {id:"yinyangjing",name:"阴阳镜",ic:"☯️",slot:"w",atk:18,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:69030,need:{"xuanhuang":18,"jiuye":16,"niepan":10,"qilinj":4,"yinyangh":2,"hunyuan":1}},
-    {id:"taixuguan",name:"太虚冠",ic:"🎩",slot:"h",atk:0,hp:22,ess:0,crit:0,brk:0,dmgR:0,value:61360,need:{"peng":18,"xuanhuang":16,"niepan":10,"xinghui":4,"yinyangh":2,"fenghuangy":2}},
-    {id:"xingtian",name:"星辰鉴",ic:"🌠",slot:"a",atk:0,hp:0,ess:0,crit:0,brk:0,dmgR:20,value:83980,need:{"peng":18,"jiuye":16,"xuanhuang":10,"qilinj":4,"xuanwubei":2,"zulongy":1}},
-    {id:"jiuyaohuan",name:"九曜环",ic:"💍",slot:"r1",atk:20,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:63310,need:{"xuanhuang":18,"niepan":16,"chiyan":10,"qilinj":4,"zijinm":3,"fenghuangy":2}},
-    {id:"dayan",name:"大衍戒",ic:"💍",slot:"r2",atk:0,hp:0,ess:0,crit:18,brk:0,dmgR:0,value:67210,need:{"jiuye":18,"peng":16,"xianhe":10,"xinghui":4,"jiuyang":2,"hunyuan":1}},
-    {id:"suoling",name:"锁灵珠串",ic:"📿",slot:"n",atk:0,hp:0,ess:0,crit:0,brk:22,dmgR:0,value:60450,need:{"peng":18,"xuanhuang":16,"jiuye":8,"qilinj":4,"zixiaot":2,"wanfuf":2,"yinglongl":1}},
-    {id:"hundundingq",name:"混元鼎",ic:"🏺",slot:"m",atk:0,hp:0,ess:22,crit:0,brk:0,dmgR:0,value:55120,need:{"peng":18,"xuanhuang":16,"niepan":10,"jiuye":4,"zijinm":3,"hunyuan":1}},
-    {id:"haotianjing",name:"昊天镜",ic:"🌕",slot:"w",atk:30,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:185250,need:{"xinghui":20,"zijinm":14,"fenghuangy":10,"zhulongm":4,"hundun":1,"changsheng":1}},
-    {id:"hongmengzjg",name:"鸿蒙紫金冠",ic:"👑",slot:"h",atk:0,hp:30,ess:0,crit:0,brk:0,dmgR:0,value:152880,need:{"xinghui":20,"qilinj":14,"jiuyang":10,"zixiaot":4,"zijinm":2,"fenghuangy":2,"hongmengj":1}},
-    {id:"taiyixuanjia",name:"太一玄甲",ic:"🛡️",slot:"a",atk:0,hp:0,ess:0,crit:0,brk:0,dmgR:25,value:180310,need:{"wanfuf":18,"xinghui":16,"tianwai":10,"biluoy":2,"qilinj":2,"xuanwubei":2,"yinglongl":1,"chuangshij":1}},
-    {id:"hundunhuan",name:"混沌环",ic:"💍",slot:"r1",atk:32,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:192660,need:{"zhulongm":18,"zijinm":16,"fenghuangy":10,"qilinj":6,"hunjing":1,"hundun":1}},
-    {id:"taiyijie",name:"太一戒",ic:"💍",slot:"r2",atk:0,hp:0,ess:0,crit:25,brk:0,dmgR:0,value:173030,need:{"qilinj":18,"xinghui":16,"yinyangh":10,"wanfuf":4,"jiuyang":2,"hongmengj":1,"chuangshil":1}},
-    {id:"dadao",name:"大道珠串",ic:"📿",slot:"n",atk:0,hp:0,ess:0,crit:0,brk:30,dmgR:0,value:198770,need:{"xinghui":20,"zijinm":14,"jiuyang":10,"fenghuangy":4,"wanfuf":2,"chuangshil":1,"changsheng":1}},
-    {id:"chuangshiding",name:"创世鼎",ic:"🏺",slot:"m",atk:0,hp:0,ess:32,crit:0,brk:0,dmgR:0,value:231140,need:{"zijinm":18,"qilinj":14,"jiuyang":8,"fenghuangy":6,"hunjing":1,"taichu":1,"chuangshij":2}},
+    {id:"qingfengjian",name:"青锋剑",ic:"🗡️",slot:"w",atk:6,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:819,ds:"青锋三尺，锋芒初露，斩妖除魔。", need:{"iron":24,"gold":10,"skin":18,"bone":12}},
+    {id:"xuantiekui",name:"玄铁盔",ic:"⛑️",slot:"h",atk:0,hp:8,ess:0,crit:0,brk:0,dmgR:0,value:749,ds:"玄铁铸盔，坚不可摧，气血绵长。", need:{"iron":22,"bone":18,"skin":12,"gold":8}},
+    {id:"tielinjia",name:"铁鳞甲",ic:"🛡️",slot:"a",atk:0,hp:0,ess:0,crit:0,brk:0,dmgR:10,value:910,ds:"铁鳞覆甲，刀枪难入，减免伤势。", need:{"iron":20,"skin":22,"tort":10,"tong":12}},
+    {id:"xuantiejie",name:"玄铁戒",ic:"💍",slot:"r1",atk:5,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:669,ds:"玄铁为戒，锋锐内敛，战力提升。", need:{"iron":24,"skin":20,"tong":12,"lingzhi":6}},
+    {id:"feicui",name:"翡翠指环",ic:"💚",slot:"r2",atk:0,hp:0,ess:0,crit:7,brk:0,dmgR:0,value:1020,ds:"翡翠通灵，会心澄明，福缘自生。", need:{"gold":10,"herb":24,"iron":18,"tort":8}},
+    {id:"yunling",name:"蕴灵珠串",ic:"📿",slot:"n",atk:0,hp:0,ess:6,crit:0,brk:0,dmgR:0,value:2127,ds:"蕴灵纳气，灵气绵长，修炼加速。", need:{"gold":8,"bing":6,"herb":24,"iron":20,"lingzhi":4}},
+    {id:"zihulu",name:"紫金葫芦",ic:"🧡",slot:"m",atk:0,hp:0,ess:8,crit:0,brk:0,dmgR:0,value:921,ds:"紫金葫芦，纳灵聚气，灵气自涌。", need:{"gold":12,"tong":18,"herb":22,"bone":10}},
+    {id:"liangtianchi",name:"量天尺",ic:"📏",slot:"w",atk:10,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:15496,ds:"量天测地，锋芒毕露，战力大增。", need:{"qing":20,"core":16,"myst":8,"xuanhuang":4,"peng":4}},
+    {id:"zijinguan",name:"紫金冠",ic:"👑",slot:"h",atk:0,hp:14,ess:0,crit:0,brk:0,dmgR:0,value:15236,ds:"紫金冠冕，气血充盈，威严自生。", need:{"qing":20,"core":16,"myst":10,"hansui":6,"zhu":6}},
+    {id:"fuyaosuo",name:"缚妖索",ic:"🪢",slot:"a",atk:0,hp:0,ess:0,crit:0,brk:0,dmgR:15,value:22230,ds:"缚妖索出，万妖俯首，减免伤势。", need:{"jiao":18,"xie":16,"qing":18,"tiger":6,"xuanwubei":2}},
+    {id:"chiyanhuan",name:"赤焰环",ic:"🔥",slot:"r1",atk:10,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:36920,ds:"赤焰环绕，灼灼其华，战力滔天。", need:{"huoshi":18,"chiyan":16,"zhu":6,"dihuo":6,"xuanyang":6,"fenghuangy":2}},
+    {id:"qiankun",name:"乾坤戒",ic:"💍",slot:"r2",atk:0,hp:0,ess:0,crit:12,brk:0,dmgR:0,value:16016,ds:"乾坤藏纳，会心通玄，妙用无穷。", need:{"zishen":18,"bing":18,"myst":8,"heshouwu":8,"xuanhuang":4}},
+    {id:"dingling",name:"定灵珠",ic:"🔮",slot:"n",atk:0,hp:0,ess:0,crit:0,brk:15,dmgR:0,value:17576,ds:"定灵镇气，突破更易，灵韵自生。", need:{"qing":20,"core":14,"bing":18,"myst":8,"xlangz":4}},
+    {id:"qinglian",name:"青莲宝座",ic:"🪷",slot:"m",atk:0,hp:0,ess:12,crit:0,brk:0,dmgR:0,value:16536,ds:"青莲宝座，灵气如莲，清泉自涌。", need:{"qing":20,"core":16,"myst":8,"jiuye":4,"peng":4}},
+    {id:"yinyangjing",name:"阴阳镜",ic:"☯️",slot:"w",atk:18,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:69030,ds:"阴阳照彻，攻守兼备，战力无双。", need:{"xuanhuang":18,"jiuye":16,"niepan":10,"qilinj":4,"yinyangh":2,"hunyuan":1}},
+    {id:"taixuguan",name:"太虚冠",ic:"🎩",slot:"h",atk:0,hp:22,ess:0,crit:0,brk:0,dmgR:0,value:61360,ds:"太虚之冠，气血如海，威压四方。", need:{"peng":18,"xuanhuang":16,"niepan":10,"xinghui":4,"yinyangh":2,"fenghuangy":2}},
+    {id:"xingtian",name:"星辰鉴",ic:"🌠",slot:"a",atk:0,hp:0,ess:0,crit:0,brk:0,dmgR:20,value:83980,ds:"星辰为鉴，光照万里，减免伤势。", need:{"peng":18,"jiuye":16,"xuanhuang":10,"qilinj":4,"xuanwubei":2,"zulongy":1}},
+    {id:"jiuyaohuan",name:"九曜环",ic:"💍",slot:"r1",atk:20,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:63310,ds:"九曜齐辉，锋芒毕露，战力无双。", need:{"xuanhuang":18,"niepan":16,"chiyan":10,"qilinj":4,"zijinm":3,"fenghuangy":2}},
+    {id:"dayan",name:"大衍戒",ic:"💍",slot:"r2",atk:0,hp:0,ess:0,crit:18,brk:0,dmgR:0,value:67210,ds:"大衍之数，算无遗策，会心通神。", need:{"jiuye":18,"peng":16,"xianhe":10,"xinghui":4,"jiuyang":2,"hunyuan":1}},
+    {id:"suoling",name:"锁灵珠串",ic:"📿",slot:"n",atk:0,hp:0,ess:0,crit:0,brk:22,dmgR:0,value:60450,ds:"锁灵固元，突破如神，道韵自生。", need:{"peng":18,"xuanhuang":16,"jiuye":8,"qilinj":4,"zixiaot":2,"wanfuf":2,"yinglongl":1}},
+    {id:"hundundingq",name:"混元鼎",ic:"🏺",slot:"m",atk:0,hp:0,ess:22,crit:0,brk:0,dmgR:0,value:55120,ds:"混元宝鼎，容纳万灵，灵气暴涨。", need:{"peng":18,"xuanhuang":16,"niepan":10,"jiuye":4,"zijinm":3,"hunyuan":1}},
+    {id:"haotianjing",name:"昊天镜",ic:"🌕",slot:"w",atk:30,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:185250,ds:"昊天镜照，洞彻九霄，战力滔天。", need:{"xinghui":20,"zijinm":14,"fenghuangy":10,"zhulongm":4,"hundun":1,"changsheng":1}},
+    {id:"hongmengzjg",name:"鸿蒙紫金冠",ic:"👑",slot:"h",atk:0,hp:30,ess:0,crit:0,brk:0,dmgR:0,value:152880,ds:"鸿蒙紫金，冠绝群仙，气血如渊。", need:{"xinghui":20,"qilinj":14,"jiuyang":10,"zixiaot":4,"zijinm":2,"fenghuangy":2,"hongmengj":1}},
+    {id:"taiyixuanjia",name:"太一玄甲",ic:"🛡️",slot:"a",atk:0,hp:0,ess:0,crit:0,brk:0,dmgR:25,value:180310,ds:"太一玄甲，万法不侵，减免伤势。", need:{"wanfuf":18,"xinghui":16,"tianwai":10,"biluoy":2,"qilinj":2,"xuanwubei":2,"yinglongl":1,"chuangshij":1}},
+    {id:"hundunhuan",name:"混沌环",ic:"💍",slot:"r1",atk:32,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:192660,ds:"混沌之力，环抱乾坤，战力无双。", need:{"zhulongm":18,"zijinm":16,"fenghuangy":10,"qilinj":6,"hunjing":1,"hundun":1}},
+    {id:"taiyijie",name:"太一戒",ic:"💍",slot:"r2",atk:0,hp:0,ess:0,crit:25,brk:0,dmgR:0,value:173030,ds:"太一之戒，道韵天成，会心无双。", need:{"qilinj":18,"xinghui":16,"yinyangh":10,"wanfuf":4,"jiuyang":2,"hongmengj":1,"chuangshil":1}},
+    {id:"dadao",name:"大道珠串",ic:"📿",slot:"n",atk:0,hp:0,ess:0,crit:0,brk:30,dmgR:0,value:198770,ds:"大道珠串，道韵流转，突破如神。", need:{"xinghui":20,"zijinm":14,"jiuyang":10,"fenghuangy":4,"wanfuf":2,"chuangshil":1,"changsheng":1}},
+    {id:"chuangshiding",name:"创世鼎",ic:"🏺",slot:"m",atk:0,hp:0,ess:32,crit:0,brk:0,dmgR:0,value:231140,ds:"创世宝鼎，造化万物，灵气无量。", need:{"zijinm":18,"qilinj":14,"jiuyang":8,"fenghuangy":6,"hunjing":1,"taichu":1,"chuangshij":2}},
   ]},
   {cat:"阵法", ic:"⛩️", ds:"布置法阵", rec:[
-    {id:"juling",name:"聚灵阵图",ic:"🌀",value:614,eff:"ess_flat",val:25,durMin:30,maxStack:5,need:{"iron":24,"herb":22,"skin":12,"gold":6}},
-    {id:"jingxin",name:"静心阵",ic:"🧘",value:2487,eff:"crit",val:10,durMin:60,maxStack:4,need:{"herb":26,"zishen":8,"bone":18,"tort":12,"lingzhi":5}},
-    {id:"hushen",name:"护身阵",ic:"🛡️",value:991,eff:"dmg_reduce",val:15,durMin:60,maxStack:2,need:{"iron":22,"bone":20,"skin":10,"tort":12}},
-    {id:"jianzhen",name:"剑阵图",ic:"🗡️",value:851,eff:"combat",val:8,durMin:60,maxStack:2,need:{"iron":24,"gold":10,"skin":18,"tong":12}},
-    {id:"taiji",name:"太极阵",ic:"☯️",value:2933,eff:"brk",val:15,durMin:60,maxStack:3,need:{"qing":8,"han":12,"lingzhi":10,"herb":24,"skin":18}},
-    {id:"wuxing",name:"五行聚灵阵",ic:"🎨",value:16744,eff:"ess_flat",val:50,durMin:60,maxStack:4,need:{"qing":20,"core":14,"myst":8,"huoshi":18,"peng":4}},
-    {id:"xingdou",name:"星斗凝神阵",ic:"🌌",value:15990,eff:"crit",val:12,durMin:60,maxStack:3,need:{"zishen":20,"bing":18,"heshouwu":8,"lei":6,"xuanhuang":4}},
-    {id:"xuanjia",name:"玄甲护身阵",ic:"🛡️",value:21502,eff:"dmg_reduce",val:20,durMin:60,maxStack:2,need:{"qing":22,"xie":16,"jiao":10,"tiger":6,"xuanwubei":2}},
-    {id:"tiangang",name:"天罡剑阵",ic:"🗡️",value:23192,eff:"combat",val:12,durMin:60,maxStack:2,need:{"qing":18,"lei":6,"xie":16,"jiao":10,"zhu":6,"fenghuangy":2}},
-    {id:"liangyi",name:"两仪破境阵",ic:"☯️",value:44408,eff:"brk",val:20,durMin:60,maxStack:2,need:{"qing":20,"core":16,"bing":18,"xlangz":4,"yinyangh":6}},
-    {id:"jiuyao",name:"九曜聚灵阵",ic:"✨",value:51870,eff:"ess_pct",val:18,durMin:120,maxStack:2,need:{"peng":18,"jiuye":16,"xuanhuang":10,"xinghui":4,"wanfuf":2,"zixiaot":2}},
-    {id:"taiyin",name:"太阴定神阵",ic:"🌙",value:70850,eff:"crit",val:16,durMin:120,maxStack:1,need:{"niepan":18,"peng":16,"xianhe":10,"xinghui":2,"yinyangh":2,"jiuyang":2,"hunyuan":1}},
-    {id:"hundunhudun",name:"混元护盾阵",ic:"🛰️",value:63232,eff:"dmg_reduce",val:25,durMin:120,maxStack:1,need:{"jiuye":18,"peng":16,"longxue":8,"liuli":6,"xuanwubei":2,"hunyuan":1}},
-    {id:"zhuxian",name:"诛仙剑阵",ic:"⚔️",value:84968,eff:"combat",val:20,durMin:120,maxStack:1,need:{"xuanhuang":18,"niepan":16,"chiyan":8,"xinghui":4,"wanfuf":2,"taotieg":1,"hunjing":1}},
-    {id:"fengshen",name:"封神破妄阵",ic:"🏯",value:76700,eff:"brk",val:28,durMin:120,maxStack:1,need:{"xuanhuang":20,"jiuye":16,"xlangz":6,"qilinj":4,"tianwai":2,"biluoy":2,"hunyuan":1}},
-    {id:"hongmengjuling",name:"鸿蒙聚灵大阵",ic:"🌌",value:147160,eff:"ess_pct",val:30,durMin:120,maxStack:1,need:{"xinghui":20,"zijinm":14,"wanfuf":10,"jiuyang":4,"hongmengj":1,"chuangshil":1}},
-    {id:"hundunding",name:"混沌定魂阵",ic:"🌑",value:161200,eff:"crit",val:22,durMin:120,maxStack:1,need:{"zixiaot":20,"qilinj":14,"yinyangh":10,"xinghui":4,"hunjing":1,"taichu":1}},
-    {id:"wujijinshenz",name:"无极金身大阵",ic:"🛡️",value:190970,eff:"dmg_reduce",val:30,durMin:120,maxStack:1,need:{"wanfuf":18,"zixiaot":14,"tianwai":10,"biluoy":6,"xuanwubei":2,"yinglongl":1,"chuangshij":1}},
-    {id:"wanjian",name:"万剑诛仙阵",ic:"🗡️",value:183560,eff:"combat",val:30,durMin:120,maxStack:1,need:{"zhulongm":14,"xinghui":14,"fenghuangy":10,"qilinj":8,"zijinm":2,"yinglongl":1,"hongmengj":1,"chuangshij":1}},
-    {id:"jiuzhuanzheng",name:"九转证道大阵",ic:"🪷",value:238940,eff:"brk",val:40,durMin:120,maxStack:1,need:{"qilinj":18,"xinghui":14,"jiuyang":10,"fenghuangy":8,"chuangshil":1,"zulongy":1,"changsheng":1}},
+    {id:"juling",name:"聚灵阵图",ic:"🌀",value:614,eff:"ess_flat",val:25,durMin:30,maxStack:5,ds:"聚灵成阵，灵气自涌，修炼加速。", need:{"iron":24,"herb":22,"skin":12,"gold":6}},
+    {id:"jingxin",name:"静心阵",ic:"🧘",value:2487,eff:"crit",val:10,durMin:60,maxStack:4,ds:"静心凝神，会心澄澈，外邪不侵。", need:{"herb":26,"zishen":8,"bone":18,"tort":12,"lingzhi":5}},
+    {id:"hushen",name:"护身阵",ic:"🛡️",value:991,eff:"dmg_reduce",val:15,durMin:60,maxStack:2,ds:"护身法阵，坚如磐石，减免伤势。", need:{"iron":22,"bone":20,"skin":10,"tort":12}},
+    {id:"jianzhen",name:"剑阵图",ic:"🗡️",value:851,eff:"combat",val:8,durMin:60,maxStack:2,ds:"剑气纵横，攻伐凌厉，战力提升。", need:{"iron":24,"gold":10,"skin":18,"tong":12}},
+    {id:"taiji",name:"太极阵",ic:"☯️",value:2933,eff:"brk",val:15,durMin:60,maxStack:3,ds:"太极流转，阴阳互济，突破更易。", need:{"qing":8,"han":12,"lingzhi":10,"herb":24,"skin":18}},
+    {id:"wuxing",name:"五行聚灵阵",ic:"🎨",value:16744,eff:"ess_flat",val:50,durMin:60,maxStack:4,ds:"五行齐聚，灵气如潮，绵绵不绝。", need:{"qing":20,"core":14,"myst":8,"huoshi":18,"peng":4}},
+    {id:"xingdou",name:"星斗凝神阵",ic:"🌌",value:15990,eff:"crit",val:12,durMin:60,maxStack:3,ds:"星斗列阵，神思清明，会心提升。", need:{"zishen":20,"bing":18,"heshouwu":8,"lei":6,"xuanhuang":4}},
+    {id:"xuanjia",name:"玄甲护身阵",ic:"🛡️",value:21502,eff:"dmg_reduce",val:20,durMin:60,maxStack:2,ds:"玄甲覆阵，固若金汤，减免伤势。", need:{"qing":22,"xie":16,"jiao":10,"tiger":6,"xuanwubei":2}},
+    {id:"tiangang",name:"天罡剑阵",ic:"🗡️",value:23192,eff:"combat",val:12,durMin:60,maxStack:2,ds:"天罡剑气，所向披靡，战力大增。", need:{"qing":18,"lei":6,"xie":16,"jiao":10,"zhu":6,"fenghuangy":2}},
+    {id:"liangyi",name:"两仪破境阵",ic:"☯️",value:44408,eff:"brk",val:20,durMin:60,maxStack:2,ds:"两仪相生，破境开悟，突破更易。", need:{"qing":20,"core":16,"bing":18,"xlangz":4,"yinyangh":6}},
+    {id:"jiuyao",name:"九曜聚灵阵",ic:"✨",value:51870,eff:"ess_pct",val:18,durMin:120,maxStack:2,ds:"九曜聚灵，星光入阵，灵气暴涨。", need:{"peng":18,"jiuye":16,"xuanhuang":10,"xinghui":4,"wanfuf":2,"zixiaot":2}},
+    {id:"taiyin",name:"太阴定神阵",ic:"🌙",value:70850,eff:"crit",val:16,durMin:120,maxStack:1,ds:"太阴镇魂，神念如冰，会心大增。", need:{"niepan":18,"peng":16,"xianhe":10,"xinghui":2,"yinyangh":2,"jiuyang":2,"hunyuan":1}},
+    {id:"hundunhudun",name:"混元护盾阵",ic:"🛰️",value:63232,eff:"dmg_reduce",val:25,durMin:120,maxStack:1,ds:"混元护盾，万法难侵，减免伤势。", need:{"jiuye":18,"peng":16,"longxue":8,"liuli":6,"xuanwubei":2,"hunyuan":1}},
+    {id:"zhuxian",name:"诛仙剑阵",ic:"⚔️",value:84968,eff:"combat",val:20,durMin:120,maxStack:1,ds:"诛仙剑阵，杀伐果断，战力滔天。", need:{"xuanhuang":18,"niepan":16,"chiyan":8,"xinghui":4,"wanfuf":2,"taotieg":1,"hunjing":1}},
+    {id:"fengshen",name:"封神破妄阵",ic:"🏯",value:76700,eff:"brk",val:28,durMin:120,maxStack:1,ds:"封神破妄，直指本心，突破无碍。", need:{"xuanhuang":20,"jiuye":16,"xlangz":6,"qilinj":4,"tianwai":2,"biluoy":2,"hunyuan":1}},
+    {id:"hongmengjuling",name:"鸿蒙聚灵大阵",ic:"🌌",value:147160,eff:"ess_pct",val:30,durMin:120,maxStack:1,ds:"鸿蒙聚灵，天地灵气尽归，产出无双。", need:{"xinghui":20,"zijinm":14,"wanfuf":10,"jiuyang":4,"hongmengj":1,"chuangshil":1}},
+    {id:"hundunding",name:"混沌定魂阵",ic:"🌑",value:161200,eff:"crit",val:22,durMin:120,maxStack:1,ds:"混沌定魂，神念不朽，会心无双。", need:{"zixiaot":20,"qilinj":14,"yinyangh":10,"xinghui":4,"hunjing":1,"taichu":1}},
+    {id:"wujijinshenz",name:"无极金身大阵",ic:"🛡️",value:190970,eff:"dmg_reduce",val:30,durMin:120,maxStack:1,ds:"无极金身，万劫不磨，减免伤势。", need:{"wanfuf":18,"zixiaot":14,"tianwai":10,"biluoy":6,"xuanwubei":2,"yinglongl":1,"chuangshij":1}},
+    {id:"wanjian",name:"万剑诛仙阵",ic:"🗡️",value:183560,eff:"combat",val:30,durMin:120,maxStack:1,ds:"万剑归宗，诛仙灭魔，战力无双。", need:{"zhulongm":14,"xinghui":14,"fenghuangy":10,"qilinj":8,"zijinm":2,"yinglongl":1,"hongmengj":1,"chuangshij":1}},
+    {id:"jiuzhuanzheng",name:"九转证道大阵",ic:"🪷",value:238940,eff:"brk",val:40,durMin:120,maxStack:1,ds:"九转证道，大道可期，突破无碍。", need:{"qilinj":18,"xinghui":14,"jiuyang":10,"fenghuangy":8,"chuangshil":1,"zulongy":1,"changsheng":1}},
   ]},
 ];
 const REC_RARE={jufu:1,ningshen:2,dundi:1,yuhuo:2,pojun:3,xuanling:4,zhenfu:5,jiadun:4,fentian:5,zixiao:6,taichufu:7,dinghun:8,hundunfu:7,jiuyangfu:8,zhuxianpo:9,hunyuanqi:10,taiyizhen:10,wujidun:10,hundunpo:10,hongmengzheng:10,juqi:1,chuiti:1,yangshen:2,zhuji:2,jinganghu:3,huiling:4,huoyuancu:4,qiqiao:5,pojing:5,xuanguihu:6,tianyuan:7,jiuzhuanlian:8,taiyiding:8,poxudujie:9,hundunhu:9,hundunzaohua:10,daoticuihuo:10,hongmengding:10,jiuzhuanpoxu:10,wujijinshen:10,juling:1,jingxin:1,hushen:2,jianzhen:2,taiji:3,wuxing:4,xingdou:5,xuanjia:4,tiangang:5,liangyi:6,jiuyao:7,taiyin:8,hundunhudun:7,zhuxian:8,fengshen:9,hongmengjuling:10,hundunding:10,wujijinshenz:10,wanjian:10,jiuzhuanzheng:10,qingfengjian:1,xuantiekui:2,tielinjia:1,xuantiejie:2,feicui:3,yunling:1,zihulu:3,liangtianchi:4,zijinguan:5,fuyaosuo:4,chiyanhuan:5,qiankun:6,dingling:4,qinglian:5,yinyangjing:7,taixuguan:8,xingtian:7,jiuyaohuan:8,dayan:9,suoling:9,hundundingq:8,haotianjing:10,hongmengzjg:10,taiyixuanjia:10,hundunhuan:10,taiyijie:10,dadao:10,chuangshiding:10};
 const REC_BY_ID={}; CRAFT.forEach(c=>c.rec.forEach(r=>{ r.rarity=REC_RARE[r.id]||1; REC_BY_ID[r.id]=r; }));
 function effText(r){
   const suf = (r.maxStack>1)? "，可叠加至 "+r.maxStack+" 层" : "";
+  let base="";
   switch(r.eff){
-    case "ess_flat": return "灵气产出 +"+r.val+" 点，持续 "+r.durMin+" 分钟"+suf;
-    case "ess_pct":  return "灵气产出 +"+r.val+"%，持续 "+r.durMin+" 分钟"+suf;
-    case "brk":      return "突破成功率 +"+r.val+"%，持续 "+r.durMin+" 分钟"+suf;
-    case "crit":     return "会心概率 +"+r.val+"%，持续 "+r.durMin+" 分钟"+suf;
-    case "combat":   return "战力 +"+r.val+"%，持续 "+r.durMin+" 分钟"+suf;
-    case "dmg_reduce": return "秘境受伤减免 "+r.val+"%，持续 "+r.durMin+" 分钟"+suf;
-    default: return "";
+    case "ess_flat": base="灵气产出 +"+r.val+" 点，持续 "+r.durMin+" 分钟"+suf; break;
+    case "ess_pct":  base="灵气产出 +"+r.val+"%，持续 "+r.durMin+" 分钟"+suf; break;
+    case "brk":      base="突破成功率 +"+r.val+"%，持续 "+r.durMin+" 分钟"+suf; break;
+    case "crit":     base="会心概率 +"+r.val+"%，持续 "+r.durMin+" 分钟"+suf; break;
+    case "combat":   base="战力 +"+r.val+"%，持续 "+r.durMin+" 分钟"+suf; break;
+    case "dmg_reduce": base="秘境受伤减免 "+r.val+"%，持续 "+r.durMin+" 分钟"+suf; break;
   }
+  if(r.heal) base += (base?" · ":"")+"服用恢复气血 "+r.heal+"%";
+  return base;
 }
 function buffEffSum(eff){
   let sum=0; const now=Date.now();
@@ -1334,7 +1336,7 @@ function renderZao(body){
     can = can && !S.yunning && !S.making; // 运功/制造中禁止制造
     item.innerHTML=`<div class="ic">${r.ic}</div><div class="body">
       <div class="nm">${r.name}<span class="cat">${cur.cat}</span>${r.slot?`<span class="cat">装备</span><span class="cat">${SLOT_NAMES[r.slot]}</span>`:""}</div>
-      <div class="ds">${r.ds}</div>
+      <div class="ds">${r.ds||"无"}</div>
       <div class="ln" style="color:var(--jade)">效果：${isEquip(r.id)?eqText(r):effText(r)}</div>
       <div class="ln">持有 <b>${fmt(isEquip(r.id)?equipCount(r.id):S.tres[r.id]||0)}</b> · 价值 ${r.value} 下品灵石</div>
       <div class="cost">配方：${needTxt}</div>
@@ -1378,7 +1380,7 @@ function renderPu(body){
     let progTxt="";
     if(s.task){
       const eff=SV_EFF[s.lv]||0.4;
-      let iv=8/eff;
+      let iv=15/eff;
       if(s.task.kind==="zao"){
         const full=(CRAFT.find(c=>c.cat===s.task.t)||{rec:[]}).rec;
         const r0=s.curR||(s.task.rId?full.find(r=>r.id===s.task.rId):full[0]);
@@ -2451,7 +2453,7 @@ function gameTick(now){
     if(s.task.kind==="cai"){
       const iv=15/eff;
       s.prog+=dt;
-      while(s.prog>=iv){ s.prog-=iv; const m=randMatOfCat(s.task.t, s.task.zone); if(m){ S.mats[m.id]=(S.mats[m.id]||0)+1; logEvent((LV_NM[s.lv]||s.lv)+"傀采集到「"+m.name+"」×1",'sys','collect'); svProduced=true; } }
+      while(s.prog>=iv){ s.prog-=iv; const m=randMatOfCat(s.task.t, s.task.zone); if(m){ S.mats[m.id]=(S.mats[m.id]||0)+1; logEvent((LV_NM[s.lv]||s.lv)+"傀采集到「"+m.name+"」×1",'sys','collect'); svProduced=true; } else { logEvent((LV_NM[s.lv]||s.lv)+"傀采集失败，一无所获",'dim','collect'); } }
     } else {
       const cat=s.task.t;
       const full=(CRAFT.find(c=>c.cat===cat)||{rec:[]}).rec;
@@ -2472,7 +2474,7 @@ function gameTick(now){
       if(!s.task) return;
       const el=$("svProg"+i); if(!el) return;
       const eff2=SV_EFF[s.lv]||0.4;
-      let iv2=8/eff2;
+      let iv2=15/eff2;
       if(s.task.kind==="zao"){
         const full=(CRAFT.find(c=>c.cat===s.task.t)||{rec:[]}).rec;
         const r0=s.curR||(s.task.rId?full.find(r=>r.id===s.task.rId):full[0]);
