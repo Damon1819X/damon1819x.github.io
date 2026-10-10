@@ -1898,6 +1898,7 @@ function renderExch(body){
     const ok100=(S[e.from]||0)>=cost*100;
     row.innerHTML=`<span class="ex-n">${e.n}（${cost}:${gain} 含1%）${ok?"":"<span style='color:#e05555;font-size:11px'>（不足"+cost+"）</span>"}</span>`;
     const btns=document.createElement("div");btns.style.display="flex";btns.style.gap="6px";
+    btns.appendChild(buyBtn(ok,()=>{doExch(e,1);render();},(e.fa>1?(e.fa+":1"):("1:"+e.ta))));
     btns.appendChild(buyBtn(ok10,()=>{doExch(e,10);render();},"×10"));
     btns.appendChild(buyBtn(ok50,()=>{doExch(e,50);render();},"×50"));
     btns.appendChild(buyBtn(ok100,()=>{doExch(e,100);render();},"×100"));
