@@ -139,6 +139,30 @@ body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft 
 .buBar{height:12px;border-radius:6px;background:rgba(0,0,0,.35);overflow:hidden;margin:4px 0;}
 .buBar div{height:100%;transition:width .25s;}
 .buStat{font-size:12px;color:var(--ink);line-height:1.6;}
+/* 战斗动画层：飘字 / 受击 / 暴击 / 五行克光（纯视觉，不影响回合逻辑） */
+#battleTop{position:relative;}
+#battleFx{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:5;}
+.battleFxEl{position:absolute;transform:translate(-50%,-50%);font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.65);color:var(--fc,#ffd27a);white-space:nowrap;pointer-events:none;}
+.fxFloat{animation:fxFloatUp .9s ease-out forwards;}
+.fxCrit{animation:fxCritPop .9s ease-out forwards;}
+.fxFlash{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0) 70%);animation:fxFlash .5s ease-out forwards;}
+.fxKezhi{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--fc,#fff) 0%,rgba(255,255,255,0) 70%);animation:fxKezhi .8s ease-out forwards;}
+.fxKezhiWeak{width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,rgba(130,130,150,.5) 0%,rgba(255,255,255,0) 65%);animation:fxKezhi .7s ease-out forwards;}
+.fxShake{animation:fxShake .28s linear;}
+@keyframes fxFloatUp{0%{opacity:0;transform:translate(-50%,-50%) scale(.6);}15%{opacity:1;}100%{opacity:0;transform:translate(-50%,-145%) scale(1.15);}}
+@keyframes fxCritPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4);}20%{opacity:1;transform:translate(-50%,-50%) scale(1.4);}100%{opacity:0;transform:translate(-50%,-155%) scale(1);}}
+@keyframes fxFlash{0%{opacity:.9;transform:translate(-50%,-50%) scale(.5);}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6);}}
+@keyframes fxKezhi{0%{opacity:.85;transform:translate(-50%,-50%) scale(.3);}100%{opacity:0;transform:translate(-50%,-50%) scale(1.35);}}
+@keyframes fxShake{0%,100%{transform:translate(0,0);}20%{transform:translate(-5px,2px);}40%{transform:translate(5px,-2px);}60%{transform:translate(-3px,1px);}80%{transform:translate(3px,-1px);}}
+/* 人物对战：我方居左、敌方居右（对换） */
+#battlePlayer{order:0;}
+#battleEnemy{order:1;}
+.buAvatar{font-size:46px;line-height:1;text-align:center;margin:2px 0 6px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.55));}
+.buAvatar .av-sub{display:block;font-size:11px;color:var(--ink-dim);font-weight:400;margin-top:4px;}
+/* 交火光束：施放方 → 目标 的五行色光束 */
+.fxBeam{position:absolute;height:0;pointer-events:none;z-index:6;}
+.fxBeamCore{position:absolute;left:0;top:0;width:100%;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--bc,#ffd95e),transparent);box-shadow:0 0 8px var(--bc);transform:scaleX(0);transform-origin:left;animation:fxBeam .38s ease-out forwards;}
+@keyframes fxBeam{0%{transform:scaleX(0);opacity:0;}20%{opacity:1;}100%{transform:scaleX(1);opacity:0;}}
 .buEff{font-size:11px;color:var(--mystic);margin-top:3px;line-height:1.5;}
 #battleActions button{flex:1;min-width:96px;padding:9px 6px;border-radius:8px;cursor:pointer;color:var(--ink);background:var(--panel2);border:1px solid var(--line);font-size:13px;}
 #battleActions button:hover:not(:disabled){border-color:var(--gold);}
@@ -165,22 +189,21 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 .sw input:checked+.sl{background:var(--jade)}
 .sw input:checked+.sl:before{transform:translateX(16px)}
 .dummyWrap{display:flex;gap:16px;align-items:flex-start;margin:10px 0}
-.dummy{position:relative;width:230px;height:330px;flex:none;background:rgba(0,0,0,.22);border-radius:14px;border:1px solid var(--line,#3a3a4a)}
-.dummy .slotBtn{position:absolute;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;background:rgba(255,255,255,.08);border:1px dashed var(--line,#6a6a8a);border-radius:8px;color:var(--ink,#ddd);cursor:pointer;font-size:11px;text-align:center;transition:background .15s;padding:2px 4px;min-width:46px}
-.dummy .slotBtn:hover{background:rgba(120,180,255,.2);border-color:#6aa8ff}
-.dummy .slotBtn .plus{font-size:22px;line-height:1;font-weight:700;color:var(--mystic,#8e7cf0)}
+.dummy{position:relative;width:250px;height:312px;flex:none;border-radius:12px;overflow:hidden;background:#14141e}
+.dummy .equipBarImg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block;z-index:0}
+.dummy .avatarImg{position:absolute;left:5%;top:4%;width:52%;height:90%;object-fit:contain;border-radius:10px;z-index:1;pointer-events:none}
+.dummy .slotBtn{position:absolute;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;background:rgba(255,255,255,.10);border:1px dashed var(--line,#8a8aaa);border-radius:8px;color:var(--ink,#ddd);cursor:pointer;font-size:11px;text-align:center;transition:background .15s;padding:2px 3px;min-width:42px;min-height:40px;transform:translate(-50%,-50%);z-index:2}
+.dummy .slotBtn:hover{background:rgba(120,180,255,.25);border-color:#6aa8ff}
+.dummy .slotBtn .plus{font-size:20px;line-height:1;font-weight:700;color:var(--mystic,#8e7cf0)}
 .dummy .slotBtn.worn{border-style:solid;border-color:var(--jade,#59b97a)}
 .dummy .slotBtn.worn .plus{display:none}
-.dummy .slotBtn .eqname{max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dummy .slotBtn .eqname{max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dummy .slotLbl{position:absolute;left:6px;font-size:10px;color:var(--ink-dim,#888)}
-.dummy .headBlock{position:absolute;left:85px;top:22px;width:60px;height:60px;border-radius:50%;background:linear-gradient(160deg,#d9a066,#b97b45);box-shadow:inset 0 -6px 10px rgba(0,0,0,.25)}
-.dummy .bodyBlock{position:absolute;left:75px;top:110px;width:80px;height:120px;border-radius:14px;background:linear-gradient(160deg,#7d6a9e,#54436e);box-shadow:inset 0 -8px 12px rgba(0,0,0,.28)}
-.dummy .armL,.dummy .armR{position:absolute;top:118px;width:18px;height:78px;border-radius:9px;background:linear-gradient(160deg,#c89363,#a57142)}
-.dummy .armL{left:52px;transform:rotate(8deg)}.dummy .armR{left:160px;transform:rotate(-8deg)}
-.dummy .legL,.dummy .legR{position:absolute;top:238px;width:22px;height:70px;border-radius:10px;background:linear-gradient(160deg,#6b5a86,#453663)}
-.dummy .legL{left:84px}.dummy .legR{left:124px}
-.dummy .footL,.dummy .footR{position:absolute;top:302px;width:30px;height:12px;border-radius:6px;background:#8a7a55}
-.dummy .footL{left:80px}.dummy .footR{left:120px}
+.avGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;max-height:210px;overflow-y:auto}
+.avGrid .avCell{cursor:pointer;text-align:center;border:2px solid var(--line,#3a3a4a);border-radius:10px;padding:6px;background:rgba(0,0,0,.18);transition:border-color .15s}
+.avGrid .avCell.sel{border-color:#6aa8ff}
+.avGrid .avCell img{width:100%;height:150px;object-fit:contain;border-radius:8px;background:#1a1a26;display:block}
+.avGrid .avCell .avNm{font-size:12px;margin-top:4px;color:var(--ink,#ddd)}
 .eqPickMask{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:120;display:flex;align-items:center;justify-content:center}
 .eqPickBox{background:var(--panel,#20222e);border:1px solid var(--line,#3a3a4a);border-radius:12px;width:min(440px,90vw);max-height:70vh;display:flex;flex-direction:column;padding:14px;color:var(--ink,#e8e8ee)}
 .eqPickBox .eqTitle{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--ink,#eee)}
@@ -216,7 +239,6 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
     <button id="settingsBtn">⚙ 设置</button>
   </div>
   <div id="curbar">
-    <div class="cur"><span>灵晶</span><b class="jade" id="cCrystal">0</b></div>
     <div class="cur"><span>下品灵石</span><b id="cL">0</b></div>
     <div class="cur"><span>中品灵石</span><b id="cM">0</b></div>
     <div class="cur"><span>上品灵石</span><b class="mystic" id="cH">0</b></div>
@@ -342,11 +364,11 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v20.1（单灵根双强势点：元素亲和采集 + 修炼暴击）
+   修仙挂机 · 问道长生  v21.1（坊市出售货物新增鼠标悬浮详情框）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v20";
+const VERSION = "v26.2";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -632,6 +654,21 @@ const CRAFT = [
 ];
 const REC_RARE={jufu:1,ningshen:2,dundi:1,yuhuo:2,pojun:3,xuanling:4,zhenfu:5,jiadun:4,fentian:5,zixiao:6,taichufu:7,dinghun:8,hundunfu:7,jiuyangfu:8,zhuxianpo:9,hunyuanqi:10,taiyizhen:10,wujidun:10,hundunpo:10,hongmengzheng:10,juqi:1,chuiti:1,yangshen:2,zhuji:2,jinganghu:3,huiling:4,huoyuancu:4,qiqiao:5,pojing:5,xuanguihu:6,tianyuan:7,jiuzhuanlian:8,taiyiding:8,poxudujie:9,hundunhu:9,hundunzaohua:10,daoticuihuo:10,hongmengding:10,jiuzhuanpoxu:10,wujijinshen:10,juling:1,jingxin:1,hushen:2,jianzhen:2,taiji:3,wuxing:4,xingdou:5,xuanjia:4,tiangang:5,liangyi:6,jiuyao:7,taiyin:8,hundunhudun:7,zhuxian:8,fengshen:9,hongmengjuling:10,hundunding:10,wujijinshenz:10,wanjian:10,jiuzhuanzheng:10,qingfengjian:1,xuantiekui:2,tielinjia:1,xuantiejie:2,feicui:3,yunling:1,zihulu:3,liangtianchi:4,zijinguan:5,fuyaosuo:4,chiyanhuan:5,qiankun:6,dingling:4,qinglian:5,yinyangjing:7,taixuguan:8,xingtian:7,jiuyaohuan:8,dayan:9,suoling:9,hundundingq:8,haotianjing:10,hongmengzjg:10,taiyixuanjia:10,hundunhuan:10,taiyijie:10,dadao:10,chuangshiding:10};
 const REC_BY_ID={}; CRAFT.forEach(c=>c.rec.forEach(r=>{ r.rarity=REC_RARE[r.id]||1; REC_BY_ID[r.id]=r; }));
+/* 符箓贴图映射（v21）：制造/背包/坊市/拍卖/增益条统一走 icOf()，无图配方回退 emoji */
+const FU_IMG={jufu:"贴图/符箓/聚灵符.png",dundi:"贴图/符箓/遁地符.png",yuhuo:"贴图/符箓/御火符.png",ningshen:"贴图/符箓/凝神符.png",pojun:"贴图/符箓/破军符.jpg",xuanling:"贴图/符箓/玄灵符.jpg",jiadun:"贴图/符箓/金甲遁地.jpg",zhenfu:"贴图/符箓/镇神符.jpg",fentian:"贴图/符箓/焚天御火.jpg",zixiao:"贴图/符箓/紫霄破阵.jpg",hundunfu:"贴图/符箓/混元遁形.jpg",dinghun:"贴图/符箓/定魂.jpg",jiuyangfu:"贴图/符箓/九阳焚天.jpg",zhuxianpo:"贴图/符箓/诛仙破妄.jpg",hunyuanqi:"贴图/符箓/混元一气.jpg",taiyizhen:"贴图/符箓/太一镇神符.jpg",wujidun:"贴图/符箓/无极遁世符.jpg",hundunpo:"贴图/符箓/混沌破天符.jpg",hongmengzheng:"贴图/符箓/鸿蒙证道符.jpg",taichufu:"贴图/符箓/太初灵符.jpeg"};
+/* 功法贴图映射（v22）：贴图/功法/ 下 20 张，统一走 icOf() */
+const GONG_IMG={yj:"贴图/功法/黄庭经.jpg",lz:"贴图/功法/炼气真经.jpg",xp:"贴图/功法/玄牝功.jpg",qq:"贴图/功法/青莲剑歌.jpg",zf:"贴图/功法/紫府真章.jpg",tz:"贴图/功法/太乙玄功.jpg",xt:"贴图/功法/玄天经.jpg",cs:"贴图/功法/长春不老功.jpg",dz:"贴图/功法/大周天诀.jpg",hd:"贴图/功法/混元一气.jpg",jw:"贴图/功法/金乌诀.jpg",wf:"贴图/功法/万物生息诀.jpg",xx:"贴图/功法/星宿真经.jpg",ql:"贴图/功法/青龙九章.jpg",jh:"贴图/功法/九转玄功.jpg",ts:"贴图/功法/天地同寿诀.jpg",ht:"贴图/功法/混沌诀.jpg",tx:"贴图/功法/太虚神录.jpg",wl:"贴图/功法/无量真经.jpg",hm:"贴图/功法/鸿蒙大道经.jpg"};
+/* 丹药贴图映射（v23）：贴图/丹药/ 下 20 张（文件名带品级前缀），统一走 icOf() */
+const DANYAO_IMG={juqi:"贴图/丹药/1聚气丹.png",chuiti:"贴图/丹药/1淬体丹.png",yangshen:"贴图/丹药/1养神丹.png",zhuji:"贴图/丹药/1筑基丹.png",jinganghu:"贴图/丹药/1金刚护体丹.png",huiling:"贴图/丹药/2回灵丹.png",huoyuancu:"贴图/丹药/2火元淬体丹.png",qiqiao:"贴图/丹药/2七窍养神丹.png",pojing:"贴图/丹药/2破境丹.png",xuanguihu:"贴图/丹药/2玄龟护体丹.png",tianyuan:"贴图/丹药/3天元丹.png",jiuzhuanlian:"贴图/丹药/3九转炼体丹.png",taiyiding:"贴图/丹药/3太一定神丹.png",poxudujie:"贴图/丹药/3破虚渡劫丹.png",hundunhu:"贴图/丹药/3混元护体丹.png",hundunzaohua:"贴图/丹药/4混沌造化丹.png",daoticuihuo:"贴图/丹药/4道体淬炼丹.png",hongmengding:"贴图/丹药/4鸿蒙定魂丹.png",jiuzhuanpoxu:"贴图/丹药/4九转破虚丹.png",wujijinshen:"贴图/丹药/4无极金身丹.png"};
+/* 炼器贴图映射（v24）：贴图/炼器/ 下 26 张（紫金葫芦/紫金冠无图保留 emoji） */
+const LQ_IMG={qingfengjian:"贴图/炼器/青锋剑.jpg",xuantiekui:"贴图/炼器/玄铁盔.jpg",tielinjia:"贴图/炼器/铁鳞甲.jpg",xuantiejie:"贴图/炼器/玄铁戒.jpg",feicui:"贴图/炼器/翡翠指环.jpg",yunling:"贴图/炼器/蕴灵珠串.jpg",liangtianchi:"贴图/炼器/量天尺_6ba4690a-f75f-4dd8-bd2d-2ea575bc56ad_PhotoGrid.png",fuyaosuo:"贴图/炼器/缚妖索.jpeg",qiankun:"贴图/炼器/乾坤戒_f3f521cc-f1fa-44fd-a58d-5a88ef5e36f5_PhotoGrid.png",dingling:"贴图/炼器/定灵珠.png",qinglian:"贴图/炼器/青莲宝座.png",yinyangjing:"贴图/炼器/阴阳镜.jpg",taixuguan:"贴图/炼器/太虚冠.jpg",xingtian:"贴图/炼器/星辰鉴.webp",jiuyaohuan:"贴图/炼器/九耀戒指.webp",dayan:"贴图/炼器/大衍戒.webp",suoling:"贴图/炼器/锁灵珠串.webp",hundundingq:"贴图/炼器/混元鼎.webp",haotianjing:"贴图/炼器/昊天镜.webp",hongmengzjg:"贴图/炼器/鸿蒙紫金冠.webp",taiyixuanjia:"贴图/炼器/太一甲.webp",hundunhuan:"贴图/炼器/混沌指环.webp",taiyijie:"贴图/炼器/太一戒.webp",dadao:"贴图/炼器/大道珠串.webp",chuangshiding:"贴图/炼器/创世鼎.webp",chiyanhuan:"贴图/炼器/火焰环.jpeg"};
+/* 阵法贴图映射（v24）：贴图/阵法/ 下 20 张 */
+const ZHENFA_IMG={juling:"贴图/阵法/聚灵阵.jpg",jingxin:"贴图/阵法/静心阵.jpg",hushen:"贴图/阵法/护身阵.jpg",jianzhen:"贴图/阵法/剑阵.jpg",taiji:"贴图/阵法/太极阵.jpg",wuxing:"贴图/阵法/五行聚灵阵.jpg",xingdou:"贴图/阵法/星斗凝神阵.jpg",xuanjia:"贴图/阵法/玄甲护身阵.jpg",tiangang:"贴图/阵法/天罡剑阵.jpg",liangyi:"贴图/阵法/两仪破境阵.jpg",jiuyao:"贴图/阵法/九曜聚灵阵.jpg",taiyin:"贴图/阵法/太阴定神阵.jpg",hundunhudun:"贴图/阵法/混元护盾阵.jpg",zhuxian:"贴图/阵法/诛仙剑阵.jpg",fengshen:"贴图/阵法/封神破妄阵.jpg",hongmengjuling:"贴图/阵法/鸿蒙聚灵大阵.jpg",hundunding:"贴图/阵法/混沌定魂阵.jpg",wujijinshenz:"贴图/阵法/无极金身大阵.jpg",wanjian:"贴图/阵法/万剑诛仙阵.jpg",jiuzhuanzheng:"贴图/阵法/九转证道大阵.jpg"};
+function icOf(o,size){
+  const p=o&&(FU_IMG[o.id]||GONG_IMG[o.id]||DANYAO_IMG[o.id]||LQ_IMG[o.id]||ZHENFA_IMG[o.id]);
+  if(p) return '<img class="icImg" src="'+p+'" alt="'+o.name+'" style="width:'+(size||30)+'px;height:'+(size||30)+'px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:2px">';
+  return o.ic;
+}
 function effText(r){
   const suf = (r.maxStack>1)? "，可叠加至 "+r.maxStack+" 层" : "";
   let base="";
@@ -736,7 +773,7 @@ const ACHS = [
 const EVENTS=[
   {id:"rain", nm:"天降灵雨", good:true,  txt:"灵雨润泽，60秒内修炼速度翻倍！", fx:()=>{ evt.prodBoost=Date.now()+60000; }},
   {id:"heart",nm:"心魔来袭", good:false, txt:"心魔突袭，灵台蒙尘！300秒内修炼速度减半，且灵气散失一成。", fx:()=>{ evt.prodPenalty=Date.now()+300000; const l=Math.floor(S.essence*0.1); if(l>0){ S.essence-=l; logEvent("心魔之下，灵气散失 "+fmt(l)+"！",'warn'); } }},
-  {id:"meet", nm:"偶得奇遇", good:true,  txt:"深山偶遇仙缘，收获一笔灵晶或灵石！", fx:()=>{ const r=Math.random()*100; if(r<96){ const n=Math.max(10,Math.floor(100+Math.random()*4900)); S.crystal+=n; logEvent("奇遇得财，灵晶 +"+fmt(n)+"！",'sys'); } else if(r<98.5){ const n=Math.floor(100+Math.random()*900); S.stoneL+=n; logEvent("奇遇得财，下品灵石 +"+fmt(n)+"！",'sys'); } else if(r<99.3){ const n=Math.floor(10+Math.random()*90); S.stoneM+=n; logEvent("奇遇得财，中品灵石 +"+fmt(n)+"！",'sys'); } else if(r<99.99){ const n=Math.floor(1+Math.random()*9); S.stoneH+=n; logEvent("奇遇得财，上品灵石 +"+fmt(n)+"！",'sys'); } else { S.stoneT+=1; logEvent("惊天奇遇！极品灵石 +1！",'sys'); } }},
+  {id:"meet", nm:"偶得奇遇", good:true,  txt:"深山偶遇仙缘，收获一笔灵石！", fx:()=>{ const r=Math.random()*100; if(r<96){ const n=Math.max(1,Math.floor(1+Math.random()*50)); S.stoneL+=n; logEvent("奇遇得财，下品灵石 +"+fmt(n)+"！",'sys'); } else if(r<98.5){ const n=Math.floor(100+Math.random()*900); S.stoneL+=n; logEvent("奇遇得财，下品灵石 +"+fmt(n)+"！",'sys'); } else if(r<99.3){ const n=Math.floor(10+Math.random()*90); S.stoneM+=n; logEvent("奇遇得财，中品灵石 +"+fmt(n)+"！",'sys'); } else if(r<99.99){ const n=Math.floor(1+Math.random()*9); S.stoneH+=n; logEvent("奇遇得财，上品灵石 +"+fmt(n)+"！",'sys'); } else { S.stoneT+=1; logEvent("惊天奇遇！极品灵石 +1！",'sys'); } }},
   {id:"dawn", nm:"一朝顿悟", good:true,  txt:"顿悟天道，60秒内突破成功率大增！", fx:()=>{ evt.breakBoost=Date.now()+60000; }},
   {id:"tide", nm:"灵气潮汐", good:true,  txt:"灵气潮涌，30秒内修炼速度提升三倍！", fx:()=>{ evt.prodBoost3=Date.now()+30000; }},
   {id:"herb", nm:"仙草现世", good:true,  txt:"荒山仙草现世，采得数株灵药！", fx:()=>{ const hs=MATS.filter(m=>m.cat==="草药"); for(let i=0;i<3;i++){ const h=hs[Math.floor(Math.random()*hs.length)]; S.mats[h.id]=(S.mats[h.id]||0)+1; } }},
@@ -756,11 +793,11 @@ function newState(){
   return {
     version:VERSION, root:null, freeRolls:CFG.freeRerolls, paidRolls:0,
     realm:0, essence:0, lifetime:0, clicks:0, dao:0, daoTotal:0, hp:100, hpMax:100,
-    crystal:0, stoneL:0, stoneM:0, stoneH:0, stoneT:0, stoneG:0,
+    stoneL:0, stoneM:0, stoneH:0, stoneT:0, stoneG:0,
     fa:FAC.map(()=>0), ups:Object.fromEntries(UPS.map(u=>[u.id,0])),
     mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0, servants:[{lv:"丁",task:null,prog:0,curR:null}], pets:[], gongs:["yj"], activeGong:"yj", slots:null,
     shen:[], shenProd:0, shenBreak:0, shenCrit:0, shenOffline:0, shenDaoProd:0,
-    ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, buffWarned:{}, buffEnded:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(),
+    ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, buffWarned:{}, buffEnded:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(), avatar:null,
     settings:{theme:"dark",lang:"zh"},
   };
 }
@@ -769,6 +806,7 @@ function normalizeState(){
   S.achGot=S.achGot||{}; S.achPending=S.achPending||[]; S.buffWarned=S.buffWarned||{}; S.buffEnded=S.buffEnded||{};
   S.mats=S.mats||{}; S.tres=S.tres||{}; S.collect=S.collect||{};
   S.equip=S.equip||[]; S.equipped=S.equipped||{}; S.uid=S.uid||0;
+  if(!S.avatar || !LIHUI.some(x=>x.id===S.avatar)) S.avatar=null; // 旧档缺省：装备页按默认立绘显示
   S.gongs=S.gongs||["yj"]; S.gongs=S.gongs.filter(id=>GONGFAS.some(g=>g.id===id));
   if(S.slots===undefined)S.slots=null; // 旧档缺省：战斗时按灵根池自动补齐技能槽
   if(!S.gongs.includes(S.activeGong)) S.activeGong=S.gongs[0]||null;
@@ -783,7 +821,7 @@ function normalizeState(){
   S.shen=S.shen||[]; S.ach=S.ach||[];
   S.settings=S.settings||{}; if(S.settings.theme===undefined)S.settings.theme="dark"; if(S.settings.lang===undefined)S.settings.lang="zh";
   if(!Array.isArray(S.log))S.log=[];
-  S.crystal=S.crystal||0; S.stoneL=S.stoneL||0; S.stoneM=S.stoneM||0; S.stoneH=S.stoneH||0; S.stoneT=S.stoneT||0; S.stoneG=S.stoneG||0;
+  if(S.crystal){ S.stoneL=(S.stoneL||0)+Math.floor(S.crystal/100); delete S.crystal; } S.stoneL=S.stoneL||0; S.stoneM=S.stoneM||0; S.stoneH=S.stoneH||0; S.stoneT=S.stoneT||0; S.stoneG=S.stoneG||0;
   if(S.freeRolls===undefined)S.freeRolls=CFG.freeRerolls;
   if(S.paidRolls===undefined)S.paidRolls=0;
   if(S.shenProd===undefined)S.shenProd=0;
@@ -1156,7 +1194,6 @@ function renderStats(){
   $("daoVal").textContent=fmt(S.dao);
   $("yunMult").textContent = S.yunning? (S.critBoost? "运功×3" : "运功中") : "暂停";
   $("yunMult").style.color = S.yunning? "var(--jade)" : "var(--ink-dim)";
-  $("cCrystal").textContent=fmt(S.crystal);
   $("cL").textContent=fmt(S.stoneL);
   $("cM").textContent=fmt(S.stoneM);
   $("cH").textContent=fmt(S.stoneH);
@@ -1169,7 +1206,7 @@ function renderStats(){
   $("yunBtn").disabled = S.yunning;
   $("stopYunBtn").style.display = S.yunning? "" : "none";
   const acts=Object.keys(S.buffs).filter(id=>S.buffs[id].until>Date.now());
-  $("buffLine").innerHTML = acts.length ? ("生效："+acts.map(id=>{const r=REC_BY_ID[id];const b=S.buffs[id];return `<span style="margin:0 4px">${r.ic}${r.name}×${b.stack} ${Math.ceil((b.until-Date.now())/60000)}分</span>`;}).join("")) : "";
+  $("buffLine").innerHTML = acts.length ? ("生效："+acts.map(id=>{const r=REC_BY_ID[id];const b=S.buffs[id];return `<span style="margin:0 4px">${icOf(r,18)}${r.name}×${b.stack} ${Math.ceil((b.until-Date.now())/60000)}分</span>`;}).join("")) : "";
   const rb=$("rollBtn"); if(rb) rb.style.display=S.root?"none":"";
   const rt=$("rollTip"); if(rt) rt.style.display=S.root?"none":"";
   $("realmDesc").textContent=realm().desc;
@@ -1260,7 +1297,7 @@ function renderGong(body){
     const have=(S.tres[g.id]||0)>0;
     const active=S.activeGong===g.id;
     const item=document.createElement("div");item.className="item";
-    item.innerHTML=`<div class="ic">${g.ic}</div><div class="body">
+    item.innerHTML=`<div class="ic">${icOf(g)}</div><div class="body">
       <div class="nm">${g.name}<span class="cat">${g.tier}</span>${owned?'<span class="cm-tag">已研习</span>':''}${active?'<span class="cm-tag">已激活</span>':''}</div>
       <div class="ds">${g.ds}</div>
       <div class="ln">灵气倍率 ×${g.ess}${have?(' · 持有 '+fmt(S.tres[g.id])):''}</div>
@@ -1406,7 +1443,7 @@ function renderZao(body){
     const needTxt=Object.keys(r.need).map(k=>{ const m=MATS_BY_ID[k]; return (m?m.name:k)+"×"+r.need[k]+"（持有 "+(S.mats[k]||0)+"）"; }).join(" + ");
     let can=true; for(const k in r.need){ if((S.mats[k]||0)<r.need[k]){ can=false; break; } }
     can = can && !S.yunning && !S.making; // 运功/制造中禁止制造
-    item.innerHTML=`<div class="ic">${r.ic}</div><div class="body">
+    item.innerHTML=`<div class="ic">${icOf(r)}</div><div class="body">
       <div class="nm">${r.name}<span class="cat">${cur.cat}</span>${r.slot?`<span class="cat">装备</span><span class="cat">${SLOT_NAMES[r.slot]}</span>`:""}</div>
       <div class="ds">${r.ds||"无"}</div>
       <div class="ln" style="color:var(--jade)">效果：${isEquip(r.id)?eqText(r):effText(r)}</div>
@@ -1600,25 +1637,26 @@ function renderPets(body){
 }
 function renderEqp(body){
   body.innerHTML="";
-  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 装备 · 穿戴（假人）—";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="<b>装备系统</b>：炼器制成的装备可穿戴，属性常驻生效（战力/气血/灵气/会心/突破/减伤）。护甲分头部 / 衣物槽，饰品分 2 个戒指槽与 1 个项链槽，另有武器槽与法宝槽。点击假人身上带「＋」的方块，在弹窗中选择穿戴。";body.appendChild(p);
+  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 装备 · 穿戴 —";body.appendChild(st);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="<b>装备系统</b>：炼器制成的装备可穿戴，属性常驻生效（战力/气血/灵气/会心/突破/减伤）。护甲分头部 / 衣物槽，饰品分 2 个戒指槽与 1 个项链槽，另有武器槽与法宝槽。点击装备栏上的槽位方块，在弹窗中选择穿戴。";body.appendChild(p);
   const wrap=document.createElement("div");wrap.className="dummyWrap";
   const d=document.createElement("div");d.className="dummy";
+  /* 装备栏贴图 7 槽位中心百分比（贴图/装备栏.png 922×1152，右侧一列）：头部/项链/防具/武器/戒指壹/戒指贰/法宝 */
   const PARTS=[
-    {sl:"m",  left:88, top:8},
-    {sl:"h",  left:85, top:84},
-    {sl:"n",  left:90, top:104},
-    {sl:"a",  left:90, top:148},
-    {sl:"w",  left:158, top:146},
-    {sl:"r1", left:24, top:206},
-    {sl:"r2", left:172, top:206},
+    {sl:"h",  left:0.850, top:0.123},
+    {sl:"n",  left:0.850, top:0.252},
+    {sl:"a",  left:0.850, top:0.379},
+    {sl:"w",  left:0.850, top:0.509},
+    {sl:"r1", left:0.850, top:0.641},
+    {sl:"r2", left:0.850, top:0.765},
+    {sl:"m",  left:0.850, top:0.899},
   ];
-  d.innerHTML='<div class="headBlock"></div><div class="bodyBlock"></div><div class="armL"></div><div class="armR"></div><div class="legL"></div><div class="legR"></div><div class="footL"></div><div class="footR"></div>';
+  d.innerHTML='<img class="avatarImg" src="'+avatarObj().src+'" alt="'+avatarObj().name+'" onerror="this.style.opacity=0"><img class="equipBarImg" src="贴图/装备栏.png" alt="装备栏">';
   PARTS.forEach(pa=>{
     const uid=S.equipped[pa.sl]; const it=uid!=null?(S.equip||[]).find(x=>x.uid===uid):null; const r=it?REC_BY_ID[it.id]:null;
     const b=document.createElement("button");b.className="slotBtn"+(r?" worn":"");
-    b.style.left=pa.left+"px";b.style.top=pa.top+"px";b.title=SLOT_NAMES[pa.sl]+"槽"+(r?("·"+r.name):"（空）");
-    b.innerHTML=r?('<span class="eqname">'+r.ic+" "+r.name+'</span>') : ('<span class="plus">＋</span><span class="eqname">'+SLOT_NAMES[pa.sl]+'</span>');
+    b.style.left=(pa.left*100)+"%";b.style.top=(pa.top*100)+"%";b.title=SLOT_NAMES[pa.sl]+"槽"+(r?("·"+r.name):"（空）");
+    b.innerHTML=r?('<span class="eqname">'+icOf(r)+" "+r.name+'</span>') : ('<span class="plus">＋</span><span class="eqname">'+SLOT_NAMES[pa.sl]+'</span>');
     b.onclick=()=>openEquipPick(pa.sl);
     d.appendChild(b);
   });
@@ -1628,7 +1666,7 @@ function renderEqp(body){
   SLOT_KEYS.forEach(sl=>{
     const row=document.createElement("div");row.className="exchRow";
     const uid=S.equipped[sl]; const it=uid!=null?(S.equip||[]).find(x=>x.uid===uid):null; const r=it?REC_BY_ID[it.id]:null;
-    row.innerHTML=`<span class="ex-n">${SLOT_NAMES[sl]}：${r?(r.ic+" "+r.name+"（"+eqText(r)+"）"):"（空）"}</span>`;
+    row.innerHTML=`<span class="ex-n">${SLOT_NAMES[sl]}：${r?(icOf(r)+" "+r.name+"（"+eqText(r)+"）"):"（空）"}</span>`;
     if(r) row.appendChild(buyBtn(true,()=>{unequipEquip(sl);},"卸下"));
     side.appendChild(row);
   });
@@ -1662,7 +1700,7 @@ function renderEquipBar(){
     const r=REC_BY_ID[id]; if(!r) return;
     const row=document.createElement("div");row.className="esRow";
     const nm=document.createElement("span");nm.className="esN";
-    nm.textContent=r.ic+" "+r.name+"　"+SLOT_NAMES[r.slot]+"　"+eqText(r)+"　稀有"+r.rarity+"　持有"+equipCount(id);
+    nm.innerHTML=icOf(r)+" "+r.name+"　"+SLOT_NAMES[r.slot]+"　"+eqText(r)+"　稀有"+r.rarity+"　持有"+equipCount(id);
     row.appendChild(nm);
     const btns=document.createElement("div");btns.className="esBtns";
     btns.appendChild(buyBtn(true,()=>wearEquip(id),"穿戴"));
@@ -1682,7 +1720,7 @@ function openEquipPick(sl){
   if(cur!=null){
     const it=(S.equip||[]).find(x=>x.uid===cur); const r=it?REC_BY_ID[it.id]:null;
     const row=document.createElement("div");row.className="eqPickRow";
-    row.innerHTML=`<span class="nm">当前：${r?r.ic+" "+r.name+"（"+eqText(r)+"）":"未知"}</span>`;
+    row.innerHTML=`<span class="nm">当前：${r?icOf(r)+" "+r.name+"（"+eqText(r)+"）":"未知"}</span>`;
     row.appendChild(buyBtn(true,()=>{ mask.remove(); unequipEquip(sl); },"卸下"));
     box.appendChild(row);
   }
@@ -1694,7 +1732,7 @@ function openEquipPick(sl){
     const wornId=(S.equip||[]).find(x=>x.uid===cur);
     const isOn=wornId&&wornId.id===id;
     const row=document.createElement("div");row.className="eqPickRow";
-    row.innerHTML=`<span class="nm">${r.ic} ${r.name}<div class="sub">${eqText(r)} · 稀有${r.rarity}</div></span><span class="sub">持有 ${equipCount(id)}</span>`;
+    row.innerHTML=`<span class="nm">${icOf(r)} ${r.name}<div class="sub">${eqText(r)} · 稀有${r.rarity}</div></span><span class="sub">持有 ${equipCount(id)}</span>`;
     row.appendChild(buyBtn(!isOn,()=>{ mask.remove(); wearEquip(id); },"穿戴"));
     list.appendChild(row);
   });
@@ -1772,7 +1810,7 @@ function renderXu(body){
         else if(useable) acts.push([true,()=>{useTres(r);render();},"使用"]);
         else acts.push([true,()=>{banner("「"+r.name+"」为珍宝收藏，无可使用效果");},"珍宝"]);
         acts.push([true,()=>{openSell("tres",r);},"出售"]);
-        body.appendChild(whRow(`<span class="whName"><span class="ic">${r.ic}</span>${r.name}<span class="cat">${cn}</span></span><div class="whSub">持有 ${fmt(S.tres[id])} · 稀有${r.rarity} · 价值 ${r.value}</div>`,tip,acts));
+        body.appendChild(whRow(`<span class="whName"><span class="ic">${icOf(r)}</span>${r.name}<span class="cat">${cn}</span></span><div class="whSub">持有 ${fmt(S.tres[id])} · 稀有${r.rarity} · 价值 ${r.value}</div>`,tip,acts));
       });
     });
   }
@@ -1783,7 +1821,7 @@ function renderXu(body){
       if(!kf(r.name)) return;
       const n=unwornEq.filter(x=>x.id===id).length;
       const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${SLOT_NAMES[r.slot]}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${eqText(r)}</span><br>价值 ${r.value} 下品灵石 · 持有 ${n}`;
-      body.appendChild(whRow(`<span class="whName"><span class="ic">${r.ic}</span>${r.name}<span class="cat">${SLOT_NAMES[r.slot]}</span></span><div class="whSub">持有 ${n} · 稀有${r.rarity} · ${eqText(r)}</div>`,tip,[[true,()=>wearEquip(id),"穿戴"],[true,()=>sellEquip(id),"出售"]]));
+      body.appendChild(whRow(`<span class="whName"><span class="ic">${icOf(r)}</span>${r.name}<span class="cat">${SLOT_NAMES[r.slot]}</span></span><div class="whSub">持有 ${n} · 稀有${r.rarity} · ${eqText(r)}</div>`,tip,[[true,()=>wearEquip(id),"穿戴"],[true,()=>sellEquip(id),"出售"]]));
     });
   }
   // 材料：按妖兽材料/矿石/草药分组
@@ -1849,6 +1887,19 @@ function itemCat(it){
   }
   if(it.kind==="tres"){ const c=CRAFT.find(x=>x.rec.indexOf(r)>=0); if(c) return c.cat; }
   return "奇珍";
+}
+function shopTipHtml(it,en){
+  const r=it.obj;
+  let eff="";
+  if(it.kind==="gong") eff="功法 · 灵气倍率 ×"+r.ess;
+  else if(it.kind==="mat"){ /* 材料无效果段 */ }
+  else if(r.slot) eff=eqText(r);
+  else { const useable=!!(r.eff||r.heal); eff=useable?("效果："+effText(r)):"珍宝收藏，无可使用效果，可出售"; }
+  let held="";
+  if(it.kind==="mat") held=" · 持有 "+fmt(S.mats[en.id]||0);
+  else if(it.kind==="gong") held=" · "+(S.gongs.includes(en.id)?"已习得":"未习得");
+  else held=" · 持有 "+fmt(S.tres[en.id]||0);
+  return `<b>${r.name}</b>（稀有${r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>${it.kind==="mat"?"单价":"价值"} ${r.value} 下品灵石 · 库存 ${en.stock}${held}`;
 }
 function auctionItem(kind,id){
   if(kind==="mat"){ const m=MATS_BY_ID[id]; return m?{kind:"mat",obj:m}:null; }
@@ -1933,7 +1984,7 @@ function renderAuction(body){
     const add=Math.max(1,Math.ceil(en.base*0.1));
     const nb=en.bid+add, extra=nb-(en.pPaid||0);
     const row=document.createElement("div");row.className="exchRow";
-    row.innerHTML=`<span class="ex-n">${it.obj.ic} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 底价 ${ceilPriceText(en.base)} · 当前 <span id="aucBid${idx}">${ceilPriceText(en.bid)}（${who}）</span></span>`;
+    row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 底价 ${ceilPriceText(en.base)} · 当前 <span id="aucBid${idx}">${ceilPriceText(en.bid)}（${who}）</span></span>`;
     row.appendChild(buyBtn(canPayL(splitPriceL(extra)),()=>{bidAuction(en);},"出价 "+ceilPriceText(nb)));
     body.appendChild(row);
   });
@@ -1962,17 +2013,15 @@ function renderShop(body){
   let st=document.createElement("div");st.className="sectionTitle";st.textContent="— 坊市 · 随机出售（每10分钟刷新）—";body.appendChild(st);
   const p=document.createElement("div");p.className="hint";p.innerHTML="随机上架 10 种材料 / 成品，越稀有刷新率越低、库存越少（稀有度1~5 → 库存10~1）。以灵石购买，请自行凑齐各品灵石。"+(S.shop.list.length?(" 距下次刷新 <b>"+Math.ceil((S.shop.until-Date.now())/60000)+"</b> 分钟。"):"");body.appendChild(p);
   if(!S.shop.list.length){ const e=document.createElement("div");e.className="hint";e.textContent="暂无上架商品。";body.appendChild(e); }
-  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${it.obj.ic} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; row.appendChild(buyBtn(en.stock>0&&canPayL(pr),()=>{buyShop(en);render();},"购买")); body.appendChild(row); });
+  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; bindTip(row,shopTipHtml(it,en)); row.appendChild(buyBtn(en.stock>0&&canPayL(pr),()=>{buyShop(en);render();},"购买")); body.appendChild(row); });
 }
 function renderExch(body){
   const st2=document.createElement("div");st2.className="sectionTitle";st2.textContent="— 坊市 · 灵石兑换（手续费1%）—";body.appendChild(st2);
-  const p2=document.createElement("div");p2.className="hint";p2.textContent="兑换比：1神品=100极品=1万上品=100万中品=1亿下品=100亿灵晶。兑换收取固定 1% 手续费：低→高支付多付（如 100 下品→1 中品扣 101），高→低所得扣减（如 1 中品→100 下品得 99）。「×10」一次 10 份，「×50」一次 50 份，「×100」一次 100 份。";body.appendChild(p2);
+  const p2=document.createElement("div");p2.className="hint";p2.textContent="兑换比：1神品=100极品=1万上品=100万中品=1亿下品。兑换收取固定 1% 手续费：低→高支付多付（如 100 下品→1 中品扣 101），高→低所得扣减（如 1 中品→100 下品得 99）。「×10」一次 10 份，「×50」一次 50 份，「×100」一次 100 份。";body.appendChild(p2);
   const EXCH=[
-    {n:"灵晶 → 下品",from:"crystal",to:"stoneL",fa:100,ta:1},
     {n:"下品 → 中品",from:"stoneL",to:"stoneM",fa:100,ta:1},
     {n:"中品 → 上品",from:"stoneM",to:"stoneH",fa:100,ta:1},
     {n:"上品 → 极品",from:"stoneH",to:"stoneT",fa:100,ta:1},
-    {n:"下品 → 灵晶",from:"stoneL",to:"crystal",fa:1,ta:100},
     {n:"中品 → 下品",from:"stoneM",to:"stoneL",fa:1,ta:100},
     {n:"上品 → 中品",from:"stoneH",to:"stoneM",fa:1,ta:100},
     {n:"极品 → 上品",from:"stoneT",to:"stoneH",fa:1,ta:100},
@@ -2353,6 +2402,18 @@ function battleStrike(att,def,opts){
   if(att.nextDmg>0) att.nextDmg=0;                    // 下回合伤害增幅：本次命中后消耗
   if(r.total>0) bLog((opts.label||"攻击")+"命中，造成 "+r.total+" 伤害"+(r.crits?"（暴击）":""));
   else if(opts.missLabel) bLog(opts.missLabel);
+  // 战斗动画：交火光束 / 受击闪光 / 伤害飘字 / 暴击 / 五行克光（纯视觉）
+  if(r.total>0){
+    try{
+      const fromSel=(BATTLE&&att===BATTLE.player)?"battlePlayer":"battleEnemy";
+      const ts=(BATTLE&&def===BATTLE.enemy)?"battleEnemy":"battlePlayer";
+      const isCrit=r.crits>0;
+      fxBeam(fromSel,ts,opts.elem?ELEM_COLOR[opts.elem]:"#ffd95e");
+      fxHit(ts,isCrit);
+      fxDmg(ts,r.total,isCrit);
+      if(opts.elem&&def.elems) fxKezhi(ts,opts.elem,def.elems);
+    }catch(e){}
+  }
   return r;
 }
 /* 每回合初：状态回合数递减 */
@@ -2526,6 +2587,75 @@ function resolveCell(win,fleeMode){
   }
   save(); renderExpPanel(); renderStats();
 }
+/* ---------- 战斗动画（第一批：飘字 / 受击 / 暴击 / 五行克光） ---------- */
+let BATTLE_FX={on:true};          // 纯视觉层，可在设置中关闭；on=false 时全部动画跳过
+const ELEM_COLOR={金:"#e8d98a",木:"#45d0a0",水:"#4aa8ff",火:"#ff7a4d",土:"#c9a86a",冰:"#7ad6ff",雷:"#b58cff",风:"#7fe8c8",毒:"#8fd06a",阴阳:"#cfc7ff"};
+let _fxLayer=null;
+function battleFxLayer(){
+  if(_fxLayer) return _fxLayer;
+  const top=$("battleTop"); if(!top) return null;
+  try{ top.style.position="relative"; }catch(e){}
+  const f=document.createElement("div"); f.id="battleFx"; f.className="battleFx";
+  top.appendChild(f); _fxLayer=f; return f;
+}
+function fxPos(sel){ // 目标块中心 → 相对 #battleFx 的坐标
+  const f=battleFxLayer(), t=$(sel); if(!f||!t) return null;
+  try{ const fr=f.getBoundingClientRect(), tr=t.getBoundingClientRect();
+    return {x:tr.left+tr.width/2-fr.left, y:tr.top+tr.height/2-fr.top}; }catch(e){ return null; }
+}
+function fxSpawn(x,y,o){ // o:{cls,text,color,size}
+  if(!BATTLE_FX.on) return;
+  const f=battleFxLayer(); if(!f) return;
+  if(f.children&&f.children.length>26) return; // 自动战斗连发时防堆积
+  try{
+    const el=document.createElement("div"); el.className="battleFxEl "+(o.cls||"fxFloat");
+    el.style.left=x+"px"; el.style.top=y+"px";
+    if(o.color) el.style.setProperty("--fc",o.color);
+    if(o.text!=null) el.textContent=o.text;
+    if(o.size) el.style.fontSize=o.size+"px";
+    f.appendChild(el);
+    setTimeout(()=>{ try{ if(el.parentNode) el.remove(); }catch(e){} }, 900);
+  }catch(e){}
+}
+function fxHit(sel,crit){ // 受击：命中闪光；暴击附带面板微震
+  if(!BATTLE_FX.on) return;
+  const p=fxPos(sel); if(!p) return;
+  fxSpawn(p.x,p.y,{cls:"fxFlash",size:crit?80:56});
+  if(crit){ const f=battleFxLayer(); if(f){ f.classList.remove("fxShake"); void f.offsetWidth; f.classList.add("fxShake"); } }
+}
+function fxDmg(sel,dmg,crit){ // 伤害飘字；暴击放大变红 + "暴击!"标签
+  if(!BATTLE_FX.on) return;
+  const p=fxPos(sel); if(!p) return;
+  fxSpawn(p.x,p.y,{cls:"fxFloat",text:dmg>0?"-"+dmg:"",color:crit?"#ff5a5a":"#ffd27a",size:crit?28:20});
+  if(crit) fxSpawn(p.x-4,p.y-34,{cls:"fxCrit",text:"暴击!",color:"#ff3b3b",size:15});
+}
+function fxKezhi(sel,elem,defElems){ // 五行克光：克→元素色大光环；被克→灰暗小光环
+  if(!BATTLE_FX.on) return;
+  const p=fxPos(sel); if(!p) return;
+  const m=kezhiMult(elem,defElems);
+  const col=ELEM_COLOR[elem]||"#fff";
+  fxSpawn(p.x,p.y,{cls:m>=1.35?"fxKezhi":"fxKezhiWeak",color:col,size:m>=1.35?120:70});
+}
+function fxBeam(fromSel,toSel,color){ // 交火光束：施放方 → 目标 的五行色光线
+  if(!BATTLE_FX.on) return;
+  const f=battleFxLayer(); if(!f) return;
+  const p1=fxPos(fromSel), p2=fxPos(toSel); if(!p1||!p2) return;
+  const dx=p2.x-p1.x, dy=p2.y-p1.y;
+  const len=Math.sqrt(dx*dx+dy*dy); if(len<4) return;
+  const ang=Math.atan2(dy,dx)*180/Math.PI;
+  try{
+    const w=document.createElement("div"); w.className="fxBeam";
+    w.style.left=p1.x+"px"; w.style.top=p1.y+"px";
+    w.style.width=len+"px";
+    w.style.transform="translate(-50%,-50%) rotate("+ang+"deg)";
+    const core=document.createElement("div"); core.className="fxBeamCore";
+    if(color) core.style.setProperty("--bc",color);
+    w.appendChild(core);
+    f.appendChild(w);
+    setTimeout(()=>{ try{ if(w.parentNode) w.remove(); }catch(e){} }, 380);
+  }catch(e){}
+}
+
 /* ---------- 战斗 UI ---------- */
 function renderBattleUI(){
   const b=BATTLE; if(!b)return;
@@ -2542,7 +2672,10 @@ function renderBattleUnit(id,u,label,elems){
   const effs=[];
   Object.keys(u.buffs||{}).forEach(k=>{ const b2=u.buffs[k]; if(b2&&b2.t>0){ effs.push(k+(b2.v?("+"+b2.v+"%"):"")); } });
   if(u.immune>0) effs.push("免伤×"+u.immune);
-  box.innerHTML=`<div class="buName">${label} <span class="cat" style="color:var(--jade)">${elems||"无属性"}</span></div>
+  const av = label==="玩家" ? "🧙" : (BATTLE&&BATTLE.kind==="elite"?"🐉":BATTLE&&BATTLE.kind==="boss"?"👹":"🐺");
+  const avSub = label==="玩家" ? ("修为·"+(realm()?realm().full:"炼气")) : (BATTLE&&BATTLE.kind==="fight"?"妖兽":BATTLE&&BATTLE.kind==="elite"?"精英守卫":"秘境BOSS");
+  box.innerHTML=`<div class="buAvatar">${av}<span class="av-sub">${avSub}</span></div>
+    <div class="buName">${label} <span class="cat" style="color:var(--jade)">${elems||"无属性"}</span></div>
     <div class="buBar"><div style="width:${pct}%;background:${label==="玩家"?"var(--jade)":"#d9534f"}"></div></div>
     <div class="buStat">气血 ${Math.floor(u.hp)}/${u.hpMax}（${pct}%）${label==="玩家"?(" · 灵力 "+Math.floor(u.spirit)+"/"+u.pool):""}</div>
     <div class="buStat">攻 ${bEffAtk(u)} · 速 ${bEffSpeed(u)} · 减伤 ${Math.round(bEffDmgRed(u)*100)}%${(u.buffs&&u.buffs.atkDown&&u.buffs.atkDown.t>0)?(" · 攻-"+u.buffs.atkDown.v+"%"):""}${(u.buffs&&u.buffs.pierce&&u.buffs.pierce.t>0)?(" · 破甲"+u.buffs.pierce.v+"%"):""}</div>
@@ -2810,7 +2943,7 @@ function renderExpLoot(){
   exp.loot.forEach(it=>{
     let nm=it.name||"未知", ic="📦", val=0;
     if(it.kind==="mat"){ const m=MATS_BY_ID[it.id]; if(m){ nm=m.name; val=m.value; ic="🌿"; } }
-    else if(it.kind==="tres"){ const r=REC_BY_ID[it.id]; if(r){ nm=r.name; val=r.value||0; ic=r.ic||"📦"; } }
+    else if(it.kind==="tres"){ const r=REC_BY_ID[it.id]; if(r){ nm=r.name; val=r.value||0; ic=icOf(r); } }
     else if(it.kind==="stone"){ const nm2={L:"下品灵石",M:"中品灵石",H:"上品灵石",T:"极品灵石",G:"神品灵石"}[it.tier]||"灵石"; const v2={L:1,M:100,H:10000,T:1000000,G:100000000}[it.tier]||0; nm=nm2; val=v2*(it.qty||1); ic="💎"; }
     const key=nm;
     if(!agg[key]) agg[key]={ic,nm,qty:0,val:0};
@@ -2846,12 +2979,33 @@ function renderAchs(body){
 }
 
 /* ================================================================
+   立绘库（v25）：玩家初始形象，装备页替代假人显示
+   ================================================================ */
+const LIHUI=[
+  {id:"boy1", name:"少年·一", src:"贴图/立绘/少年1.png"},
+  {id:"boy2", name:"少年·二", src:"贴图/立绘/少年2.png"},
+  {id:"girl1", name:"少女·一", src:"贴图/立绘/少女1.png"},
+  {id:"girl2", name:"少女·二", src:"贴图/立绘/少女2.png"},
+  {id:"male1", name:"男修·一", src:"贴图/立绘/男1.png"},
+  {id:"male2", name:"男修·二", src:"贴图/立绘/男2.png"},
+  {id:"male3", name:"男修·三", src:"贴图/立绘/男3.png"},
+  {id:"male4", name:"男修·四", src:"贴图/立绘/男4.png"},
+  {id:"fem1", name:"女修·一", src:"贴图/立绘/女1.png"},
+  {id:"fem2", name:"女修·二", src:"贴图/立绘/女2.png"},
+  {id:"fem3", name:"女修·三", src:"贴图/立绘/女3.png"},
+  {id:"fem4", name:"女修·四", src:"贴图/立绘/女4.png"},
+  {id:"myst", name:"神秘修士", src:"贴图/立绘/神秘修士.png"},
+];
+function avatarObj(){ return LIHUI.find(x=>x.id===S.avatar)||LIHUI[4]; } // 默认男修·一
+
+/* ================================================================
    新手指引（v18.4）
    ================================================================ */
 const TUT_STEPS=[
   {t:"— 仙途伊始 · 一 —", b:"混沌初开，天地灵气沉浮。你的一缕真灵穿越虚空，坠入这方修仙世界——百族林立，宗门如云，凡人寿不过百，唯有踏入仙途，方可超脱生死轮回。"},
   {t:"— 仙途伊始 · 二 —", b:"你自荒山野岭中醒来，衣衫褴褛，周身灵气稀薄，却隐隐感到体内灵根暗藏、气机勃发。这是你的新生，也是你问道长生的起点。"},
   {t:"— 仙途伊始 · 三 —", b:"临行前，为自己取一个行走修仙界的名号吧。这个名字将伴随你从炼气到飞升，被世间道友传颂。", input:true},
+  {t:"— 仙途伊始 · 四 —", b:"选定你的初始形象。它将显示在装备页，伴随你行走修仙界、问道长生。", avatar:true},
   {t:"— 修炼 —", b:"点击修炼页的『盘膝打坐 · 开始运功』即可开始积累灵气，灵气满额后可尝试『突破』冲击更高境界。<br><br>注意：灵气产出默认暂停，仅在运功时产出；运功与采集 / 制造互斥，停止运功即停止产出。"},
   {t:"— 采集与制造 —", b:"『采集』可狩猎 / 挖矿 / 采药，随机获得妖兽材料、矿石与草药；『制造』以材料合成符箓、丹药、装备与阵法。所有材料与成品都存放在『须弥空间』，可随时使用或出售。"},
   {t:"— 傀儡 —", b:"『傀儡』可替你自动采集或制造：玉傀效率最高（玩家 90%），木傀最低（40%）。指派任务后自动持续产出，点击红色『停止』按钮即可随时停止。"},
@@ -2867,7 +3021,11 @@ function tutNext(){
     const nm=$("tutName").value.trim().slice(0,12);
     if(!nm){ $("tutName").style.borderColor="#e05555"; $("tutName").placeholder="请输入道号后再继续…"; return; }
     $("tutName").style.borderColor=""; S.name=nm;
-    if(S.tut==="skip"){ finishTut(); return; }
+    if(S.tut==="skip"){ tutStep=TUT_STEPS.findIndex(s=>s.avatar); renderTut(); return; } // 直接开始也强制选择形象
+  }
+  if(st && st.avatar){
+    if(!S.avatar){ banner("请先选择你的初始形象"); return; }
+    if(S.tut==="skip"){ finishTut(); return; } // 直接开始：选完形象即完成创建
   }
   tutStep++;
   if(tutStep>=TUT_STEPS.length){ finishTut(); return; }
@@ -2888,9 +3046,24 @@ function renderTut(){
   $("tutNameWrap").style.display=st.input?"block":"none";
   $("tutSkip").style.display=st.input?"none":"inline-block";
   $("tutNext").textContent=(tutStep===TUT_STEPS.length-1)?"完成":"下一步";
+  if(st.avatar) renderAvatarPick();
+}
+function renderAvatarPick(){
+  const box=$("tutBody");
+  let grid=box.querySelector(".avGrid");
+  if(!grid){ grid=document.createElement("div"); grid.className="avGrid"; box.appendChild(grid); }
+  grid.innerHTML="";
+  LIHUI.forEach(a=>{
+    const c=document.createElement("div");
+    c.className="avCell"+(S.avatar===a.id?" sel":"");
+    c.innerHTML='<img src="'+a.src+'" alt="'+a.name+'"><div class="avNm">'+a.name+'</div>';
+    c.onclick=()=>{ S.avatar=a.id; renderAvatarPick(); };
+    grid.appendChild(c);
+  });
 }
 function finishTut(){
   const nm=S.name||"无名散修"; S.name=nm;
+  if(!S.avatar) S.avatar=LIHUI[4].id; // 未选时默认男修·一
   S.tut="done";
   $("tutOverlay").classList.remove("show");
   sound(700,.2); banner("欢迎来到修仙界，"+nm+"！");
