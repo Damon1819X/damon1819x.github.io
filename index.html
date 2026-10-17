@@ -164,7 +164,9 @@ body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft 
 .fxBeamCore{position:absolute;left:0;top:0;width:100%;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--bc,#ffd95e),transparent);box-shadow:0 0 8px var(--bc);transform:scaleX(0);transform-origin:left;animation:fxBeam .38s ease-out forwards;}
 @keyframes fxBeam{0%{transform:scaleX(0);opacity:0;}20%{opacity:1;}100%{transform:scaleX(1);opacity:0;}}
 .buEff{font-size:11px;color:var(--mystic);margin-top:3px;line-height:1.5;}
-#battleActions button{flex:1;min-width:96px;padding:9px 6px;border-radius:8px;cursor:pointer;color:var(--ink);background:var(--panel2);border:1px solid var(--line);font-size:13px;}
+#battleActions button{flex:1;min-width:104px;padding:8px 6px;border-radius:8px;cursor:pointer;color:var(--ink);background:var(--panel2);border:1px solid var(--line);font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;}
+#battleActions button .btMain{font-size:13px;font-weight:600;}
+#battleActions button .btDesc{font-size:10px;color:var(--ink-dim);line-height:1.25;max-width:150px;}
 #battleActions button:hover:not(:disabled){border-color:var(--gold);}
 #battleActions button:disabled{opacity:.45;cursor:not-allowed;}
 #battleLog div{border-bottom:1px dashed rgba(128,128,128,.18);padding:1px 0;}
@@ -236,6 +238,7 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
     <div class="stat"><div class="lbl">运功加成</div><div class="val" id="yunMult">×1</div></div>
     <div class="stat"><div class="lbl">大道碎片</div><div class="val" id="daoVal">0</div></div>
     <div class="spacer"></div>
+    <button id="qqGroupBtn" title="点击复制群号">QQ群：1128330622</button>
     <button id="settingsBtn">⚙ 设置</button>
   </div>
   <div id="curbar">
@@ -249,6 +252,7 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
   </div>
   <nav id="leftMenu">
     <div class="menu-item active" data-tab="cult">修炼</div>
+    <div class="menu-item" data-tab="attr">属性</div>
     <div class="menu-item" data-tab="xu">须弥空间</div>
     <div class="menu-item" data-tab="eqp">装备</div>
     <div class="menu-item" data-tab="ls">灵兽</div>
@@ -368,7 +372,7 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v26.2";
+const VERSION = "v26.4";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -956,7 +960,7 @@ function essencePerSec(){
 function yunEffMult(){ return 1 + UPS[0].fx(S.ups.click); }
 function yunOutPerSec(){ return S.yunning ? essencePerSec()*yunEffMult()*(S.critBoost?3:1) : 0; }
 function prodPerSec(){ return yunOutPerSec(); }
-function critChance(){ return Math.min(0.50, UPS[2].fx(S.ups.crit) + buffEffSum("crit")) + rootCritBonus() + eqSum("crit") + petSum("crit"); }
+function critChance(){ return Math.min(0.50, UPS[2].fx(S.ups.crit) + buffEffSum("crit")/100) + rootCritBonus() + eqSum("crit")/100 + petSum("crit")/100; }
 function realmNeed(){
   const n = Math.min(S.realm+1, REALMS.length-1);
   return REALMS[n].req * rootReqMult();
@@ -1241,7 +1245,7 @@ function switchTab(tab){
   document.querySelectorAll(".menu-item").forEach(m=>m.classList.toggle("active", m.dataset.tab===tab));
   renderTab();
 }
-const RENDERERS={qiang:renderQiang,eqp:renderEqp,xu:renderXu,pu:renderPu,ls:renderPets,gong:renderGong,shen:renderShen,cai:renderCai,zao:renderZao,shop:renderShop,battle:renderBattle,ach:renderAchs};
+const RENDERERS={qiang:renderQiang,eqp:renderEqp,attr:renderAttr,xu:renderXu,pu:renderPu,ls:renderPets,gong:renderGong,shen:renderShen,cai:renderCai,zao:renderZao,shop:renderShop,battle:renderBattle,ach:renderAchs};
 function renderTab(){
   const cult = activeTab==="cult";
   $("mainPanel").classList.toggle("hide", !cult);
@@ -1554,7 +1558,7 @@ function renderPu(body){
 function isEquip(id){ const r=REC_BY_ID[id]; return !!(r&&r.slot); }
 const SLOT_NAMES={w:"武器",h:"头部",a:"防具",r1:"戒指·壹",r2:"戒指·贰",n:"项链",m:"法宝"};
 const SLOT_KEYS=["w","h","a","r1","r2","n","m"];
-function eqText(r){
+function eqText(r,it){
   const p=[];
   if(r.atk)p.push("战力 +"+r.atk+"%");
   if(r.hp)p.push("气血上限 +"+r.hp+"%");
@@ -1562,11 +1566,38 @@ function eqText(r){
   if(r.crit)p.push("会心 +"+r.crit+"%");
   if(r.brk)p.push("突破成功率 +"+r.brk+"%");
   if(r.dmgR)p.push("受伤减免 "+r.dmgR+"%");
+  const s=subText(it);
+  if(s)p.push(s);
   return p.join(" · ");
 }
 function equippedItems(){ const o=[]; for(const sl in S.equipped){ const uid=S.equipped[sl]; if(uid!=null){ const it=(S.equip||[]).find(x=>x.uid===uid); if(it)o.push(it); } } return o; }
 function eqSum(key){ return equippedItems().reduce((a,it)=>{ const r=REC_BY_ID[it.id]; return a+(r&&r[key]?r[key]:0); },0); }
 function petSum(key){ return (S.pets||[]).reduce((a,it)=>{ const b=BEAS_BY_ID[it.id]; if(!b) return a; const v=b[key]||0; return a+v*(1+0.1*(it.lv-1)); },0); }
+/* ============ 装备副属性词条（人物属性设计 7.2）：炼器装备随机 1–2 条，数值随稀有度提升 ============ */
+const SUB_DEF={spd:["速度",[1,2,3,4,5,6,8,9,10,12]],hit:["命中",[1,2,2,3,3,4,5,6,8,10]],dodge:["闪避",[1,1,2,2,3,3,4,5,6,8]],res:["五行抗性",[2,2,3,3,4,4,5,6,8,10]],critDmg:["暴击伤害",[3,4,5,6,8,10,12,15,18,22]],pool:["灵力池",[2,3,4,5,6,8,10,12,15,18]]};
+const RES_ELMS=["金","木","水","火","土"];
+function rollSubstats(id){
+  const r=REC_BY_ID[id]; if(!r||!r.slot) return null;
+  const rarity=Math.min(10,Math.max(1,r.rarity||1));
+  const want=1+(Math.random()<(0.20+rarity*0.05)?1:0);
+  const keys=Object.keys(SUB_DEF);
+  const got={}; const sub=[]; let guard=0;
+  while(sub.length<want&&guard++<12){
+    const k=keys[Math.floor(Math.random()*keys.length)];
+    if(got[k]) continue;
+    got[k]=1;
+    const arr=SUB_DEF[k][1];
+    sub.push(k==="res"?{k,e:RES_ELMS[Math.floor(Math.random()*RES_ELMS.length)],v:arr[rarity-1]}:{k,v:arr[rarity-1]});
+  }
+  return sub;
+}
+function newEquip(id){ return {uid:++S.uid,id,sub:rollSubstats(id)}; }
+function eqSubSum(k){ return equippedItems().reduce((a,it)=>{ if(!it.sub) return a; let s=0; it.sub.forEach(x=>{ if(x.k===k)s+=x.v; }); return a+s; },0); }
+function eqResSum(e){ return equippedItems().reduce((a,it)=>{ if(!it.sub) return a; let s=0; it.sub.forEach(x=>{ if(x.k==="res"&&x.e===e)s+=x.v; }); return a+s; },0); }
+function subText(it){
+  if(!it||!it.sub||!it.sub.length) return "";
+  return it.sub.map(x=>x.k==="res"?("五行抗性·"+x.e+" +"+x.v+"%"):(SUB_DEF[x.k][0]+" +"+x.v+(x.k==="spd"?"":"%"))).join(" · ");
+}
 function wearEquip(id){
   const r=REC_BY_ID[id]; if(!r||!r.slot) return;
   const it=(S.equip||[]).find(x=>x.id===id && !(x.uid===S.equipped[r.slot]));
@@ -1666,16 +1697,68 @@ function renderEqp(body){
   SLOT_KEYS.forEach(sl=>{
     const row=document.createElement("div");row.className="exchRow";
     const uid=S.equipped[sl]; const it=uid!=null?(S.equip||[]).find(x=>x.uid===uid):null; const r=it?REC_BY_ID[it.id]:null;
-    row.innerHTML=`<span class="ex-n">${SLOT_NAMES[sl]}：${r?(icOf(r)+" "+r.name+"（"+eqText(r)+"）"):"（空）"}</span>`;
+    row.innerHTML=`<span class="ex-n">${SLOT_NAMES[sl]}：${r?(icOf(r)+" "+r.name+"（"+eqText(r,it)+"）"):"（空）"}</span>`;
     if(r) row.appendChild(buyBtn(true,()=>{unequipEquip(sl);},"卸下"));
     side.appendChild(row);
   });
   const bonus=document.createElement("div");bonus.className="hint";
   const bs=[]; if(eqSum("atk"))bs.push("战力 +"+eqSum("atk")+"%"); if(eqSum("hp"))bs.push("气血 +"+eqSum("hp")+"%"); if(eqSum("ess"))bs.push("灵气 +"+eqSum("ess")+"%"); if(eqSum("crit"))bs.push("会心 +"+eqSum("crit")+"%"); if(eqSum("brk"))bs.push("突破 +"+eqSum("brk")+"%"); if(eqSum("dmgR"))bs.push("减伤 +"+eqSum("dmgR")+"%");
+  if(eqSubSum("spd"))bs.push("速度 +"+eqSubSum("spd"));
+  if(eqSubSum("hit"))bs.push("命中 +"+eqSubSum("hit")+"%");
+  if(eqSubSum("dodge"))bs.push("闪避 +"+eqSubSum("dodge")+"%");
+  if(eqSubSum("critDmg"))bs.push("暴伤 +"+eqSubSum("critDmg")+"%");
+  if(eqSubSum("pool"))bs.push("灵力池 +"+eqSubSum("pool")+"%");
+  RES_ELMS.forEach(e=>{ if(eqResSum(e))bs.push("抗"+e+" +"+eqResSum(e)+"%"); });
   bonus.textContent="装备加成："+(bs.length?bs.join(" · "):"无");
   side.appendChild(bonus);
   wrap.appendChild(side);
   body.appendChild(wrap);
+}
+/* ============ 属性面板（人物属性设计 2.2/3/4 章）：六维 + 次级 + 五行抗性 + 来源明细 ============ */
+function renderAttr(body){
+  body.innerHTML="";
+  const pA=battleAttrs();
+  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 人物属性 · 战斗面板 —";body.appendChild(st);
+  const h=document.createElement("div");h.className="hint";h.innerHTML="六维与次级属性均为<b>实时派生值</b>，随境界 / 灵根 / 功法 / 装备 / 灵兽 / 增益变化即时刷新。法力（灵力池）与战斗内状态仅在战斗中生效，战斗外不保留。防御力按乘法叠加，上限 70%。";body.appendChild(h);
+  const card=function(grid,nm,val,sub){ const d=document.createElement("div");d.style.cssText="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;";d.innerHTML=`<div style="font-size:12px;color:var(--ink-dim)">${nm}</div><div style="font-size:19px;font-weight:700;color:var(--gold);margin:3px 0">${val}</div><div style="font-size:11px;color:var(--ink-dim);line-height:1.4">${sub||""}</div>`;grid.appendChild(d); };
+  const grid=document.createElement("div");grid.style.cssText="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;margin:10px 0;";
+  card(grid,"血气（气血上限）",Math.floor(pA.hp)+" / "+pA.hpMax,"⌊100×1.45^境界×(1+气血%)⌋；突破回满");
+  card(grid,"攻击力",pA.atk,"⌊战力 / 4⌋；当前战力 "+playerPower());
+  card(grid,"防御力（减伤）",(pA.dmgRed*100).toFixed(1)+"%","1−∏(1−单项)，上限 70%");
+  card(grid,"法力（灵力池）",pA.pool,"每回合回灵 "+Math.round(pA.regain*100)+"%");
+  card(grid,"速度",pA.speed,"100+境界×15+词条；决定先手");
+  body.appendChild(grid);
+  const st2=document.createElement("div");st2.className="sectionTitle";st2.textContent="— 次级属性 —";body.appendChild(st2);
+  const grid2=document.createElement("div");grid2.style.cssText="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;margin:10px 0;";
+  const card2=function(g,nm,val,sub){ const d=document.createElement("div");d.style.cssText="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;";d.innerHTML=`<div style="font-size:12px;color:var(--ink-dim)">${nm}</div><div style="font-size:17px;font-weight:700;color:var(--jade);margin:3px 0">${val}</div><div style="font-size:11px;color:var(--ink-dim);line-height:1.4">${sub||""}</div>`;g.appendChild(d); };
+  card2(grid2,"命中",(pA.hit*100).toFixed(1)+"%","基础 95% + 命中词条，上限 100%");
+  card2(grid2,"闪避",(pA.dodge*100).toFixed(1)+"%","基础 0%，变异风 +10%，上限 60%");
+  card2(grid2,"暴击率",(pA.crit*100).toFixed(1)+"%","会心（升级/符箓/装备/灵兽）+ 功法 + 变异雷，上限 75%");
+  card2(grid2,"暴击伤害","×"+pA.critDmg.toFixed(2),"基础 ×1.5 + 功法 + 暴伤词条 + 变异雷 ×1.7");
+  body.appendChild(grid2);
+  const st3=document.createElement("div");st3.className="sectionTitle";st3.textContent="— 五行抗性（受被克伤害再减免）—";body.appendChild(st3);
+  const resRow=document.createElement("div");resRow.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;";
+  RES_ELMS.forEach(e=>{
+    const v=pA.res&&pA.res[e]?pA.res[e]:0;
+    const d=document.createElement("div");d.style.cssText="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;";
+    d.innerHTML=`<b style="color:var(--ink)">${e}</b> <span style="color:var(--jade);font-weight:700">${(v*100).toFixed(0)}%</span>`;
+    resRow.appendChild(d);
+  });
+  body.appendChild(resRow);
+  const st4=document.createElement("div");st4.className="sectionTitle";st4.textContent="— 属性来源明细 —";body.appendChild(st4);
+  const src=document.createElement("div");src.className="hint";src.style.lineHeight="1.7";
+  const lines=[];
+  const r=GONGFAS.find(x=>x.id===S.activeGong);
+  lines.push("<b>灵根：</b>"+(S.root?S.root.name+"（战斗加成 ×"+S.root.combat+"，突破上限 "+(S.root.breakCap*100)+"%）："+S.root.ds:"未定灵根，先定灵根方可战斗"));
+  lines.push("<b>功法：</b>"+(r?r.name+"（"+r.ds+(r.passive&&r.passive!=="无"?"；"+r.passive:"")+"）":"—"));
+  const eq=equippedItems().map(it=>{ const rr=REC_BY_ID[it.id]; return rr?rr.name+"（"+eqText(rr,it)+"）":null; }).filter(Boolean);
+  lines.push("<b>装备（7 槽）：</b>"+(eq.length?eq.join("；"):"未穿戴"));
+  const petLines=(S.pets||[]).map(it=>{ const b=BEAS_BY_ID[it.id]; if(!b)return null; const p=[]; if(b.atk)p.push("战力+"+b.atk+"%"); if(b.dmgR)p.push("减伤"+b.dmgR+"%"); if(b.crit)p.push("会心+"+b.crit+"%"); if(b.ess)p.push("灵气+"+b.ess+"%"); return b.name+(p.length?"（"+p.join("，")+"）":""); }).filter(Boolean);
+  lines.push("<b>灵兽：</b>"+(petLines.length?petLines.join("；"):"无"));
+  const acts=Object.keys(S.buffs).filter(id=>S.buffs[id].until>Date.now());
+  lines.push("<b>增益（丹药/符箓）：</b>"+(acts.length?acts.map(id=>{const x=REC_BY_ID[id];return x?x.name+"×"+S.buffs[id].stack:null;}).filter(Boolean).join("；"):"无"));
+  src.innerHTML=lines.join("<br>");
+  body.appendChild(src);
 }
 /* 装备页固定面板（滚动区外下端）：战前技能槽在上，装备库在下，装备库内部独立滚动 */
 function renderEquipBar(){
@@ -1698,9 +1781,10 @@ function renderEquipBar(){
   if(!ids.length){ const e=document.createElement("div");e.className="hint";e.textContent="装备库空空如也，前往「制造 · 炼器」炼制装备。";lib.appendChild(e); }
   else ids.forEach(id=>{
     const r=REC_BY_ID[id]; if(!r) return;
+    const inst0=(S.equip||[]).find(x=>x.id===id);
     const row=document.createElement("div");row.className="esRow";
     const nm=document.createElement("span");nm.className="esN";
-    nm.innerHTML=icOf(r)+" "+r.name+"　"+SLOT_NAMES[r.slot]+"　"+eqText(r)+"　稀有"+r.rarity+"　持有"+equipCount(id);
+    nm.innerHTML=icOf(r)+" "+r.name+"　"+SLOT_NAMES[r.slot]+"　"+eqText(r,inst0)+"　稀有"+r.rarity+"　持有"+equipCount(id);
     row.appendChild(nm);
     const btns=document.createElement("div");btns.className="esBtns";
     btns.appendChild(buyBtn(true,()=>wearEquip(id),"穿戴"));
@@ -1720,7 +1804,7 @@ function openEquipPick(sl){
   if(cur!=null){
     const it=(S.equip||[]).find(x=>x.uid===cur); const r=it?REC_BY_ID[it.id]:null;
     const row=document.createElement("div");row.className="eqPickRow";
-    row.innerHTML=`<span class="nm">当前：${r?icOf(r)+" "+r.name+"（"+eqText(r)+"）":"未知"}</span>`;
+    row.innerHTML=`<span class="nm">当前：${r?icOf(r)+" "+r.name+"（"+eqText(r,it)+"）":"未知"}</span>`;
     row.appendChild(buyBtn(true,()=>{ mask.remove(); unequipEquip(sl); },"卸下"));
     box.appendChild(row);
   }
@@ -1729,10 +1813,11 @@ function openEquipPick(sl){
   if(!ids.length){ const e=document.createElement("div");e.className="hint";e.textContent="该部位暂无装备，可前往「制造 · 炼器」炼制。";list.appendChild(e); }
   ids.forEach(id=>{
     const r=REC_BY_ID[id];
+    const inst0=(S.equip||[]).find(x=>x.id===id&&x.uid!==cur);
     const wornId=(S.equip||[]).find(x=>x.uid===cur);
     const isOn=wornId&&wornId.id===id;
     const row=document.createElement("div");row.className="eqPickRow";
-    row.innerHTML=`<span class="nm">${icOf(r)} ${r.name}<div class="sub">${eqText(r)} · 稀有${r.rarity}</div></span><span class="sub">持有 ${equipCount(id)}</span>`;
+    row.innerHTML=`<span class="nm">${icOf(r)} ${r.name}<div class="sub">${eqText(r,inst0||wornId)} · 稀有${r.rarity}</div></span><span class="sub">持有 ${equipCount(id)}</span>`;
     row.appendChild(buyBtn(!isOn,()=>{ mask.remove(); wearEquip(id); },"穿戴"));
     list.appendChild(row);
   });
@@ -2048,8 +2133,9 @@ function renderExch(body){
 function renderBattle(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 探索 · 秘境 —";body.appendChild(st);
+  const canExp=S.realm>=1;
   const p=document.createElement("div");p.className="hint";
-  p.innerHTML="进入区域遭遇凶险、寻获机缘：蜂窝秘境共 10 层，难度与奖励逐层递增，最终层或遇 BOSS；气血耗尽将被迫撤离并损失一半收获。灵根直接影响战斗数值——灵根越多战力越强（单灵根专精修炼、战力平庸，五灵根战力最强），变异灵根各具战斗特性，神通库中的技能为可施展神通。"+(S.root?(" 当前灵根「"+S.root.name+"」战斗加成 +"+Math.round(S.root.combat*100)+"%。"):"");
+  p.innerHTML="进入区域遭遇凶险、寻获机缘：蜂窝秘境共 10 层，难度与奖励逐层递增，最终层或遇 BOSS；气血耗尽将被迫撤离并损失一半收获。灵根直接影响战斗数值——灵根越多战力越强（单灵根专精修炼、战力平庸，五灵根战力最强），变异灵根各具战斗特性，神通库中的技能为可施展神通。"+(S.root?(" 当前灵根「"+S.root.name+"」战斗加成 +"+Math.round(S.root.combat*100)+"%。"):"")+(canExp?"":" <b style=\"color:#e05555\">炼气期尚未开悟，筑基后方可踏入秘境。</b>");
   body.appendChild(p);
   const AREAS=[
     {key:"dt", nm:"洞天福地", lv:"中危", lvC:"#e67e22", ic:"🏞️", ds:"灵气浓郁之地，机缘众多，偶有低阶妖兽与珍稀灵植，适宜稳步积累。"},
@@ -2065,7 +2151,7 @@ function renderBattle(body){
       <div class="ln" style="margin-top:4px">蜂窝秘境 · 共 10 层，每层难度与奖励递增，最终层或遇 BOSS</div>
     </div>`;
     const wr=document.createElement("div");wr.className="btnRow";
-    wr.appendChild(buyBtn(true,()=>startExplore(a.key),"进入探索"));
+    wr.appendChild(buyBtn(canExp,()=>startExplore(a.key),"进入探索"));
     item.appendChild(wr);
     body.appendChild(item);
   });
@@ -2240,7 +2326,8 @@ function resolveSlots(root){
   while(shenSh.length<cap.shenSh){ const x=learned.find(x=>!shenSh.includes(x.id)); if(!x)break; shenSh.push(x.id); }
   return {dmg,shen,shenSh,cap};
 }
-/* 玩家战斗属性（3.1/3.2/3.3 派生） */
+/* 玩家战斗属性（3.1/3.2/3.3 派生；4 章五行抗性；7 章装备词条接入）
+   六维：血气/攻击/防御(减伤)/法力(灵力池)/速度；次级：命中/闪避/暴击率/暴击伤害/五行抗性 */
 function battleAttrs(){
   const g=GONGFAS.find(x=>x.id===S.activeGong)||GONGFAS[0];
   const root=S.root||null;
@@ -2249,22 +2336,38 @@ function battleAttrs(){
   const hpMax=S.hpMax, hp=Math.min(S.hp||hpMax,hpMax);
   const bp=GONG_BP[g.id]||{};
   const mutE=root&&root.type==="mut"?root.id:null;
-  let speed=100+(S.realm||0)*15;
-  let hit=0.95, dodge=0;
-  let crit=Math.min(0.6,critChance()+(bp.crit||0));
-  if(mutE==="mut-wind") dodge+=0.10;
-  if(mutE==="mut-thun") crit+=0.20;
-  let pool=g.pool||50, regain=g.regain||0.10;
+  const allUp=bp.allUp||0;
+  // 速度 = 100 + 境界×15 + 装备速度词条；鸿蒙全属性 ×1.10；变异风 ×1.15
+  let speed=Math.floor((100+(S.realm||0)*15+eqSubSum("spd"))*(1+allUp));
+  if(mutE==="mut-wind") speed=Math.floor(speed*1.15);
+  // 命中：基础 95% + 装备命中词条，上限 100%
+  const hit=Math.min(1,0.95+eqSubSum("hit")/100);
+  // 闪避：基础 0% + 变异风 10% + 装备闪避词条，上限 60%
+  const dodge=Math.min(0.60,(mutE==="mut-wind"?0.10:0)+eqSubSum("dodge")/100);
+  // 暴击率：基础 5% + 会心（升级/符箓/装备/灵兽）+ 功法 + 变异雷，上限 75%（3.3）
+  const crit=Math.min(0.75,0.05+critChance()+(bp.crit||0)+(mutE==="mut-thun"?0.20:0));
+  // 暴击伤害：基础 ×1.5 + 功法 + 暴伤词条 + 变异雷（×1.7）
+  const critDmg=1.5+(bp.critDmg||0)+eqSubSum("critDmg")/100+(mutE==="mut-thun"?0.20:0);
+  // 法力（灵力池）= 功法池 × 装备灵力池词条 × 鸿蒙全属性；每回合回灵 = ⌊池 × 回灵率⌋
+  let pool=Math.floor((g.pool||50)*(1+eqSubSum("pool")/100)*(1+allUp));
+  let regain=g.regain||0.10;
   if(bp.regainExtra) regain+=bp.regainExtra;
-  if(bp.allUp){ pool=Math.floor(pool*(1+bp.allUp)); regain+=bp.allUp; speed=Math.floor(speed*(1+bp.allUp)); }
-  let dmgRed=(eqSum("dmgR")+petSum("dmgR"))/100+(bp.dmgRed||0);
+  regain+=allUp;
+  // 防御力（减伤）：总减伤 = 1 − ∏(1−单项)，上限 70%（3.3 乘法叠加）
+  let dmgRed=1;
+  dmgRed*=1-eqSum("dmgR")/100;
+  dmgRed*=1-petSum("dmgR")/100;
+  dmgRed*=1-(bp.dmgRed||0);
+  dmgRed*=1-allUp;
+  if(mutE==="mut-yin") dmgRed*=1-0.10;
+  dmgRed=Math.min(0.70,1-dmgRed);
+  // 五行抗性（4 章）：装备副属性五行抗性词条汇总，被克伤害 ×0.8×(1−对应抗性)
+  const res={}; RES_ELMS.forEach(e=>res[e]=Math.min(0.50,eqResSum(e)/100));
   let allPow=1+(bp.allPow||0); let kezhiPow=1+(bp.kezhiPow||0);
-  let critDmg=1.5+(bp.critDmg||0);
-  if(mutE==="mut-yin"){ allPow+=0.20; dmgRed+=0.10; }
+  if(mutE==="mut-yin") allPow+=0.20;
   if(mutE==="mut-ven"){ /* 毒系持续伤害强化 */ }
   const elemPow={}; Object.keys(bp.elemPow||{}).forEach(k=>elemPow[k]=bp.elemPow[k]);
-  if(mutE==="mut-wind") speed=Math.floor(speed*1.15);
-  return {atk,hp,hpMax,speed,hit,dodge,crit,pool,regain,dmgRed,allPow,kezhiPow,critDmg,elemPow,shenCd:(bp.shenCd||0),costRed:1-(bp.costRed||0),first:(bp.first||0),hpRegen:(bp.hpRegen||0),mutE,g,rootElems:rootSpellElems(root),poisonPow:(mutE==="mut-ven"?1.10:1),ccPow:(mutE==="mut-ice"?1.10:1)};
+  return {atk,hp,hpMax,speed,hit,dodge,crit,pool,regain,dmgRed,allPow,kezhiPow,critDmg,elemPow,res,shenCd:(bp.shenCd||0),costRed:1-(bp.costRed||0),first:(bp.first||0),hpRegen:(bp.hpRegen||0),mutE,g,rootElems:rootSpellElems(root),elems:rootSpellElems(root),poisonPow:(mutE==="mut-ven"?1.10:1),ccPow:(mutE==="mut-ice"?1.10:1)};
 }
 /* 敌方模板（8.1）：强度复用 enemyPower，气血=强度×1.5，敌攻=强度/4，减伤按层段 */
 function enemyElement(area,kind){
@@ -2296,8 +2399,9 @@ function bEffDmgRed(u){
   const selfRed=u.buffs&&u.buffs.dmgRed?u.buffs.dmgRed.v/100:0;
   const allUp=u.buffs&&u.buffs.allUp?u.buffs.allUp.v/100:0;
   const pierce=u.buffs&&u.buffs.pierce?u.buffs.pierce.v/100:0;
-  const base=(u.baseDmgRed||0);
-  return Math.max(0,Math.min(0.8, base+selfRed+allUp+defending-pierce));
+  const base=Math.max(0,Math.min(0.70,u.baseDmgRed||0));
+  let r=1-(1-base)*(1-selfRed)*(1-allUp)*(1-defending);
+  return Math.max(0,Math.min(0.70, r-pierce));
 }
 function bEffSpeed(u){
   let sp=u.speed||100;
@@ -2319,12 +2423,14 @@ function bAtkMult(u){
   if(u.buffs&&u.buffs.atkDown) m*=1-(u.buffs.atkDown.v/100);
   return m;
 }
-/* 伤害结算（4.5/6.2）：命中 → 功法威力/克制/暴击/减伤 */
+/* 伤害结算（4.5/6.2）：命中 → 功法威力/克制/五行抗性/暴击/减伤 */
 function battleDamage(att,def,opts){
   opts=opts||{};
   const hits=opts.hits||1; let total=0,landed=0,crits=0;
   for(let i=0;i<hits;i++){
-    const hr=Math.max(0.05,Math.min(1, (att.hit||0.95)-(def.dodge||0)+(opts.hitB||0)));
+    // 闪避叠加身法类增益后仍受上限 60% 约束（4.2）
+    const dodgeEff=Math.min(0.60,(def.dodge||0)+((def.buffs&&def.buffs.dodge)?def.buffs.dodge.v/100:0));
+    const hr=Math.max(0.05,Math.min(1, (att.hit||0.95)-dodgeEff+(opts.hitB||0)));
     if(opts.guaranteed||Math.random()<hr){
       landed++;
       let d=(att.atk||1)*(opts.mult||1);
@@ -2332,7 +2438,11 @@ function battleDamage(att,def,opts){
       if(opts.elem&&att.elemPow&&att.elemPow[opts.elem]) pow*=1+att.elemPow[opts.elem];
       if(opts.elem&&att.kezhiPow>1&&kezhiMult(opts.elem,def.elems)>=1.35) pow*=att.kezhiPow;
       d*=pow;
-      if(opts.elem) d*=kezhiMult(opts.elem,def.elems);
+      if(opts.elem){
+        const k=kezhiMult(opts.elem,def.elems);
+        d*=k;
+        if(k===0.8&&def.res&&def.res[opts.elem]) d*=1-def.res[opts.elem]; // 五行抗性：受被克伤害再减免（4 章）
+      }
       d*=bAtkMult(att);
       if(opts.isSpell&&att.nextPower>0) d*=1+(att.nextPower/100);
       if(att.nextDmg>0) d*=1+(att.nextDmg/100);
@@ -2681,16 +2791,48 @@ function renderBattleUnit(id,u,label,elems){
     <div class="buStat">攻 ${bEffAtk(u)} · 速 ${bEffSpeed(u)} · 减伤 ${Math.round(bEffDmgRed(u)*100)}%${(u.buffs&&u.buffs.atkDown&&u.buffs.atkDown.t>0)?(" · 攻-"+u.buffs.atkDown.v+"%"):""}${(u.buffs&&u.buffs.pierce&&u.buffs.pierce.t>0)?(" · 破甲"+u.buffs.pierce.v+"%"):""}</div>
     ${effs.length?`<div class="buEff">${effs.join(" · ")}</div>`:""}`;
 }
+/* 技能效果描述：状态特效 → 中文 */
+const EF_TXT={
+  pierce:(v)=>"破甲"+v+"%", bind:(v)=>"束缚"+v+"%", reflectHit:(v)=>"反伤"+v+"%", heal:(v)=>"回血"+v+"%",
+  dodge:(v)=>"闪避+"+v+"%", slow:(v)=>"减速"+v+"%", freeze:()=>"冰冻", dmgRed:(v)=>"减伤"+v+"%",
+  immune:()=>"免负面", burn:(v)=>"灼烧"+Math.round(v*100)+"%攻", atkUp:(v)=>"攻+"+v+"%",
+  sacrifice:(v)=>"自损"+v+"%", nextDmg:(v)=>"下次伤害+"+v+"%", stun:()=>"眩晕", reflect:(v)=>"反伤"+v+"%",
+  spdUp:(v)=>"速+"+v+"%", nextFirst:()=>"先手", atkDown:(v)=>"敌攻-"+v+"%", poison:(v)=>"中毒"+v,
+  allUp:(v)=>"全属性+"+v+"%", nextPower:(v)=>"下次威力+"+v+"%", guaranteed:()=>"必中", invuln:()=>"无敌"
+};
+function fmtEff(es){
+  return (es||[]).map(e=>{
+    const fn=EF_TXT[e.k]; if(!fn) return e.k;
+    let r=""; if(e.ch&&e.ch<1) r+=Math.round(e.ch*100)+"%";
+    r+=fn(e.v);
+    if(e.t) r+="("+e.t+"回合)";
+    return r;
+  }).join("，");
+}
+function battleSkillDesc(kind,s){
+  if(kind==="shensh") return (SHEN_BS[s.id]&&SHEN_BS[s.id].ds)||"";
+  let r="";
+  if(s.type==="dmg"){ r=(s.elem||"无属性")+"·"+(s.target==="all"?"全体":"单体")+"×"+s.mult; if(s.hits>1) r+="（连击"+s.hits+"段）"; }
+  else if(s.elem) r=s.elem+"·";
+  if(s.eff&&s.eff.length){ const e=fmtEff(s.eff); if(e) r+=(r?" · ":"")+e; }
+  if(s.lifesteal) r+=(r?" · ":"")+"吸血"+Math.round(s.lifesteal*100)+"%";
+  if(s.guaranteed) r+=" · 必中";
+  if(s.hitB) r+=" · 会心+"+Math.round(s.hitB*100)+"%";
+  return r.replace(/·\s*$/,"");
+}
 function renderBattleActions(){
   const b=BATTLE; const box=$("battleActions"); if(!box||b.over)return;
   box.innerHTML="";
-  const mk=(label,fn,disable)=>{ const btn=document.createElement("button"); btn.textContent=label; btn.disabled=!!disable; btn.addEventListener("click",fn); box.appendChild(btn); };
+  const mk=(label,fn,disable,desc)=>{ const btn=document.createElement("button"); btn.disabled=!!disable;
+    const m=document.createElement("span"); m.className="btMain"; m.textContent=label; btn.appendChild(m);
+    if(desc){ const d=document.createElement("span"); d.className="btDesc"; d.textContent=desc; btn.appendChild(d); }
+    btn.addEventListener("click",fn); box.appendChild(btn); };
   mk("普攻",()=>battleUse("atk"));
   mk("防御",()=>battleUse("def"));
   mk("逃跑",()=>battleUse("flee"));
-  b.spells.forEach(s=>{ const cost=Math.ceil(s.cost*b.player.costRed); const cd=cdLeft(b.player,s.id); mk("法术·"+s.name+(cost?" ("+cost+")":""),()=>battleUse("spell",s.id), b.player.spirit<cost||cd>0||b.over); });
-  b.shens.forEach(s=>{ const cost=Math.ceil(s.cost*b.player.costRed); const cd=cdLeft(b.player,s.id); mk("身法·"+s.name+(cost?" ("+cost+")":""),()=>battleUse("shen",s.id), b.player.spirit<cost||cd>0||b.over); });
-  b.shenSh.forEach(sh=>{ const bs=SHEN_BS[sh.id]; if(!bs)return; const cd=cdLeft(b.player,sh.id); mk("神通·"+sh.name+(bs.cost?" ("+bs.cost+")":""),()=>battleUse("shensh",sh.id), b.player.spirit<bs.cost||cd>0||b.over); });
+  b.spells.forEach(s=>{ const cost=Math.ceil(s.cost*b.player.costRed); const cd=cdLeft(b.player,s.id); mk("法术·"+s.name+(cost?" ("+cost+")":""),()=>battleUse("spell",s.id), b.player.spirit<cost||cd>0||b.over, battleSkillDesc("spell",s)); });
+  b.shens.forEach(s=>{ const cost=Math.ceil(s.cost*b.player.costRed); const cd=cdLeft(b.player,s.id); mk("身法·"+s.name+(cost?" ("+cost+")":""),()=>battleUse("shen",s.id), b.player.spirit<cost||cd>0||b.over, battleSkillDesc("shen",s)); });
+  b.shenSh.forEach(sh=>{ const bs=SHEN_BS[sh.id]; if(!bs)return; const cd=cdLeft(b.player,sh.id); mk("神通·"+sh.name+(bs.cost?" ("+bs.cost+")":""),()=>battleUse("shensh",sh.id), b.player.spirit<bs.cost||cd>0||b.over, battleSkillDesc("shensh",sh)); });
 }
 function renderBattleLog(){
   const b=BATTLE; const box=$("battleLog"); if(!box)return;
@@ -2723,8 +2865,8 @@ const EXP_AREAS={
   sg:{nm:"上古战场", lv:"极危", power:320},
   kj:{nm:"跨界空间", lv:"九死一生", power:700}
 };
-function hpMaxFor(n){ return Math.floor(100*Math.pow(1.45,Math.max(0,n))*(1+eqSum("hp")/100)); }
-function playerPower(){ return Math.floor(100*(1+S.realm*0.45)*(1+(S.root?S.root.combat:0))*(1+buffEffSum("combat")/100)*(1+(eqSum("atk")+petSum("atk"))/100)); }
+function hpMaxFor(n){ return Math.floor(100*Math.pow(1.45,Math.max(0,n))*(1+(eqSum("hp")+petSum("hp"))/100)); }
+function playerPower(){ return Math.floor(100*(1+S.realm*0.45)*(1+(S.root?S.root.combat:0))*(1+buffEffSum("combat")/100)*(1+eqSum("atk")/100)*(1+petSum("atk")/100)); }
 /* v18.49：按「玩家全装+全buff+有回血丹药」基准重新设计难度。
    区域难度绑定境界段——洞天福地=筑基/金丹/元婴，原始禁区=化神/炼虚/合体，
    上古战场=大乘/渡劫/真仙，跨界空间=真仙及以上（九死一生，怪强度系数更高）。
@@ -2813,7 +2955,7 @@ function expLootToBag(){
   if(!S.exp) return;
   S.exp.loot.forEach(it=>{
     if(it.kind==="mat") S.mats[it.id]=(S.mats[it.id]||0)+it.qty;
-    else if(it.kind==="tres"){ if(isEquip(it.id)){ S.equip.push({uid:++S.uid,id:it.id}); } else { S.tres[it.id]=(S.tres[it.id]||0)+it.qty; } }
+    else if(it.kind==="tres"){ if(isEquip(it.id)){ S.equip.push(newEquip(it.id)); } else { S.tres[it.id]=(S.tres[it.id]||0)+it.qty; } }
     else if(it.kind==="stone"){
       if(it.tier==="L")S.stoneL+=it.qty; else if(it.tier==="M")S.stoneM+=it.qty; else if(it.tier==="H")S.stoneH+=it.qty; else if(it.tier==="T")S.stoneT+=it.qty; else S.stoneG+=it.qty;
     }
@@ -3132,6 +3274,19 @@ function renderSetModal(){
   document.querySelectorAll("#themeBtns button").forEach(b=>b.classList.toggle("sel", b.dataset.theme===S.settings.theme));
 }
 $("settingsBtn").addEventListener("click",()=>{ renderSetModal(); $("setOverlay").classList.add("show"); });
+$("qqGroupBtn").addEventListener("click",()=>{
+  const num="1128330622";
+  const done=()=>{ banner("QQ群号已复制：1128330622"); logEvent("已复制官方QQ群号 1128330622",'sys'); };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(num).then(done).catch(()=>fallbackCopy(num,done)); }
+  else fallbackCopy(num,done);
+});
+function fallbackCopy(txt,cb){
+  const ta=document.createElement("textarea");
+  ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); cb(); }catch(e){ banner("复制失败，请手动复制：1128330622"); }
+  document.body.removeChild(ta);
+}
 $("setOverlay").addEventListener("click",e=>{ if(e.target.id==="setOverlay")$("setOverlay").classList.remove("show"); });
 $("setClose").addEventListener("click",()=>$("setOverlay").classList.remove("show"));
 document.querySelectorAll("#themeBtns button").forEach(b=>b.addEventListener("click",()=>{ S.settings.theme=b.dataset.theme; applyTheme(S.settings.theme); save(); }));
@@ -3245,7 +3400,7 @@ function gameTick(now){
   // 制造完成
   if(S.making && Date.now()>=S.making.end){
     const rid=S.making.rId, r=REC_BY_ID[rid]; S.making=null;
-    if(r){ if(isEquip(r.id)){ S.equip.push({uid:++S.uid,id:r.id}); } else { S.tres[rid]=(S.tres[rid]||0)+1; } sound(660,.2); logEvent("炼成「"+r.name+"」",'sys'); banner("炼成「"+r.name+"」"); }
+    if(r){ if(isEquip(r.id)){ S.equip.push(newEquip(r.id)); } else { S.tres[rid]=(S.tres[rid]||0)+1; } sound(660,.2); logEvent("炼成「"+r.name+"」",'sys'); banner("炼成「"+r.name+"」"); }
     // 循环制造续作：目标未达成且材料足够则自动下一炉，否则停止
     if(S.cycle && !S.yunning){
       const cr=REC_BY_ID[S.cycle.rId];
@@ -3280,7 +3435,7 @@ function gameTick(now){
       if(!s.curR || !pool.some(p=>p.id===s.curR.id)) s.curR=pool[Math.floor(Math.random()*pool.length)];
       const r=s.curR, iv=craftTime(r)/eff;
       s.prog+=dt;
-      while(s.prog>=iv){ s.prog-=iv; s.curR=null; for(const k in r.need) S.mats[k]-=r.need[k]; if(isEquip(r.id)){ S.equip.push({uid:++S.uid,id:r.id}); logEvent((LV_NM[s.lv]||s.lv)+"傀炼制出「"+r.name+"」",'sys','craft'); } else { S.tres[r.id]=(S.tres[r.id]||0)+1; logEvent((LV_NM[s.lv]||s.lv)+"傀制成「"+r.name+"」×1",'sys','craft'); } svProduced=true; }
+      while(s.prog>=iv){ s.prog-=iv; s.curR=null; for(const k in r.need) S.mats[k]-=r.need[k]; if(isEquip(r.id)){ S.equip.push(newEquip(r.id)); logEvent((LV_NM[s.lv]||s.lv)+"傀炼制出「"+r.name+"」",'sys','craft'); } else { S.tres[r.id]=(S.tres[r.id]||0)+1; logEvent((LV_NM[s.lv]||s.lv)+"傀制成「"+r.name+"」×1",'sys','craft'); } svProduced=true; }
     }
   });
   if(svProduced && activeTab==="pu") renderTab();
