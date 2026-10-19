@@ -368,11 +368,11 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v21.1（坊市出售货物新增鼠标悬浮详情框）
+   修仙挂机 · 问道长生  v28（三采全览按稀有度排列 + 拍卖会货物悬浮详情）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v26.4";
+const VERSION = "v28";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -403,18 +403,20 @@ function showModal(t,body,cb){ $("mTitle").textContent=t; $("mBody").textContent
    数据库（四库：后台数据）
    ================================================================ */
 
-/* 强化设施（原功法迁入强化，统一产灵气）：cost 为下品灵石，out 为灵气/秒 */
+/* 强化设施（原功法迁入强化，统一产灵气）：cost 为下品灵石，out 为灵气/秒。
+   v26.4 数值修正：全设施统一 10 秒回本（out=cost/10，单位灵石产出恒定 10%）；
+   outM 与 costM 对齐（每级成本×M、产出×M，升级边际性价比恒定），消除"同灵石投入产出倒挂"。 */
 const FAC = [
-  {id:"array",  name:"聚灵阵",   ic:"🌀", cost:20,    out:2,     costM:1.15, outM:1.10, unlock:0, ds:"吸纳四方灵气，每秒凝聚灵气。"},
-  {id:"beast",  name:"驭兽台",   ic:"🐉", cost:150,   out:12,    costM:1.15, outM:1.10, unlock:0, ds:"驭兽台上百兽驯服，灵气自聚。"},
-  {id:"cave",   name:"洞府",     ic:"🏔️", cost:1800,  out:120,   costM:1.16, outM:1.10, unlock:1, ds:"洞天福地，汇聚灵气。"},
-  {id:"pill",   name:"丹药炉",   ic:"⚗️", cost:20000, out:1500,  costM:1.16, outM:1.10, unlock:2, ds:"丹火不息，炼化灵气。"},
-  {id:"field",  name:"仙田",     ic:"🌾", cost:280000,out:190,   costM:1.17, outM:1.10, unlock:2, ds:"种植仙草，萌发灵气。"},
-  {id:"sword",  name:"剑冢",     ic:"🗡️", cost:4e6,   out:2400,  costM:1.17, outM:1.10, unlock:3, ds:"万剑归宗，剑气化灵。"},
-  {id:"disciple",name:"炼丹童子",ic:"🧒", cost:7e7,   out:32000, costM:1.12, outM:1.10, unlock:3, ds:"童子服侍，吐纳灵气。"},
-  {id:"vein",   name:"灵脉",     ic:"⛰️", cost:1.2e9, out:420,   costM:1.12, outM:1.10, unlock:4, ds:"地脉灵髓，涌出灵气。"},
-  {id:"guard",  name:"护山大阵", ic:"🛡️", cost:2e10,  out:5500,  costM:1.13, outM:1.10, unlock:5, ds:"大阵运转，聚拢灵气。"},
-  {id:"thunder",name:"天雷淬体", ic:"⚡", cost:3.5e11,out:70,    costM:1.13, outM:1.10, unlock:6, ds:"引天雷淬体，灵气温养。"},
+  {id:"array",  name:"聚灵阵",   ic:"🌀", cost:20,    out:2,     costM:1.15, outM:1.15, unlock:0, ds:"吸纳四方灵气，每秒凝聚灵气。"},
+  {id:"beast",  name:"驭兽台",   ic:"🐉", cost:150,   out:15,    costM:1.15, outM:1.15, unlock:0, ds:"驭兽台上百兽驯服，灵气自聚。"},
+  {id:"cave",   name:"洞府",     ic:"🏔️", cost:1800,  out:180,   costM:1.16, outM:1.16, unlock:1, ds:"洞天福地，汇聚灵气。"},
+  {id:"pill",   name:"丹药炉",   ic:"⚗️", cost:20000, out:2000,  costM:1.16, outM:1.16, unlock:2, ds:"丹火不息，炼化灵气。"},
+  {id:"field",  name:"仙田",     ic:"🌾", cost:280000,out:28000, costM:1.17, outM:1.17, unlock:2, ds:"种植仙草，萌发灵气。"},
+  {id:"sword",  name:"剑冢",     ic:"🗡️", cost:4e6,   out:400000,costM:1.17, outM:1.17, unlock:3, ds:"万剑归宗，剑气化灵。"},
+  {id:"disciple",name:"炼丹童子",ic:"🧒", cost:7e7,   out:7e6,   costM:1.12, outM:1.12, unlock:3, ds:"童子服侍，吐纳灵气。"},
+  {id:"vein",   name:"灵脉",     ic:"⛰️", cost:1.2e9, out:1.2e8, costM:1.12, outM:1.12, unlock:4, ds:"地脉灵髓，涌出灵气。"},
+  {id:"guard",  name:"护山大阵", ic:"🛡️", cost:2e10,  out:2e9,   costM:1.13, outM:1.13, unlock:5, ds:"大阵运转，聚拢灵气。"},
+  {id:"thunder",name:"天雷淬体", ic:"⚡", cost:3.5e11,out:3.5e10,costM:1.13, outM:1.13, unlock:6, ds:"引天雷淬体，灵气温养。"},
 ];
 
 /* 修行升级（灵石购买，无限等级） */
@@ -1035,9 +1037,11 @@ function doExch(e,mult){
 }
 const ZONES={
   外:{nm:"外围区域",lo:1,hi:4,unlock:0},
-  中:{nm:"中部区域",lo:3,hi:6,unlock:3},
-  内:{nm:"核心区域",lo:4,hi:8,unlock:6},
+  中:{nm:"中部区域",lo:1,hi:6,unlock:3},
+  内:{nm:"核心区域",lo:1,hi:8,unlock:6},
 };
+// v27 采集重做：三项采集所有区域共用统一稀有度概率表（稀1-8），区域仅限制最高可采集稀有度
+const RARITY_POOL_PROB=[40,25,15,8,5,3,2,2]; // 稀1-8 基础概率（%），区域截断后按比例归一化
 function zoneOf(cid){ return ZONES[(S.collectZone&&S.collectZone[cid])||"外"]||ZONES.外; }
 function setZone(cid,z){
   if(S.realm<ZONES[z].unlock){ banner(ZONES[z].nm+"需"+REALMS[ZONES[z].unlock].full+"境界解锁"); return; }
@@ -1061,9 +1065,13 @@ function randMatOfCat(cid, z){
   }
   const pool=MATS.filter(m=>m.cat===cat && m.rarity>=zn.lo && m.rarity<=hi);
   if(!pool.length) return null;
-  const ws=pool.map(m=>Math.pow(2, hi-(m.rarity||1))); // 权重 2^(区域最高稀有-自身稀有)
-  let tot=0; ws.forEach(w=>tot+=w); let r=Math.random()*tot;
-  for(let i=0;i<pool.length;i++){ r-=ws[i]; if(r<=0) return pool[i]; }
+  // v27 统一概率表：先按稀有度档抽取（权重=档位概率），再在档内材料中等概率选
+  const byRarity={};
+  pool.forEach(m=>{ (byRarity[m.rarity]=byRarity[m.rarity]||[]).push(m); });
+  const rs=Object.keys(byRarity).map(Number).sort((a,b)=>a-b);
+  const ws=rs.map(r=>RARITY_POOL_PROB[Math.min(Math.max(r-1,0),7)]||0);
+  let tot=0; ws.forEach(w=>tot+=w); let rnd=Math.random()*tot;
+  for(let i=0;i<rs.length;i++){ rnd-=ws[i]; if(rnd<=0){ const arr=byRarity[rs[i]]; return arr[Math.floor(Math.random()*arr.length)]; } }
   return pool[pool.length-1];
 }
 const SV_EFF={甲:0.9,乙:0.75,丙:0.6,丁:0.4}; // 傀儡效率 = 玩家效率（100%）的比例
@@ -1335,7 +1343,7 @@ let caiCat="beast";
 function renderCai(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 采集 · 狩猎 / 挖矿 / 采药 —";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="深入<b>十万大山</b>采集，狩猎 / 挖矿 / 采药按区域产出：<b>外围区域</b>稀有 1-4（炼气解锁）· <b>中部区域</b>稀有 3-6（元婴解锁）· <b>核心区域</b>稀有 4-8（合体解锁）。每个采集框独立选择区域、独立挂机；「立即采集」全局 15 秒冷却（三框共享）。材料存放于须弥空间，可用于制造。"+(S.yunning?'<br><b style="color:#e05555">运功进行中，采集已暂停，请先停止运功。</b>':"");body.appendChild(p);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="深入<b>十万大山</b>采集，狩猎 / 挖矿 / 采药共用一张<b>统一稀有度概率表</b>：<b>外围区域</b>可采稀有 1-4（炼气解锁）· <b>中部区域</b>可采稀有 1-6（元婴解锁）· <b>核心区域</b>可采稀有 1-8（合体解锁），区域仅限制最高可采集稀有度。每次采集 50% 成功率，成功后按概率表抽取。每个采集框独立选择区域、独立挂机；「立即采集」全局 15 秒冷却（三框共享）。材料存放于须弥空间，可用于制造。"+(S.yunning?'<br><b style="color:#e05555">运功进行中，采集已暂停，请先停止运功。</b>':"");body.appendChild(p);
   const CATS=[
     {cid:"beast", nm:"狩猎", ic:"🏹", cat:"妖兽材料", ds:"进入深山猎取妖兽，随机得到一种妖兽材料。"},
     {cid:"ore",   nm:"挖矿", ic:"⛏️", cat:"矿石",       ds:"下矿层挖掘，随机得到一种矿石。"},
@@ -1385,7 +1393,8 @@ function renderCai(body){
   // 材料全览（可滚动）
   const st2=document.createElement("div");st2.className="sectionTitle";st2.textContent="— "+cur.cat+" 全览 —";body.appendChild(st2);
   const sc=document.createElement("div");sc.style.cssText="max-height:240px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--panel2)";
-  MATS.filter(m=>m.cat===cur.cat).forEach(m=>{
+  // v28 三采全览按稀有度升序排列（稀1 → 稀8，与统一概率表顺序一致）
+  MATS.filter(m=>m.cat===cur.cat).sort((a,b)=>a.rarity-b.rarity).forEach(m=>{
     const row=document.createElement("div");row.className="exchRow";
     row.innerHTML=`<span class="ex-n">${m.ic} ${m.name} · 稀有${m.rarity} · 单价 ${m.value}</span>`;
     sc.appendChild(row);
@@ -1523,7 +1532,7 @@ function renderPu(body){
     }
     const sel3Wrap=document.createElement("div");sel3Wrap.style.cssText="display:"+(cur.startsWith("cai:")?"flex":"none")+";gap:6px;align-items:center;";
     const sel3=document.createElement("select");sel3.style.cssText=selStyle;
-    [["外","外围区域（稀有1-4）"],["中","中部区域（稀有3-6）"],["内","核心区域（稀有4-8）"]].forEach(z=>{ const op=document.createElement("option");op.value=z[0];op.textContent=z[1]; if(S.realm<ZONES[z[0]].unlock){ op.disabled=true; op.textContent+="（需"+REALMS[ZONES[z[0]].unlock].full+"）"; } sel3.appendChild(op); });
+    [["外","外围区域（稀有1-4）"],["中","中部区域（稀有1-6）"],["内","核心区域（稀有1-8）"]].forEach(z=>{ const op=document.createElement("option");op.value=z[0];op.textContent=z[1]; if(S.realm<ZONES[z[0]].unlock){ op.disabled=true; op.textContent+="（需"+REALMS[ZONES[z[0]].unlock].full+"）"; } sel3.appendChild(op); });
     sel3.value=(s.task&&s.task.kind==="cai"&&s.task.zone)?s.task.zone:"外";
     sel3Wrap.appendChild(sel3);
     fillRecipes();
@@ -1986,6 +1995,16 @@ function shopTipHtml(it,en){
   else held=" · 持有 "+fmt(S.tres[en.id]||0);
   return `<b>${r.name}</b>（稀有${r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>${it.kind==="mat"?"单价":"价值"} ${r.value} 下品灵石 · 库存 ${en.stock}${held}`;
 }
+/* v28 拍卖会货物悬浮详情：与坊市随机出售同机制（#itemTip/bindTip），展示名称/分类/描述/效果与底价、当前出价 */
+function auctionTipHtml(it,en){
+  const r=it.obj;
+  let eff="";
+  if(it.kind==="gong") eff="功法 · 灵气倍率 ×"+r.ess;
+  else if(it.kind==="mat"){ /* 材料无效果段 */ }
+  else { const useable=!!(r.eff||r.heal); eff=useable?("效果："+effText(r)):"珍宝收藏，无可使用效果，可出售"; }
+  const who=en.bidder==="player"?"你":en.bidder==="npc"?"虚灵商客":"无人出价";
+  return `<b>${r.name}</b>（稀有${r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>底价 ${ceilPriceText(en.base)} · 当前 ${ceilPriceText(en.bid)}（${who}）`;
+}
 function auctionItem(kind,id){
   if(kind==="mat"){ const m=MATS_BY_ID[id]; return m?{kind:"mat",obj:m}:null; }
   const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g};
@@ -2071,6 +2090,7 @@ function renderAuction(body){
     const row=document.createElement("div");row.className="exchRow";
     row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 底价 ${ceilPriceText(en.base)} · 当前 <span id="aucBid${idx}">${ceilPriceText(en.bid)}（${who}）</span></span>`;
     row.appendChild(buyBtn(canPayL(splitPriceL(extra)),()=>{bidAuction(en);},"出价 "+ceilPriceText(nb)));
+    bindTip(row,auctionTipHtml(it,en)); // v28 拍卖会货物悬浮详情框（与坊市随机出售一致）
     body.appendChild(row);
   });
   else if(!live){ const e=document.createElement("div");e.className="hint";e.textContent="拍卖已结算或等待开场，请稍候。";body.appendChild(e); }
