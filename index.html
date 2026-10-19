@@ -106,6 +106,8 @@ body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft 
 .exchRow .ex-n{font-size:12px;color:var(--ink);}
 .exchRow button{padding:6px 12px;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;background:linear-gradient(135deg,var(--gold),#b8912a);color:#1a1406;}
 .exchRow button:disabled{background:var(--panel2);color:var(--ink-dim);cursor:not-allowed;}
+.goldBtn{padding:6px 12px;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;background:linear-gradient(135deg,var(--gold),#b8912a);color:#1a1406;}
+.goldBtn:disabled{background:var(--panel2);color:var(--ink-dim);cursor:not-allowed;}
 .hint{font-size:12px;color:var(--ink-dim);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5;}
 .cm-tag{display:inline-block;font-size:9px;border:1px solid var(--mystic);color:var(--mystic);border-radius:8px;padding:0 5px;margin-left:5px;vertical-align:1px;}
 .mainCard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:10px;}
@@ -172,6 +174,8 @@ body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft 
 #battleLog div{border-bottom:1px dashed rgba(128,128,128,.18);padding:1px 0;}
 #slotsBody button.slotPick{display:block;width:100%;text-align:left;padding:7px 10px;margin:3px 0;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);cursor:pointer;font-size:13px;}
 #slotsBody button.slotPick.on{border-color:var(--jade);color:var(--jade);}
+#slotsBody button.slotPick .sdName{font-size:13px;}
+#slotsBody button.slotPick .sd{display:block;font-size:11px;color:var(--ink-dim);margin-top:2px;font-weight:400;line-height:1.4;}
 #slotsBody .slotRow{display:flex;align-items:center;gap:8px;margin:2px 0;font-size:12px;color:var(--ink-dim);}
 .modal .btnPair button{flex:1;background:linear-gradient(135deg,var(--gold),#b8912a);color:#1a1406;border:none;padding:11px;font-weight:700;}
 .modal .btnPair button:disabled{background:var(--panel2);color:var(--ink-dim);}
@@ -803,7 +807,7 @@ function newState(){
     fa:FAC.map(()=>0), ups:Object.fromEntries(UPS.map(u=>[u.id,0])),
     mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0, servants:[{lv:"丁",task:null,prog:0,curR:null}], pets:[], gongs:["yj"], activeGong:"yj", slots:null,
     shen:[], shenProd:0, shenBreak:0, shenCrit:0, shenOffline:0, shenDaoProd:0,
-    ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, buffWarned:{}, buffEnded:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(), avatar:null,
+    ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, buffWarned:{}, buffEnded:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(), avatar:null, avatarUses:0,
     settings:{theme:"dark",lang:"zh"},
   };
 }
@@ -813,6 +817,7 @@ function normalizeState(){
   S.mats=S.mats||{}; S.tres=S.tres||{}; S.collect=S.collect||{};
   S.equip=S.equip||[]; S.equipped=S.equipped||{}; S.uid=S.uid||0;
   if(!S.avatar || !LIHUI.some(x=>x.id===S.avatar)) S.avatar=null; // 旧档缺省：装备页按默认立绘显示
+  S.avatarUses=(S.avatarUses||0); // 装备页形象更换：免费 5 次，之后每次 50 上品灵石
   S.gongs=S.gongs||["yj"]; S.gongs=S.gongs.filter(id=>GONGFAS.some(g=>g.id===id));
   if(S.slots===undefined)S.slots=null; // 旧档缺省：战斗时按灵根池自动补齐技能槽
   if(!S.gongs.includes(S.activeGong)) S.activeGong=S.gongs[0]||null;
@@ -1722,6 +1727,13 @@ function renderEqp(body){
   side.appendChild(bonus);
   wrap.appendChild(side);
   body.appendChild(wrap);
+  /* 装备框下：更换人物形象（免费 5 次，之后每次 50 上品灵石）v26.5 */
+  const avBar=document.createElement("div");avBar.className="hint";avBar.style.marginTop="10px";
+  avBar.innerHTML="人物形象：<b>"+avatarObj().name+"</b>　免费更换剩余 <b>"+Math.max(0,AVATAR_FREE_N-(S.avatarUses||0))+"</b> 次"+(S.avatarUses>=AVATAR_FREE_N?"（之后每次 "+AVATAR_FEE_H+" 上品灵石）":"");
+  const avBtn=document.createElement("button");avBtn.className="goldBtn";avBtn.textContent="选择人物形象";
+  avBtn.addEventListener("click",openAvatarPick);
+  avBar.appendChild(avBtn);
+  body.appendChild(avBar);
 }
 /* ============ 属性面板（人物属性设计 2.2/3/4 章）：六维 + 次级 + 五行抗性 + 来源明细 ============ */
 function renderAttr(body){
@@ -2219,16 +2231,18 @@ function openSlotsConfig(){
     box.innerHTML="";
     putRow(box,"法术槽（最多 "+cap.dmg+"）",dmgPool,cap.dmg,dmgSel,v=>{dmgSel=v;saveIt();});
     putRow(box,"身法槽（最多 "+cap.shen+"）",shenPool,cap.shen,shenSel,v=>{shenSel=v;saveIt();});
-    putRow(box,"神通槽（最多 "+cap.shenSh+"）",learned.map(x=>({id:x.id,name:x.name,cost:SHEN_BS[x.id]&&SHEN_BS[x.id].cost})),cap.shenSh,shenShSel,v=>{shenShSel=v;saveIt();});
+    putRow(box,"神通槽（最多 "+cap.shenSh+"）",learned.map(x=>({id:x.id,name:x.name,cost:SHEN_BS[x.id]&&SHEN_BS[x.id].cost})),cap.shenSh,shenShSel,v=>{shenShSel=v;saveIt();},"shensh");
   };
   renderPicks();
   $("slotsOverlay").classList.add("show");
 }
-function putRow(box,label,opts,cap,sel,on){
+function putRow(box,label,opts,cap,sel,on,kind){
   box.appendChild(Object.assign(document.createElement("div"),{className:"slotRow",textContent:label+"（"+sel.length+"/"+cap+"）"}));
   opts.forEach(o=>{
     const onNow=sel.includes(o.id);
-    const b=document.createElement("button");b.className="slotPick"+(onNow?" on":"");b.textContent=(onNow?"✓ ":"")+(o.name||o.id)+(o.cost?"（耗"+o.cost+"）":"");
+    const b=document.createElement("button");b.className="slotPick"+(onNow?" on":"");
+    const desc=battleSkillDesc(kind||"spell",o);
+    b.innerHTML=(onNow?"✓ ":"")+"<span class='sdName'>"+(o.name||o.id)+(o.cost?"（耗"+o.cost+"）":"")+"</span>"+(desc?"<span class='sd'>"+desc+"</span>":"");
     b.disabled=!onNow&&sel.length>=cap;
     b.addEventListener("click",()=>{
       const arr=sel.slice();
@@ -3159,6 +3173,40 @@ const LIHUI=[
   {id:"myst", name:"神秘修士", src:"贴图/立绘/神秘修士.png"},
 ];
 function avatarObj(){ return LIHUI.find(x=>x.id===S.avatar)||LIHUI[4]; } // 默认男修·一
+
+/* 装备页更换形象：免费 5 次，之后每次 50 上品灵石（v26.5） */
+const AVATAR_FREE_N=5, AVATAR_FEE_H=50;
+function openAvatarPick(){
+  const mask=document.createElement("div");mask.className="eqPickMask";
+  mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); };
+  const box=document.createElement("div");box.className="eqPickBox";
+  const t=document.createElement("div");t.className="eqTitle";t.textContent="选择人物形象";box.appendChild(t);
+  const info=document.createElement("div");info.className="hint";box.appendChild(info);
+  const grid=document.createElement("div");grid.className="avGrid";box.appendChild(grid);
+  mask.appendChild(box);document.body.appendChild(mask);
+  function updateInfo(){
+    const left=Math.max(0,AVATAR_FREE_N-(S.avatarUses||0));
+    info.innerHTML="免费更换剩余 <b>"+left+"</b> 次，用完后每次更换消耗 <b>"+AVATAR_FEE_H+" 上品灵石</b>。点击立绘直接更换。";
+  }
+  function draw(){
+    updateInfo();
+    grid.innerHTML="";
+    LIHUI.forEach(a=>{
+      const c=document.createElement("div");
+      c.className="avCell"+(S.avatar===a.id?" sel":"");
+      c.innerHTML='<img src="'+a.src+'" alt="'+a.name+'"><div class="avNm">'+a.name+'</div>';
+      c.onclick=()=>{
+        if(S.avatar===a.id){ mask.remove(); return; } // 选择当前形象：不扣费、不计数
+        if((S.avatarUses||0)<AVATAR_FREE_N){ S.avatar=a.id; S.avatarUses=(S.avatarUses||0)+1; blip(); }
+        else if(payL({l:0,m:0,h:AVATAR_FEE_H,t:0,g:0})){ S.avatar=a.id; blip(); }
+        else { banner("上品灵石不足：更换形象需 "+AVATAR_FEE_H+" 上品灵石"); return; }
+        save(); draw(); renderTab(); // 持久化次数并重渲染装备页（立绘 + 剩余次数）
+      };
+      grid.appendChild(c);
+    });
+  }
+  draw();
+}
 
 /* ================================================================
    新手指引（v18.4）
