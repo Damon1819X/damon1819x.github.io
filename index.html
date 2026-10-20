@@ -108,6 +108,8 @@ body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft 
 .exchRow button:disabled{background:var(--panel2);color:var(--ink-dim);cursor:not-allowed;}
 .goldBtn{padding:6px 12px;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;background:linear-gradient(135deg,var(--gold),#b8912a);color:#1a1406;}
 .goldBtn:disabled{background:var(--panel2);color:var(--ink-dim);cursor:not-allowed;}
+.ghostBtn{padding:6px 12px;border:1px solid var(--line);border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;background:var(--panel2);color:var(--ink);}
+.ghostBtn:hover{border-color:var(--gold);color:var(--gold);}
 .hint{font-size:12px;color:var(--ink-dim);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5;}
 .cm-tag{display:inline-block;font-size:9px;border:1px solid var(--mystic);color:var(--mystic);border-radius:8px;padding:0 5px;margin-left:5px;vertical-align:1px;}
 .mainCard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:10px;}
@@ -2227,7 +2229,7 @@ function openSlotsConfig(){
   $("slotsTitle").textContent="— 战前技能槽配置 · "+root.name+"（法"+cap.dmg+" 身"+cap.shen+" 神"+cap.shenSh+"）—";
   const box=$("slotsBody"); box.innerHTML="";
   let dmgSel=st.dmg.slice(), shenSel=st.shen.slice(), shenShSel=st.shenSh.slice();
-  const saveIt=()=>{ S.slots={dmg:dmgSel,shen:shenSel,shenSh:shenShSel}; save(); renderTab(); };
+  const saveIt=()=>{ S.slots={dmg:dmgSel,shen:shenSel,shenSh:shenShSel}; save(); renderPicks(); renderTab(); };
   const renderPicks=()=>{
     box.innerHTML="";
     putRow(box,"法术槽（最多 "+cap.dmg+"）",dmgPool,cap.dmg,dmgSel,v=>{dmgSel=v;saveIt();});
@@ -2244,10 +2246,12 @@ function putRow(box,label,opts,cap,sel,on,kind){
     const b=document.createElement("button");b.className="slotPick"+(onNow?" on":"");
     const desc=battleSkillDesc(kind||"spell",o);
     b.innerHTML=(onNow?"✓ ":"")+"<span class='sdName'>"+(o.name||o.id)+(o.cost?"（耗"+o.cost+"）":"")+"</span>"+(desc?"<span class='sd'>"+desc+"</span>":"");
-    b.disabled=!onNow&&sel.length>=cap;
+    // 始终可点选：未装备且槽满时，点选即替换当前槽中最旧的一个（自由选择技能）
     b.addEventListener("click",()=>{
       const arr=sel.slice();
-      if(onNow){ arr.splice(arr.indexOf(o.id),1); } else if(arr.length<cap){ arr.push(o.id); }
+      if(onNow){ arr.splice(arr.indexOf(o.id),1); }
+      else if(arr.length<cap){ arr.push(o.id); }
+      else { arr.shift(); arr.push(o.id); }
       on(arr);
     });
     box.appendChild(b);
@@ -2833,7 +2837,8 @@ const EF_TXT={
   immune:()=>"免负面", burn:(v)=>"灼烧"+Math.round(v*100)+"%攻", atkUp:(v)=>"攻+"+v+"%",
   sacrifice:(v)=>"自损"+v+"%", nextDmg:(v)=>"下次伤害+"+v+"%", stun:()=>"眩晕", reflect:(v)=>"反伤"+v+"%",
   spdUp:(v)=>"速+"+v+"%", nextFirst:()=>"先手", atkDown:(v)=>"敌攻-"+v+"%", poison:(v)=>"中毒"+v,
-  allUp:(v)=>"全属性+"+v+"%", nextPower:(v)=>"下次威力+"+v+"%", guaranteed:()=>"必中", invuln:()=>"无敌"
+  allUp:(v)=>"全属性+"+v+"%", nextPower:(v)=>"下次威力+"+v+"%", guaranteed:()=>"必中", invuln:()=>"无敌",
+  shield:(v)=>"护盾"+v+"%"
 };
 function fmtEff(es){
   return (es||[]).map(e=>{
@@ -3179,33 +3184,43 @@ function avatarObj(){ return LIHUI.find(x=>x.id===S.avatar)||LIHUI[4]; } // 默�
 const AVATAR_FREE_N=5, AVATAR_FEE_H=50;
 function openAvatarPick(){
   const mask=document.createElement("div");mask.className="eqPickMask";
-  mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); };
+  mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); }; // 点遮罩=取消：形象不变、次数不减
   const box=document.createElement("div");box.className="eqPickBox";
   const t=document.createElement("div");t.className="eqTitle";t.textContent="选择人物形象";box.appendChild(t);
   const info=document.createElement("div");info.className="hint";box.appendChild(info);
   const grid=document.createElement("div");grid.className="avGrid";box.appendChild(grid);
+  const btnRow=document.createElement("div");btnRow.style.cssText="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;";
+  const okBtn=document.createElement("button");okBtn.className="goldBtn";okBtn.textContent="确认";
+  const cancelBtn=document.createElement("button");cancelBtn.className="ghostBtn";cancelBtn.textContent="取消";
+  btnRow.appendChild(cancelBtn);btnRow.appendChild(okBtn);
+  box.appendChild(btnRow);
   mask.appendChild(box);document.body.appendChild(mask);
+  let picked=S.avatar; // 预览候选；确认前不写入 S.avatar
+  const pickedName=()=>{ const a=LIHUI.find(x=>x.id===picked); return a?a.name:"未知"; };
   function updateInfo(){
     const left=Math.max(0,AVATAR_FREE_N-(S.avatarUses||0));
-    info.innerHTML="免费更换剩余 <b>"+left+"</b> 次，用完后每次更换消耗 <b>"+AVATAR_FEE_H+" 上品灵石</b>。点击立绘直接更换。";
+    info.innerHTML="免费更换剩余 <b>"+left+"</b> 次，用完后每次更换消耗 <b>"+AVATAR_FEE_H+" 上品灵石</b>。点击立绘预览，确认后生效。";
+    okBtn.textContent=(picked===S.avatar)?"确认（未变更）":"确认更换 · "+pickedName();
   }
   function draw(){
     updateInfo();
     grid.innerHTML="";
     LIHUI.forEach(a=>{
       const c=document.createElement("div");
-      c.className="avCell"+(S.avatar===a.id?" sel":"");
+      c.className="avCell"+(picked===a.id?" sel":"");
       c.innerHTML='<img src="'+a.src+'" alt="'+a.name+'"><div class="avNm">'+a.name+'</div>';
-      c.onclick=()=>{
-        if(S.avatar===a.id){ mask.remove(); return; } // 选择当前形象：不扣费、不计数
-        if((S.avatarUses||0)<AVATAR_FREE_N){ S.avatar=a.id; S.avatarUses=(S.avatarUses||0)+1; blip(); }
-        else if(payL({l:0,m:0,h:AVATAR_FEE_H,t:0,g:0})){ S.avatar=a.id; blip(); }
-        else { banner("上品灵石不足：更换形象需 "+AVATAR_FEE_H+" 上品灵石"); return; }
-        save(); draw(); renderTab(); // 持久化次数并重渲染装备页（立绘 + 剩余次数）
-      };
+      c.onclick=()=>{ picked=a.id; blip(); draw(); }; // 仅预览：高亮候选、更新确认按钮文案
       grid.appendChild(c);
     });
   }
+  okBtn.addEventListener("click",()=>{
+    if(picked===S.avatar){ mask.remove(); return; } // 未变更：直接关闭
+    if((S.avatarUses||0)<AVATAR_FREE_N){ S.avatar=picked; S.avatarUses=(S.avatarUses||0)+1; blip(); }
+    else if(payL({l:0,m:0,h:AVATAR_FEE_H,t:0,g:0})){ S.avatar=picked; blip(); }
+    else { banner("上品灵石不足：更换形象需 "+AVATAR_FEE_H+" 上品灵石"); return; }
+    save(); renderTab(); mask.remove(); // 生效：持久化并重渲染装备页（立绘 + 剩余次数）
+  });
+  cancelBtn.addEventListener("click",()=>{ mask.remove(); }); // 取消：恢复原形象（未写入 S.avatar）
   draw();
 }
 
