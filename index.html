@@ -244,6 +244,7 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
     <div class="stat"><div class="lbl">运功加成</div><div class="val" id="yunMult">×1</div></div>
     <div class="stat"><div class="lbl">大道碎片</div><div class="val" id="daoVal">0</div></div>
     <div class="spacer"></div>
+    <button id="manualBtn" title="游戏玩法手册">📜 玩家手册</button>
     <button id="qqGroupBtn" title="点击复制群号">QQ群：1128330622</button>
     <button id="settingsBtn">⚙ 设置</button>
   </div>
@@ -349,10 +350,25 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
   </div>
 </div>
 
+<div class="overlay" id="manualOverlay">
+  <div class="modal" style="width:min(2200px,98vw);max-width:98vw">
+    <h3>📜 玩家手册 · 图鉴 <span id="manualCount" style="font-size:12px;color:var(--ink-dim)"></span></h3>
+    <div style="display:flex;gap:12px;min-height:52vh">
+      <div id="manualNav" style="width:200px;flex:none;overflow-y:auto;max-height:60vh;border-right:1px solid rgba(255,255,255,.08);padding-right:8px"></div>
+      <div id="manualBody" style="flex:1;overflow-y:auto;max-height:60vh;padding:2px 10px;line-height:1.85;font-size:13px"></div>
+    </div>
+    <div class="btnRow" style="justify-content:space-between;margin-top:10px">
+      <button id="manualPrev">← 上一条</button>
+      <button id="manualClose">关闭</button>
+      <button id="manualNext">下一条 →</button>
+    </div>
+  </div>
+</div>
+
 <div class="banner" id="banner"></div>
 <div class="overlay" id="overlay"><div class="modal"><h3 id="mTitle"></h3><div class="mbody" id="mBody"></div><div class="btnPair"><button id="mBtn">确定</button></div></div></div>
 <div class="overlay" id="expOverlay"><div class="modal" style="width:960px;max-width:96vw"><h3 id="expTitle"></h3><div class="expTabs"><button id="expTabExplore" class="expTab active">🗺️ 探索</button><button id="expTabLoot" class="expTab">🎒 战利品</button></div><div id="expViewExplore"><div id="expInfo" style="color:var(--ink-dim);font-size:12px;margin:2px 0 8px"></div><svg id="expSvg" viewBox="0 0 560 500" style="display:block;margin:0 auto;background:rgba(0,0,0,.25);border-radius:12px;width:100%;max-width:640px"></svg><div id="expLegend" style="font-size:12px;color:var(--ink-dim);text-align:center;margin-top:8px;line-height:1.7"></div></div><div id="expViewLoot" style="display:none;font-size:13px;color:var(--ink);min-height:120px;max-height:46vh;overflow-y:auto"></div><div class="btnPair"><button id="expRetreatBtn" style="background:linear-gradient(135deg,#d9534f,#b03a35);color:#fff">撤出秘境（-50%气血 · -50%战利品）</button><button id="expCloseBtn">关闭</button></div></div></div>
-<div class="overlay" id="battleOverlay"><div class="modal" style="width:860px;max-width:95vw"><h3 id="battleTitle">⚔️ 回合制战斗</h3><div id="battleTop" style="display:flex;flex-wrap:wrap;gap:12px;margin:8px 0"><div id="battleEnemy" style="flex:1;min-width:220px"></div><div id="battlePlayer" style="flex:1;min-width:220px"></div></div><div id="battleInfo" style="color:var(--ink-dim);font-size:12px;margin:4px 0"></div><div id="battleActions" style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0"></div><div id="battleLog" style="font-size:12px;color:var(--ink);max-height:24vh;overflow-y:auto;background:rgba(0,0,0,.18);border-radius:8px;padding:8px;line-height:1.7"></div><div class="btnPair"><button id="battleAutoBtn">⚡ 自动战斗</button><button id="battleCloseBtn" style="display:none">关闭</button></div></div></div>
+<div class="overlay" id="battleOverlay"><div class="modal" style="width:860px;max-width:95vw"><h3 id="battleTitle">⚔️ 回合制战斗</h3><div id="battleTop" style="display:flex;flex-wrap:wrap;gap:12px;margin:8px 0"><div id="battleEnemy" style="flex:1;min-width:220px"></div><div id="battlePlayer" style="flex:1;min-width:220px"></div></div><div id="battleInfo" style="color:var(--ink-dim);font-size:12px;margin:4px 0"></div><div id="battleActions" style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0"></div><div id="battleLog" style="font-size:12px;color:var(--ink);max-height:24vh;overflow-y:auto;background:rgba(0,0,0,.18);border-radius:8px;padding:8px;line-height:1.7"></div><div class="btnPair"><button id="battleCloseBtn" style="display:none">关闭</button></div></div></div>
 <div class="overlay" id="slotsOverlay"><div class="modal"><h3 id="slotsTitle">— 战前技能槽配置 —</h3><div class="mbody" id="slotsBody" style="line-height:1.9"></div><div class="btnPair"><button id="slotsClose">完成</button></div></div></div>
 <div class="overlay" id="cycQtyOverlay">
   <div class="modal">
@@ -374,11 +390,11 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v28（三采全览按稀有度排列 + 拍卖会货物悬浮详情）
+   修仙挂机 · 问道长生  v30（玩家手册弹窗）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v28";
+const VERSION = "v30.3";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -721,22 +737,22 @@ const SHEN = [
 const WX = ["金","木","水","火","土"];
 const WX_IC = {金:"🟡",木:"🟢",水:"🔵",火:"🔴",土:"🟤"};
 const PARAM = {
-  single:{speed:2.0, req:0.40, cap:0.10, combat:0.00},
-  double:{speed:1.6, req:0.60, cap:0.20, combat:0.10},
+  single:{speed:2.0, req:0.40, cap:0.10, combat:0.30},
+  double:{speed:1.6, req:0.60, cap:0.20, combat:0.25},
   triple:{speed:1.3, req:0.80, cap:0.30, combat:0.20},
-  quad:  {speed:1.15,req:1.00, cap:0.40, combat:0.30},
-  quint: {speed:1.0, req:1.25, cap:0.50, combat:0.40},
+  quad:  {speed:1.15,req:1.00, cap:0.40, combat:0.15},
+  quint: {speed:1.0, req:1.25, cap:0.50, combat:0.10},
 };
 const MUT = [
   {id:"mut-ice",  name:"冰灵根", ic:"❄️", speed:1.8, req:0.40, cap:0.35, combat:0.20, extra:{break:0.08},  ds:"寒冰之体，突破更易。"},
   {id:"mut-thun", name:"雷灵根", ic:"⚡", speed:1.8, req:0.40, cap:0.35, combat:0.20, extra:{crit:0.20},   ds:"天雷之体，会心大增。"},
-  {id:"mut-wind", name:"风灵根", ic:"🌪️", speed:1.8, req:0.40, cap:0.35, combat:0.20, extra:{offline:0.50},ds:"御风之体，离线收益大增。"},
-  {id:"mut-ven",  name:"毒灵根", ic:"☠️", speed:1.8, req:0.40, cap:0.35, combat:0.20, extra:{prod:0.30},   ds:"万毒之体，生产大增。"},
+  {id:"mut-wind", name:"风灵根", ic:"🌪️", speed:1.8, req:0.40, cap:0.35, combat:0.20, extra:{bs:0.15},    ds:"御风之体，身法如风（战斗速度+15%、闪避+10%）。"},
+  {id:"mut-ven",  name:"毒灵根", ic:"☠️", speed:1.8, req:0.40, cap:0.35, combat:0.25, extra:{},           ds:"万毒之体，战力大增（+25%）。"},
   {id:"mut-yin",  name:"阴阳灵根",ic:"☯️", speed:2.2, req:0.40, cap:0.35, combat:0.20, extra:{dao:0.25},   ds:"阴阳之体，大道碎片大增。"},
 ];
 function combos(arr,k){ const res=[]; function rec(s,st){ if(st.length===k){res.push(st.slice());return;} for(let i=s;i<arr.length;i++){st.push(arr[i]);rec(i+1,st);st.pop();} } rec(0,[]); return res; }
 const ROOTS=[];
-ROOTS.push({id:"root-金",name:"金灵根",ic:WX_IC["金"],type:"single",elems:["金"],speed:PARAM.single.speed,reqMult:PARAM.single.req,breakCap:PARAM.single.cap,combat:PARAM.single.combat,ds:"五行纯一，修炼最快、突破最难。"});
+ROOTS.push({id:"root-金",name:"金灵根",ic:WX_IC["金"],type:"single",elems:["金"],speed:PARAM.single.speed,reqMult:PARAM.single.req,breakCap:PARAM.single.cap,combat:PARAM.single.combat,ds:"五行纯一，修炼最快、战力最强、突破最难。"});
 ROOTS.push({id:"root-木",name:"木灵根",ic:WX_IC["木"],type:"single",elems:["木"],speed:PARAM.single.speed,reqMult:PARAM.single.req,breakCap:PARAM.single.cap,combat:PARAM.single.combat,ds:"五行纯一，修炼最快、突破最难。"});
 ROOTS.push({id:"root-水",name:"水灵根",ic:WX_IC["水"],type:"single",elems:["水"],speed:PARAM.single.speed,reqMult:PARAM.single.req,breakCap:PARAM.single.cap,combat:PARAM.single.combat,ds:"五行纯一，修炼最快、突破最难。"});
 ROOTS.push({id:"root-火",name:"火灵根",ic:WX_IC["火"],type:"single",elems:["火"],speed:PARAM.single.speed,reqMult:PARAM.single.req,breakCap:PARAM.single.cap,combat:PARAM.single.combat,ds:"五行纯一，修炼最快、突破最难。"});
@@ -745,7 +761,7 @@ const DOUBLES=[["金","水"],["水","木"],["木","火"],["火","土"],["土","�
 DOUBLES.forEach(p=>{ ROOTS.push({id:"root-"+p.join(""),name:p.join("")+"双灵根",ic:"🔁",type:"double",elems:p.slice(),speed:PARAM.double.speed,reqMult:PARAM.double.req,breakCap:PARAM.double.cap,combat:PARAM.double.combat,ds:"相生双灵根，兼顾修炼与突破。"}); });
 combos(WX,3).forEach(p=>{ ROOTS.push({id:"root-"+p.join(""),name:p.join("")+"三灵根",ic:"🔃",type:"triple",elems:p.slice(),speed:PARAM.triple.speed,reqMult:PARAM.triple.req,breakCap:PARAM.triple.cap,combat:PARAM.triple.combat,ds:"三灵根，战力渐强。"}); });
 combos(WX,4).forEach(p=>{ ROOTS.push({id:"root-"+p.join(""),name:p.join("")+"四灵根",ic:"💠",type:"quad",elems:p.slice(),speed:PARAM.quad.speed,reqMult:PARAM.quad.req,breakCap:PARAM.quad.cap,combat:PARAM.quad.combat,ds:"四灵根，突破更稳、战力更强。"}); });
-ROOTS.push({id:"root-五行",name:"五灵根",ic:"🌟",type:"quint",elems:WX.slice(),speed:PARAM.quint.speed,reqMult:PARAM.quint.req,breakCap:PARAM.quint.cap,combat:PARAM.quint.combat,ds:"五行俱全，战力最强、突破最稳。"});
+ROOTS.push({id:"root-五行",name:"五灵根",ic:"🌟",type:"quint",elems:WX.slice(),speed:PARAM.quint.speed,reqMult:PARAM.quint.req,breakCap:PARAM.quint.cap,combat:PARAM.quint.combat,ds:"五行俱全，突破最稳、战力均衡。"});
 MUT.forEach(m=>{ ROOTS.push({id:m.id,name:m.name,ic:m.ic,type:"mut",elems:[m.name.slice(0,1)],speed:m.speed,reqMult:m.req,breakCap:m.cap,combat:m.combat,extra:m.extra,ds:m.ds}); });
 
 /* 境界（req 为 v4 ×100 后数值） */
@@ -832,6 +848,7 @@ function normalizeState(){
   for(const k in S.collect){ if(!["beast","ore","herb"].includes(k)) delete S.collect[k]; }
   S.ups=S.ups||Object.fromEntries(UPS.map(u=>[u.id,0]));
   S.shen=S.shen||[]; S.ach=S.ach||[];
+  S.skills=S.skills||[]; if(!S.skills.length&&S.root) S.skills=starterSkillsFor(S.root); // 灵根技能/身法：须坊市购书学习；老档按灵根赠入门法术
   S.settings=S.settings||{}; if(S.settings.theme===undefined)S.settings.theme="dark"; if(S.settings.lang===undefined)S.settings.lang="zh";
   if(!Array.isArray(S.log))S.log=[];
   if(S.crystal){ S.stoneL=(S.stoneL||0)+Math.floor(S.crystal/100); delete S.crystal; } S.stoneL=S.stoneL||0; S.stoneM=S.stoneM||0; S.stoneH=S.stoneH||0; S.stoneT=S.stoneT||0; S.stoneG=S.stoneG||0;
@@ -898,7 +915,7 @@ function load(){
 /* ================================================================
    货币
    ================================================================ */
-/* 下品灵石计价：价格满 100 自动进位成「高品+低品」混合显示；支付必须持有对应各品组合（不自动兑换） */
+/* 下品灵石计价：价格满 100 自动进位成「高品+低品」混合显示；支付优先按各品精确组合（无手续费），组合不足时 v29 起自动以高品折低品补足（1% 手续费），低换高不自动 */
 function facCostL(i){ const g=FAC[i]; return Math.ceil(g.cost*Math.pow(g.costM,S.fa[i])); }
 function upCostL(id){ const u=UPS.find(x=>x.id===id); return Math.ceil(u.cost*Math.pow(u.costM,S.ups[id])); }
 function rerollCostL(){ return Math.ceil(CFG.rerollBaseCost*Math.pow(CFG.rerollCostM,S.paidRolls)); }
@@ -916,6 +933,29 @@ function priceLText(p){ const parts=[]; if(p.g)parts.push(fmt(p.g)+" 神品灵�
 function ceilPriceText(n){ n=Math.max(0,Math.ceil(n)); if(n>=1e8) return fmt(Math.ceil(n/1e8))+" 神品灵石"; if(n>=1e6) return fmt(Math.ceil(n/1e6))+" 极品灵石"; if(n>=1e4) return fmt(Math.ceil(n/1e4))+" 上品灵石"; if(n>=100) return fmt(Math.ceil(n/100))+" 中品灵石"; return fmt(n)+" 下品灵石"; }
 function canPayL(p){ return S.stoneG>=p.g && S.stoneT>=p.t && S.stoneH>=p.h && S.stoneM>=p.m && S.stoneL>=p.l; }
 function payL(p){ if(!canPayL(p)) return false; S.stoneG-=p.g; S.stoneT-=p.t; S.stoneH-=p.h; S.stoneM-=p.m; S.stoneL-=p.l; return true; }
+/* v29 购买自动折算：低品灵石不足时自动用更高品折算补足（高→低折 1% 手续费，与「灵石兑换」一致）；低→高不自动，需手动经「灵石兑换」凑齐高品 */
+function canPayAutoL(n){ // 总价值：各品按 99% 折算为下品后是否足够（精确组合由 canPayL 先行判定、无需手续费）
+  return S.stoneL + Math.floor(S.stoneM*99) + Math.floor(S.stoneH*9900) + Math.floor(S.stoneT*990000) + Math.floor(S.stoneG*99000000) >= n;
+}
+function payAutoL(n){ // 自动高换低支付 n 下品：低品不足时从低到高逐级折算高品（每品折得 = 面值×99%），折算多余部分以找零下品保留
+  if(S.stoneL>=n){ S.stoneL-=n; return true; }
+  if(!canPayAutoL(n)) return false;
+  let rem=n-S.stoneL; // 需高品折算补足的缺口
+  const rates=[["M",100],["H",1e4],["T",1e6],["G",1e8]]; // 中→上→极→神，逐级向上取，最小消耗高品
+  for(let i=0;i<rates.length;i++){
+    if(rem<=0) break;
+    const k=rates[i][0], v=rates[i][1];
+    if(S["stone"+k]<=0) continue;
+    const per=Math.floor(v*0.99); // 每品折得下品（1% 手续费）
+    const take=Math.min(Math.ceil(rem/per), S["stone"+k]);
+    S["stone"+k]-=take;
+    S.stoneL+=take*per;
+    rem-=take*per;
+  }
+  if(rem>0) return false;
+  S.stoneL-=n; // stoneL 含原低品+折算所得，扣除后剩余即找零
+  return true;
+}
 function addL(p){ S.stoneG+=p.g; S.stoneT+=p.t; S.stoneH+=p.h; S.stoneM+=p.m; S.stoneL+=p.l; }
 
 /* ================================================================
@@ -1970,11 +2010,11 @@ function sellTres(qty){
   sound(520,.15); save(); render();
 }const SHOP_W={1:16,2:8,3:4,4:2,5:1,6:0.5}; // 稀有度→刷新权重（越稀有越低，坊市仅 1~6）
 const SHOP_STOCK={1:10,2:8,3:5,4:3,5:1,6:1}; // 稀有度→库存（越稀有越少，最多10最少1）
-function shopPool(){ const a=[]; MATS.forEach(m=>{if(m.rarity<=6)a.push({kind:"mat",obj:m});}); CRAFT.forEach(c=>c.rec.forEach(r=>{if(r.rarity<=6&&!r.slot)a.push({kind:"tres",obj:r});})); GONGFAS.forEach(g=>{if(g.rarity<=6)a.push({kind:"gong",obj:g});}); return a; }
+function shopPool(){ const a=[]; MATS.forEach(m=>{if(m.rarity<=6)a.push({kind:"mat",obj:m});}); CRAFT.forEach(c=>c.rec.forEach(r=>{if(r.rarity<=6&&!r.slot)a.push({kind:"tres",obj:r});})); GONGFAS.forEach(g=>{if(g.rarity<=6)a.push({kind:"gong",obj:g});}); SPELLS.forEach(s=>{a.push({kind:"skill",obj:s});}); return a; }
 function weightedShopPick(pool){ let total=0; pool.forEach(p=>total+=(SHOP_W[p.obj.rarity]||1)); let rnd=Math.random()*total; for(const p of pool){ rnd-=(SHOP_W[p.obj.rarity]||1); if(rnd<=0) return p; } return pool[0]; }
 function refreshShop(now){ const pool=shopPool(); const chosen=new Set(); const list=[]; for(let i=0;i<10 && chosen.size<pool.length;i++){ let pick=weightedShopPick(pool); let guard=0; while(chosen.has(pick.obj.id) && guard<300){ pick=weightedShopPick(pool); guard++; } if(chosen.has(pick.obj.id)) continue; chosen.add(pick.obj.id); list.push({kind:pick.kind, id:pick.obj.id, stock:(SHOP_STOCK[pick.obj.rarity]||1)}); } S.shop={list, until:now+10*60*1000}; }
-function shopItem(id){ const m=MATS_BY_ID[id]; if(m) return {kind:"mat",obj:m}; const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g}; const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r}; return null; }
-function buyShop(entry){ if(!entry||entry.stock<=0) return; const it=shopItem(entry.id); if(!it) return; const p=splitPriceL(it.obj.value); if(!canPayL(p)){ logEvent("灵石不足，无法购买「"+it.obj.name+"」。",'warn'); return; } payL(p); entry.stock--; if(it.kind==="mat"){ S.mats[entry.id]=(S.mats[entry.id]||0)+1; } else { S.tres[entry.id]=(S.tres[entry.id]||0)+1; } logEvent("于坊市购入「"+it.obj.name+"」（-"+priceLText(p)+"）",'sys','trade'); sound(520,.15); save(); render(); }/* ============ 拍卖会（坊市子项）============ */
+function shopItem(id){ const m=MATS_BY_ID[id]; if(m) return {kind:"mat",obj:m}; const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g}; const s=SPELLS_BY_ID[id]; if(s) return {kind:"skill",obj:s}; const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r}; return null; }
+function buyShop(entry){ if(!entry||entry.stock<=0) return; const it=shopItem(entry.id); if(!it) return; const p=splitPriceL(it.obj.value); if(!canPayL(p)&&!canPayAutoL(it.obj.value)){ logEvent("灵石不足（可自动以高品折低品支付，或先至「灵石兑换」低换高凑齐），无法购买「"+it.obj.name+"」。",'warn'); return; } if(it.kind==="skill"){ if((S.skills||[]).includes(entry.id)){ logEvent("已习得「"+it.obj.name+"」，无需重复购买",'dim'); return; } if(!payL(p)) payAutoL(it.obj.value); entry.stock--; S.skills.push(entry.id); logEvent("购得并习得「"+it.obj.name+"」（"+it.obj.elem+"·"+(it.obj.type==="shen"?"身法":"灵根法术")+"）· 可至战前技能槽装备",'sys','trade'); sound(520,.15); save(); render(); return; } if(!payL(p)) payAutoL(it.obj.value); entry.stock--; if(it.kind==="mat"){ S.mats[entry.id]=(S.mats[entry.id]||0)+1; } else { S.tres[entry.id]=(S.tres[entry.id]||0)+1; } logEvent("于坊市购入「"+it.obj.name+"」（-"+priceLText(p)+"）",'sys','trade'); sound(520,.15); save(); render(); }/* ============ 拍卖会（坊市子项）============ */
 let shopCat="shop"; // "shop" 坊市 / "auction" 拍卖会
 function auctionPool(minR,maxR){
   const a=[];
@@ -1986,6 +2026,7 @@ function auctionPool(minR,maxR){
 }
 function itemCat(it){
   if(it.kind==="gong") return "功法";
+  if(it.kind==="skill") return it.obj.type==="shen"?"身法":"灵根法术";
   if(it.kind==="mat") return it.obj.cat||"材料";
   const r=it.obj;
   if(r.slot){
@@ -2001,12 +2042,14 @@ function shopTipHtml(it,en){
   const r=it.obj;
   let eff="";
   if(it.kind==="gong") eff="功法 · 灵气倍率 ×"+r.ess;
+  else if(it.kind==="skill") eff="购后习得，可装配至战前技能槽 · "+battleSkillDesc("spell",r);
   else if(it.kind==="mat"){ /* 材料无效果段 */ }
   else if(r.slot) eff=eqText(r);
   else { const useable=!!(r.eff||r.heal); eff=useable?("效果："+effText(r)):"珍宝收藏，无可使用效果，可出售"; }
   let held="";
   if(it.kind==="mat") held=" · 持有 "+fmt(S.mats[en.id]||0);
   else if(it.kind==="gong") held=" · "+(S.gongs.includes(en.id)?"已习得":"未习得");
+  else if(it.kind==="skill") held=" · "+(S.skills.includes(en.id)?"已习得":"未习得");
   else held=" · 持有 "+fmt(S.tres[en.id]||0);
   return `<b>${r.name}</b>（稀有${r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>${it.kind==="mat"?"单价":"价值"} ${r.value} 下品灵石 · 库存 ${en.stock}${held}`;
 }
@@ -2049,8 +2092,8 @@ function bidAuction(en){
   const nb=en.bid+add;
   const extra=nb-(en.pPaid||0); // 只需补差额
   const it=auctionItem(en.kind,en.id);
-  if(extra>0 && !canPayL(splitPriceL(extra))){ logEvent("灵石不足，无法出价「"+(it?it.obj.name:"")+"」（需 "+fmt(nb)+" 下品灵石）。",'warn'); return; }
-  if(extra>0) payL(splitPriceL(extra));
+  if(extra>0 && !canPayL(splitPriceL(extra)) && !canPayAutoL(extra)){ logEvent("灵石不足（可自动以高品折低品支付，或先至「灵石兑换」低换高凑齐），无法出价「"+(it?it.obj.name:"")+"」（需 "+fmt(nb)+" 下品灵石）。",'warn'); return; }
+  if(extra>0 && !payL(splitPriceL(extra))) payAutoL(extra);
   en.bid=nb; en.pPaid=nb; en.bidder="player";
   logEvent("你出价 "+fmt(nb)+" 下品灵石竞拍「"+(it?it.obj.name:"")+"」",'sys','trade'); sound(620,.1); save(); render();
 }
@@ -2104,7 +2147,7 @@ function renderAuction(body){
     const nb=en.bid+add, extra=nb-(en.pPaid||0);
     const row=document.createElement("div");row.className="exchRow";
     row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 底价 ${ceilPriceText(en.base)} · 当前 <span id="aucBid${idx}">${ceilPriceText(en.bid)}（${who}）</span></span>`;
-    row.appendChild(buyBtn(canPayL(splitPriceL(extra)),()=>{bidAuction(en);},"出价 "+ceilPriceText(nb)));
+    row.appendChild(buyBtn((canPayL(splitPriceL(extra))||canPayAutoL(extra)),()=>{bidAuction(en);},"出价 "+ceilPriceText(nb)));
     bindTip(row,auctionTipHtml(it,en)); // v28 拍卖会货物悬浮详情框（与坊市随机出售一致）
     body.appendChild(row);
   });
@@ -2131,9 +2174,9 @@ function renderShop(body){
     else if(Date.now()>=S.auction.npcLast+60000){ S.auction.npcLast=Date.now(); npcBid(Date.now()); }
   }
   let st=document.createElement("div");st.className="sectionTitle";st.textContent="— 坊市 · 随机出售（每10分钟刷新）—";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="随机上架 10 种材料 / 成品，越稀有刷新率越低、库存越少（稀有度1~5 → 库存10~1）。以灵石购买，请自行凑齐各品灵石。"+(S.shop.list.length?(" 距下次刷新 <b>"+Math.ceil((S.shop.until-Date.now())/60000)+"</b> 分钟。"):"");body.appendChild(p);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="随机上架 10 种材料 / 成品，越稀有刷新率越低、库存越少（稀有度1~5 → 库存10~1）。以灵石购买：<b>下品不足时自动以高品折抵</b>（高→低折算含 1% 手续费，多余找回下品）；<b>高品不足不自动低换高</b>，需先至「灵石兑换」手动凑齐。"+(S.shop.list.length?(" 距下次刷新 <b>"+Math.ceil((S.shop.until-Date.now())/60000)+"</b> 分钟。"):"");body.appendChild(p);
   if(!S.shop.list.length){ const e=document.createElement("div");e.className="hint";e.textContent="暂无上架商品。";body.appendChild(e); }
-  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; bindTip(row,shopTipHtml(it,en)); row.appendChild(buyBtn(en.stock>0&&canPayL(pr),()=>{buyShop(en);render();},"购买")); body.appendChild(row); });
+  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; bindTip(row,shopTipHtml(it,en)); const learned=it.kind==="skill"&&(S.skills||[]).includes(en.id); row.appendChild(buyBtn(en.stock>0&&(canPayL(pr)||canPayAutoL(it.obj.value))&&!learned,()=>{buyShop(en);render();},learned?"已习得":"购买")); body.appendChild(row); });
 }
 function renderExch(body){
   const st2=document.createElement("div");st2.className="sectionTitle";st2.textContent="— 坊市 · 灵石兑换（手续费1%）—";body.appendChild(st2);
@@ -2170,7 +2213,7 @@ function renderBattle(body){
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 探索 · 秘境 —";body.appendChild(st);
   const canExp=S.realm>=1;
   const p=document.createElement("div");p.className="hint";
-  p.innerHTML="进入区域遭遇凶险、寻获机缘：蜂窝秘境共 10 层，难度与奖励逐层递增，最终层或遇 BOSS；气血耗尽将被迫撤离并损失一半收获。灵根直接影响战斗数值——灵根越多战力越强（单灵根专精修炼、战力平庸，五灵根战力最强），变异灵根各具战斗特性，神通库中的技能为可施展神通。"+(S.root?(" 当前灵根「"+S.root.name+"」战斗加成 +"+Math.round(S.root.combat*100)+"%。"):"")+(canExp?"":" <b style=\"color:#e05555\">炼气期尚未开悟，筑基后方可踏入秘境。</b>");
+  p.innerHTML="进入区域遭遇凶险、寻获机缘：蜂窝秘境共 10 层，难度与奖励逐层递增，最终层或遇 BOSS；气血耗尽将被迫撤离并损失一半收获。灵根直接影响战斗数值——单灵根战力最强（+30%）、五灵根最低（+10%），灵根越多突破越稳；变异灵根各具战斗特性，神通库中的技能为可施展神通。"+(S.root?(" 当前灵根「"+S.root.name+"」战斗加成 +"+Math.round(S.root.combat*100)+"%。"):"")+(canExp?"":" <b style=\"color:#e05555\">炼气期尚未开悟，筑基后方可踏入秘境。</b>");
   body.appendChild(p);
   const AREAS=[
     {key:"dt", nm:"洞天福地", lv:"中危", lvC:"#e67e22", ic:"🏞️", ds:"灵气浓郁之地，机缘众多，偶有低阶妖兽与珍稀灵植，适宜稳步积累。"},
@@ -2180,10 +2223,13 @@ function renderBattle(body){
   ];
   AREAS.forEach(a=>{
     const item=document.createElement("div");item.className="item";
+    const df=areaDifficulty(a.key);
     item.innerHTML=`<div class="ic">${a.ic}</div><div class="body">
-      <div class="nm">${a.nm} <span class="cat" style="color:${a.lvC};border-color:${a.lvC};">${a.lv}</span></div>
+      <div class="nm">${a.nm} <span class="cat" style="color:${df.lvC};border-color:${df.lvC};">${df.lv}</span></div>
       <div class="ds">${a.ds}</div>
-      <div class="ln" style="margin-top:4px">蜂窝秘境 · 共 10 层，每层难度与奖励递增，最终层或遇 BOSS</div>
+      <div class="ln" style="margin-top:3px;color:var(--jade)">适合探索 · 建议境界 ${EXP_AREAS[a.key].rec}</div>
+      <div class="ln" style="margin-top:2px;color:var(--ink-dim)">当前难度获取灵力 ×${df.mult.toFixed(1)}</div>
+      <div class="ln" style="margin-top:2px">蜂窝秘境 · 共 10 层，每层难度与奖励递增，最终层或遇 BOSS</div>
     </div>`;
     const wr=document.createElement("div");wr.className="btnRow";
     wr.appendChild(buyBtn(canExp,()=>startExplore(a.key),"进入探索"));
@@ -2323,6 +2369,10 @@ const SPELLS=[
   {id:"s-yiny4",name:"两仪遁",elem:"阴阳",type:"shen",target:"self",cost:10,cd:2,eff:[{k:"dodge",v:30,t:2},{k:"nextDmg",v:20}]},
 ];
 const SPELLS_BY_ID={}; SPELLS.forEach(s=>SPELLS_BY_ID[s.id]=s);
+/* 技能书（坊市购买学习）：灵石价值 + 稀有度 1~6，随技能强度递增 */
+const skillBookVal=s=>Math.max(400,Math.round(s.cost*40*(s.type==="shen"?1.2:1)));
+const skillBookRarity=s=>Math.min(6,Math.max(1,Math.round(s.cost/5)));
+SPELLS.forEach(s=>{ s.value=skillBookVal(s); s.rarity=skillBookRarity(s); });
 /* 功法战斗被动（结构化；key 为 GONGFAS id） */
 const GONG_BP={
   yj:{}, lz:{costRed:0.10}, xp:{elemPow:{木:0.10}}, qq:{elemPow:{金:0.15}}, zf:{elemPow:{水:0.10}},
@@ -2348,7 +2398,8 @@ const SHEN_BS={
 /* 技能槽容量（按灵根类型，表 5-3）：{法术槽, 身法槽, 神通槽} */
 const SLOT_CAP={single:{dmg:2,shen:1,shenSh:1},double:{dmg:3,shen:1,shenSh:1},triple:{dmg:3,shen:2,shenSh:1},quad:{dmg:4,shen:2,shenSh:1},quint:{dmg:4,shen:2,shenSh:2},mut:{dmg:2,shen:2,shenSh:1}};
 function rootSpellElems(root){ if(!root) return ["金"]; if(root.type==="mut") return root.id==="mut-yin"?["阴阳"]:[root.name.slice(0,1)]; return root.elems.slice(); }
-function spellPoolFor(root){ const es=rootSpellElems(root); return SPELLS.filter(s=>es.includes(s.elem)); }
+function starterSkillsFor(root){ const es=rootSpellElems(root); const seen={}, out=[]; SPELLS.forEach(s=>{ if(es.includes(s.elem)&&s.type==="dmg"&&!seen[s.elem]){ seen[s.elem]=1; out.push(s.id); } }); return out; }
+function spellPoolFor(root){ const es=rootSpellElems(root); const learned=S.skills||[]; return SPELLS.filter(s=>es.includes(s.elem)&&learned.includes(s.id)); }
 function slotCapOf(root){ const t=root?root.type:"single"; return SLOT_CAP[t]||SLOT_CAP.single; }
 /* 战前技能槽解析：从存档已配置（S.slots）取值，缺省按灵根池自动补齐 */
 function resolveSlots(root){
@@ -2376,9 +2427,9 @@ function battleAttrs(){
   const bp=GONG_BP[g.id]||{};
   const mutE=root&&root.type==="mut"?root.id:null;
   const allUp=bp.allUp||0;
-  // 速度 = 100 + 境界×15 + 装备速度词条；鸿蒙全属性 ×1.10；变异风 ×1.15
+  // 速度 = 100 + 境界×15 + 装备速度词条；鸿蒙全属性 ×1.10；变异风 ×(1+extra.bs)（v30.3 数据驱动）
   let speed=Math.floor((100+(S.realm||0)*15+eqSubSum("spd"))*(1+allUp));
-  if(mutE==="mut-wind") speed=Math.floor(speed*1.15);
+  if(mutE==="mut-wind") speed=Math.floor(speed*(1+(root.extra&&root.extra.bs?root.extra.bs:0.15)));
   // 命中：基础 95% + 装备命中词条，上限 100%
   const hit=Math.min(1,0.95+eqSubSum("hit")/100);
   // 闪避：基础 0% + 变异风 10% + 装备闪避词条，上限 60%
@@ -2725,6 +2776,11 @@ function resolveCell(win,fleeMode){
   const st=areaStone(exp.area,exp.floor);
   if(fleeMode==="flee"){ logEvent("成功逃跑，返回地图",'dim'); }
   else if(win){
+    const mult=areaDifficulty(exp.area).mult;
+    const typeM={fight:1.0,elite:2.5,boss:6.0}[b.kind]||1.0;
+    const gain=Math.max(1,Math.floor(realmNeed()*0.001*typeM*mult));
+    S.essence+=gain; if(S.lifetime===undefined)S.lifetime=0; S.lifetime+=gain;
+    logEvent("战斗胜利，灵力 +"+fmt(gain)+"（难度×"+mult+"）",'sys');
     if(b.kind==="fight"){
       exp.loot.push({kind:"stone",tier:st.tier,qty:st.qty});
       if(Math.random()<0.5){ const m=areaMat(exp.area,exp.floor); exp.loot.push({kind:"mat",id:m.id,name:m.name,qty:1}); logEvent("击败妖兽，缴获灵石与"+m.name,'sys'); } else logEvent("击败妖兽，缴获灵石",'sys');
@@ -2734,6 +2790,7 @@ function resolveCell(win,fleeMode){
       else { exp.map=genExpMap(exp.floor,exp.area); exp.pos={q:0,r:0}; logEvent("击败精英守卫！深入第 "+exp.floor+" 层",'sys'); }
     } else if(b.kind==="boss"){ logEvent("击败秘境 BOSS！",'sys'); expFinish(); return; }
   }
+  expRevealNearby();
   save(); renderExpPanel(); renderStats();
 }
 /* ---------- 战斗动画（第一批：飘字 / 受击 / 暴击 / 五行克光） ---------- */
@@ -2900,11 +2957,20 @@ if($("battleCloseBtn"))$("battleCloseBtn").addEventListener("click",()=>{ if(BAT
 if($("slotsClose"))$("slotsClose").addEventListener("click",()=>{ $("slotsOverlay").classList.remove("show"); if(activeTab==="battle")renderBattle($("tabBody")); });
 /* ================= 探索系统 v7：气血 + 蜂窝秘境 ================= */
 const EXP_AREAS={
-  dt:{nm:"洞天福地", lv:"中危", power:60},
-  yl:{nm:"原始禁区", lv:"高危", power:140},
-  sg:{nm:"上古战场", lv:"极危", power:320},
-  kj:{nm:"跨界空间", lv:"九死一生", power:700}
+  dt:{nm:"洞天福地", lv:"中危", power:60, rec:"筑基~元婴"},
+  yl:{nm:"原始禁区", lv:"高危", power:140, rec:"化神~合体"},
+  sg:{nm:"上古战场", lv:"极危", power:320, rec:"大乘~真仙"},
+  kj:{nm:"跨界空间", lv:"九死一生", power:700, rec:"真仙及以上"}
 };
+function areaBasePower(area){ const seg={dt:2,yl:5,sg:8,kj:9}[area]||1; return Math.floor(100*(1+seg*0.45)*2.0); }
+function areaDifficulty(area){
+  const r=playerPower()/areaBasePower(area);
+  if(r>=1.6) return {lv:"毫无难度", lvC:"#45d0a0", mult:0.4};
+  if(r>=1.05) return {lv:"中危", lvC:"#e0b95e", mult:1.0};
+  if(r>=0.85) return {lv:"高危", lvC:"#e8963b", mult:1.6};
+  if(r>=0.65) return {lv:"极危", lvC:"#e05b4a", mult:2.4};
+  return {lv:"九死一生", lvC:"#d9403a", mult:3.5};
+}
 function hpMaxFor(n){ return Math.floor(100*Math.pow(1.45,Math.max(0,n))*(1+(eqSum("hp")+petSum("hp"))/100)); }
 function playerPower(){ return Math.floor(100*(1+S.realm*0.45)*(1+(S.root?S.root.combat:0))*(1+buffEffSum("combat")/100)*(1+eqSum("atk")/100)*(1+petSum("atk")/100)); }
 /* v18.49：按「玩家全装+全buff+有回血丹药」基准重新设计难度。
@@ -2987,7 +3053,7 @@ function startExplore(area){
   expTab="explore";
   if(!S.exp){
     S.exp={area, floor:1, map:genExpMap(1,area), loot:[], over:false, pos:{q:0,r:0}};
-    logEvent("踏入「"+EXP_AREAS[area].nm+"」（"+EXP_AREAS[area].lv+"），秘境探险开始",'sys');
+    logEvent("踏入「"+EXP_AREAS[area].nm+"」（"+areaDifficulty(area).lv+"），秘境探险开始",'sys');
   }
   renderExpPanel(); $("expOverlay").classList.add("show");
 }
@@ -3036,7 +3102,7 @@ function expSummary(title, lossNote){
     else if(it.kind==="stone"){ const tn={L:"下品灵石",M:"中品灵石",H:"上品灵石",T:"极品灵石",G:"神品灵石"}[it.tier]||it.tier; rows[tn]=(rows[tn]||0)+it.qty; }
   });
   const line=Object.keys(rows).length? Object.entries(rows).map(([k,v])=>k+" ×"+fmt(v)).join("、") : "（无）";
-  showModal(title,"探索区域："+EXP_AREAS[exp.area].nm+"（"+EXP_AREAS[exp.area].lv+"）\n到达层数：第 "+exp.floor+" 层"+(lossNote?"\n"+lossNote:"")+"\n本次获得：\n"+line+"\n剩余气血："+Math.floor(S.hp)+"/"+S.hpMax);
+  showModal(title,"探索区域："+EXP_AREAS[exp.area].nm+"（"+areaDifficulty(exp.area).lv+"）\n到达层数：第 "+exp.floor+" 层"+(lossNote?"\n"+lossNote:"")+"\n本次获得：\n"+line+"\n剩余气血："+Math.floor(S.hp)+"/"+S.hpMax);
 }
 function expRevealNearby(){
   const exp=S.exp; if(!exp) return;
@@ -3087,7 +3153,7 @@ let expTab="explore";
 function renderExpPanel(){
   const exp=S.exp; if(!exp) return;
   const ar=EXP_AREAS[exp.area];
-  $("expTitle").textContent=ar.nm+"（"+ar.lv+"）· 第 "+exp.floor+" 层 / 10";
+  $("expTitle").textContent=ar.nm+"（"+areaDifficulty(exp.area).lv+"）· 第 "+exp.floor+" 层 / 10";
   const viewE=$("expViewExplore"), viewL=$("expViewLoot");
   const tabE=$("expTabExplore"), tabL=$("expTabLoot");
   if(expTab==="loot"){ tabE.classList.remove("active"); tabL.classList.add("active"); viewE.style.display="none"; viewL.style.display="block"; renderExpLoot(); return; }
@@ -3324,7 +3390,9 @@ function renderRr(){
 }
 function rrKeep(){
   S.root=rrCand; S.freeRolls=0;
+  S.skills=starterSkillsFor(S.root); // 定根赠各元素入门法术；进阶法术与身法需坊市购书学习
   logEvent("定根：「"+S.root.name+"」（修炼 ×"+S.root.speed+"·突破上限 "+Math.round(S.root.breakCap*100)+"%·突破灵力 ×"+S.root.reqMult+"）",'sys');
+  logEvent("习得入门法术："+S.skills.map(id=>SPELLS_BY_ID[id].name).join("、")+"；更多灵根技能与身法可至坊市购书学习",'sys');
   $("rrOverlay").classList.remove("show");
   sound(700,.2); banner("灵根已定："+S.root.name);
   checkAchievements(); save(); render();
@@ -3358,6 +3426,102 @@ function renderSetModal(){
   document.querySelectorAll("#themeBtns button").forEach(b=>b.classList.toggle("sel", b.dataset.theme===S.settings.theme));
 }
 $("settingsBtn").addEventListener("click",()=>{ renderSetModal(); $("setOverlay").classList.add("show"); });
+/* 玩家手册 · 图鉴（v30.1）—— 左导航 + 右详情拆解，如图例 */
+const MANUAL_SECTIONS=[
+  {t:"创建角色", ic:"🧑‍🚀", secs:[
+    {h:"怎么开", b:"开始新游戏输入道号后，选择初始立绘并刷取灵根（可免费重刷 10 次，之后消耗灵石）。确认后正式踏入仙途，进入新手指引。"},
+    {h:"立绘", b:"13 张初始形象可选（少年/少女/男修/女修/神秘修士），选定后显示在装备页人物栏，后续不可更换。"},
+    {h:"核心机制", b:"道号仅作称号展示；灵根决定修炼速度、突破难度与战斗强度，是角色构建的核心，详见「灵根」条目。"},
+  ]},
+  {t:"灵根", ic:"🌟", secs:[
+    {h:"怎么选", b:"创建角色时刷取，共 31 种：五行（金木水火土）单/双/三/四/五灵根组合 26 种 + 变异灵根 5 种。灵根决定修炼速度、突破需求倍率、突破成功率上限与战斗加成。"},
+    {h:"类型对比", b:"战力按五行数量梯度：单灵根+30% 最多、双灵根+25%、三灵根+20%、四灵根+15%、五灵根+10% 最少；修炼速度相反：单灵根×2.0 最快、五灵根×1.0 最慢但突破成功率上限 50% 最稳、需求×1.25 最高。"},
+    {h:"变异灵根", b:"5 种不套用五行梯度，各带独立特性：冰（突破概率+8%）/ 雷（会心+20%）/ 风（战斗速度+15%、闪避+10%）/ 毒（战力+25%）/ 阴阳（大道碎片+25%），均修炼×1.8~2.2、突破需求×0.4、上限 35%、基础战斗+20%。"},
+    {h:"怎么变强", b:"灵根不可更换，但突破成功率上限可通过突破丹药/设施等提升；战斗加成直接并入战力，单灵根偏战斗爆发、灵根越杂突破越稳，按路线取舍。"},
+  ]},
+  {t:"修炼与突破", ic:"🧘", secs:[
+    {h:"怎么开", b:"「修炼」页点击『盘膝打坐』开始运功即积累灵气；灵气产出默认暂停，仅在运功时产出。运功与采集/制造/探索互斥，切换行为自动停止运功。"},
+    {h:"怎么变快", b:"灵气产出受境界倍率、灵根速度、运功加成、傀儡/设施等影响；「运功加成」栏实时显示当前总倍率。"},
+    {h:"突破", b:"灵气满额后点击『突破』冲击下一境界，成功率受灵根上限影响；失败损失 40% 所需灵力。突破后境界倍率大幅提升并解锁新玩法（筑基解锁探索、采集新区域等）。"},
+    {h:"注意事项", b:"离线时灵气产出默认暂停，不运功不产灵气；随机事件（灵雨/心魔）会临时影响修炼速度。"},
+  ]},
+  {t:"采集", ic:"⛏️", secs:[
+    {h:"怎么开", b:"「采集」页分狩猎/挖矿/采药三系，点击『开始采集』后每 15 秒判定一次，材料自动入须弥空间。"},
+    {h:"成功率", b:"采集成功率 50%：先判定是否采集成功，成功后才按稀有度掉落材料；越稀有概率越低（最低 1%）。失败则本轮回合重新采集。"},
+    {h:"区域", b:"外围/中部/核心三区域稀有度与产出分开计算（外围稀有1-4 / 中部3-6 / 核心4-8），中部需金丹（境界3）、核心需元婴（境界6）解锁。"},
+    {h:"怎么变快", b:"采集速度受傀儡效率影响（玉傀90%/木傀40%）；采集类设施与灵根（毒灵根生产+30%）可提升产出。"},
+  ]},
+  {t:"制造", ic:"🏭", secs:[
+    {h:"怎么开", b:"「制造」页四系标签：制符/炼丹/炼器/阵法，每系多张配方。选择配方并持有足够材料，点击『炼制』即可合成；炼制期间不可运功/采集/探索。"},
+    {h:"成品", b:"符箓战斗辅助、丹药恢复强化（含回气血丹药）、炼器成装备（见「装备」）、阵法提供常驻效果。成品全部存入须弥空间，可随时使用或出售。"},
+    {h:"怎么变快", b:"制造速度受对应效率加成影响；配方下方实时显示玩家库存，材料不足会提示缺口。循环制造支持输入目标件数自动批量炼制。"},
+  ]},
+  {t:"傀儡", ic:"🤖", secs:[
+    {h:"怎么开", b:"「傀儡」页选择执行者（玩家或傀儡）→ 指派任务（自动采集/自动制造）→ 选择目标，即开始自动执行。"},
+    {h:"效率", b:"傀儡采集概率同玩家（50%），采集时间按玩家速度×傀儡效率计算：玉傀效率最高（90%）、木傀最低（40%）。"},
+    {h:"怎么停", b:"指派后点击红色『停止』按钮随时结束任务；事件日志实时记录傀儡每次采集/制造结果。"},
+  ]},
+  {t:"探索", ic:"🗺️", secs:[
+    {h:"怎么开", b:"筑基（境界1）后解锁；炼气期「进入探索」按钮置灰不可点。探索与修炼/采集/制造互斥，进入自动停止三者。"},
+    {h:"秘境", b:"四大区域由易到难：洞天福地（中危）/ 原始禁区（高危）/ 上古战场（极危）/ 跨界空间（九死一生），按境界段制匹配敌人强度。"},
+    {h:"蜂窝秘境", b:"每区域共 10 层，难度与奖励逐层递增，最终层或遇 BOSS；踩过的格子不再重复揭开迷雾。气血耗尽将被迫撤离并损失 50% 战利品。"},
+    {h:"注意事项", b:"探索结束弹出收获详细总结；BOSS 战力≈该境界×危险系数（洞天1.15/禁区1.25/战场1.35/跨界1.5），战力不足建议先强化装备与神通。"},
+  ]},
+  {t:"装备", ic:"🛡️", secs:[
+    {h:"怎么开", b:"炼器制成装备后，「装备」页点击人物栏对应槽位方块（带 + 号），弹窗选择穿戴。"},
+    {h:"槽位", b:"共 7 槽：头部 / 项链 / 防具 / 武器 / 戒指壹 / 戒指贰 / 法宝；防具含头部槽+衣物槽，饰品含 2 戒指槽+1 项链槽。"},
+    {h:"属性", b:"穿戴属性常驻生效：战力 / 气血 / 灵气 / 会心 / 突破 / 减伤；装备稀有度越高基础属性越强。"},
+    {h:"怎么变强", b:"用更高稀有度装备替换旧装备；法宝槽可装载法宝类炼器成品，提供独特效果。"},
+  ]},
+  {t:"功法", ic:"📜", secs:[
+    {h:"怎么得", b:"功法仅能通过坊市随机刷新（10 分钟一轮）或拍卖会购得，无直接购买入口。"},
+    {h:"怎么用", b:"购入后到「功法」页『研习』习得；已学功法可『激活』（同一时间只能激活一本），激活后按钮变灰，提供常驻加成。"},
+    {h:"注意事项", b:"研习按钮使用后消失；所有已学功法保留激活/切换入口，随时更换主修功法。"},
+  ]},
+  {t:"技能·神通", ic:"⚡", secs:[
+    {h:"怎么开", b:"「神通」页神通库收录 12 个战斗神通，以大道碎片购买习得（下品1 / 中品3 / 上品8 / 极品15 / 至尊30 碎片）。"},
+    {h:"品阶与效果", b:"神通按品阶提供战斗加成：下品+8%~12%（太虚剑诀/九转玄功/御火术）、中品+12%~18%（天罡北斗阵/混元一气/呼风唤雨）、上品+20%~28%（大衍神算/万剑归宗/九霄雷法）、极品+35%~40%（诛仙剑阵/天魔解体大法）、至尊+50%（法天象地）。"},
+    {h:"怎么用", b:"购买后进入战前技能槽配置（法/身/神位），探索战斗中施展；同一技能可依据战斗策略在槽位间调整。"},
+    {h:"怎么得碎片", b:"大道碎片通过阴阳灵根加成、成就（碎片盈身/问道长生）、特殊事件等途径获取。"},
+  ]},
+  {t:"坊市与拍卖", ic:"🏮", secs:[
+    {h:"怎么开", b:"「坊市」页每 10 分钟随机刷新商品（含功法/材料/装备/丹药等），灵石购买；拍卖会定时开场、竞价购得稀有物品。"},
+    {h:"货币", b:"灵石五档：下品/中品/上品/极品/神品，1:100 逐级兑换；坊市出售材料可获灵石，兑换按钮支持 ×10 批量。"},
+    {h:"注意事项", b:"坊市可能刷新重复出售页属正常随机；拍卖会竞拍失败自动退回竞价，成交以最高价者得。"},
+  ]},
+  {t:"强化与成就", ic:"🏆", secs:[
+    {h:"强化", b:"「强化」页以灵石购买设施（聚灵阵/驭兽等），统一产出灵气，等级越高产出越多。"},
+    {h:"成就", b:"「成就」页达成条件后手动点击『领取』发放奖励；累计型成就（聚灵阵/驭兽/大道碎片）每满一档可多次领取。"},
+    {h:"注意事项", b:"设施突破成功率上限与强化等级相关，投资前先查看说明。"},
+  ]},
+];
+let manualIdx=0;
+function renderManual(){
+  const nav=$("manualNav"), box=$("manualBody");
+  nav.innerHTML=""; box.innerHTML="";
+  $("manualCount").textContent="（"+MANUAL_SECTIONS.length+" 项）";
+  MANUAL_SECTIONS.forEach((s,i)=>{
+    const nv=document.createElement("div");
+    nv.style.cssText="padding:8px 10px;border-radius:6px;cursor:pointer;margin:2px 0;font-size:13px;display:flex;align-items:center;gap:8px"+(i===manualIdx?";background:rgba(142,124,240,.25);color:#fff":";color:var(--ink-dim)");
+    nv.innerHTML='<span>'+s.ic+'</span><span>'+s.t+'</span>';
+    nv.addEventListener("click",()=>{ manualIdx=i; renderManual(); });
+    nav.appendChild(nv);
+  });
+  const s=MANUAL_SECTIONS[manualIdx];
+  const head=document.createElement("div");
+  head.innerHTML='<div style="font-size:16px;font-weight:800;margin:4px 0 8px">'+s.ic+' '+s.t+'</div>';
+  box.appendChild(head);
+  s.secs.forEach(sec=>{
+    const d=document.createElement("div");
+    d.style.cssText="margin:8px 0;padding:9px 12px;background:rgba(255,255,255,.04);border-left:3px solid var(--mystic,#8e7cf0);border-radius:6px";
+    d.innerHTML='<div style="font-weight:700;color:#eee;margin-bottom:2px">'+sec.h+'</div><div style="color:var(--ink-dim,#bbb)">'+sec.b+'</div>';
+    box.appendChild(d);
+  });
+}
+$("manualBtn").addEventListener("click",()=>{ manualIdx=0; renderManual(); $("manualOverlay").classList.add("show"); });
+$("manualClose").addEventListener("click",()=>{ $("manualOverlay").classList.remove("show"); });
+$("manualPrev").addEventListener("click",()=>{ manualIdx=(manualIdx+MANUAL_SECTIONS.length-1)%MANUAL_SECTIONS.length; renderManual(); });
+$("manualNext").addEventListener("click",()=>{ manualIdx=(manualIdx+1)%MANUAL_SECTIONS.length; renderManual(); });
 $("qqGroupBtn").addEventListener("click",()=>{
   const num="1128330622";
   const done=()=>{ banner("QQ群号已复制：1128330622"); logEvent("已复制官方QQ群号 1128330622",'sys'); };
