@@ -452,11 +452,11 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v30.7.1（含敌方技能战斗系统 v30.7；拍卖当前出价每秒刷新保留灵石单位）
+   修仙挂机 · 问道长生  v30.7.5（出售按高品灵石入账）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v30.7.1";
+const VERSION = "v30.7.5";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -555,12 +555,12 @@ const MATS = [
   {id:"xlangz", name:"玄狼爪", cat:"妖兽材料", ic:"🐺", rarity:6, value:750, ds:"玄狼利爪，破甲如纸。"},
   {id:"qilinj", name:"麒麟角", cat:"妖兽材料", ic:"🦄", rarity:7, value:1600, ds:"麒麟圣角，瑞气千条。"},
   {id:"zhulongm", name:"烛龙目", cat:"妖兽材料", ic:"👁️", rarity:7, value:1800, ds:"烛龙神目，日月之光。"},
-  {id:"fenghuangy", name:"凤凰羽", cat:"妖兽材料", ic:"🌈", rarity:8, value:4000, ds:"凤凰涅槃之羽，浴火重生。"},
-  {id:"xuanwubei", name:"玄武背甲", cat:"妖兽材料", ic:"🐚", rarity:8, value:4200, ds:"玄武神甲，坚不可摧。"},
-  {id:"yinglongl", name:"应龙鳞", cat:"妖兽材料", ic:"🐉", rarity:9, value:9000, ds:"应龙逆鳞，龙威浩荡。"},
-  {id:"taotieg", name:"饕餮骨", cat:"妖兽材料", ic:"🦴", rarity:9, value:9500, ds:"饕餮神骨，贪噬万物。"},
-  {id:"hundun", name:"混沌兽丹", cat:"妖兽材料", ic:"🌀", rarity:10, value:20000, ds:"混沌神兽内丹，鸿蒙之气。"},
-  {id:"zulongy", name:"祖龙牙", cat:"妖兽材料", ic:"🦷", rarity:10, value:22000, ds:"祖龙之牙，开天辟地。"},
+  {id:"fenghuangy", name:"凤凰羽", cat:"妖兽材料", ic:"🌈", rarity:8, value:400000, ds:"凤凰涅槃之羽，浴火重生。"},
+  {id:"xuanwubei", name:"玄武背甲", cat:"妖兽材料", ic:"🐚", rarity:8, value:420000, ds:"玄武神甲，坚不可摧。"},
+  {id:"yinglongl", name:"应龙鳞", cat:"妖兽材料", ic:"🐉", rarity:9, value:900000, ds:"应龙逆鳞，龙威浩荡。"},
+  {id:"taotieg", name:"饕餮骨", cat:"妖兽材料", ic:"🦴", rarity:9, value:950000, ds:"饕餮神骨，贪噬万物。"},
+  {id:"hundun", name:"混沌兽丹", cat:"妖兽材料", ic:"🌀", rarity:10, value:2000000, ds:"混沌神兽内丹，鸿蒙之气。"},
+  {id:"zulongy", name:"祖龙牙", cat:"妖兽材料", ic:"🦷", rarity:10, value:2200000, ds:"祖龙之牙，开天辟地。"},
   {id:"iron", name:"玄铁矿",  cat:"矿石",    ic:"⛏️", rarity:1, value:6,  ds:"地底玄铁，坚韧剔透。"},
   {id:"gold", name:"精金矿",  cat:"矿石",    ic:"🪙", rarity:2, value:30, ds:"稀有精金，璀璨夺目。"},
   {id:"myst", name:"星辰银",  cat:"矿石",    ic:"⭐", rarity:4, value:300,ds:"天外陨银，内含星辉。"},
@@ -575,12 +575,12 @@ const MATS = [
   {id:"chiyan", name:"赤炎石", cat:"矿石", ic:"🌋", rarity:6, value:720, ds:"赤炎地火所凝，灼热难当。"},
   {id:"xinghui", name:"星辉矿", cat:"矿石", ic:"✨", rarity:7, value:1500, ds:"坠星残矿，内含星辉。"},
   {id:"zijinm", name:"紫金母矿", cat:"矿石", ic:"🟪", rarity:7, value:1700, ds:"紫金母矿，天地至坚。"},
-  {id:"tianwai", name:"天外陨铁", cat:"矿石", ic:"☄️", rarity:8, value:3800, ds:"天外陨铁，锋锐无匹。"},
-  {id:"biluoy", name:"碧落玉", cat:"矿石", ic:"💎", rarity:8, value:3600, ds:"碧落神玉，温润生辉。"},
-  {id:"hunyuan", name:"混元石", cat:"矿石", ic:"🪨", rarity:9, value:8500, ds:"混元一气石，孕育大道。"},
-  {id:"hongmengj", name:"鸿蒙晶", cat:"矿石", ic:"🌌", rarity:9, value:8800, ds:"鸿蒙初判之晶。"},
-  {id:"hunjing", name:"混沌玄铁", cat:"矿石", ic:"⚫", rarity:10, value:19000, ds:"混沌玄铁，重逾万钧。"},
-  {id:"chuangshij", name:"创世晶核", cat:"矿石", ic:"💠", rarity:10, value:21000, ds:"创世遗晶，蕴含造化。"},
+  {id:"tianwai", name:"天外陨铁", cat:"矿石", ic:"☄️", rarity:8, value:380000, ds:"天外陨铁，锋锐无匹。"},
+  {id:"biluoy", name:"碧落玉", cat:"矿石", ic:"💎", rarity:8, value:360000, ds:"碧落神玉，温润生辉。"},
+  {id:"hunyuan", name:"混元石", cat:"矿石", ic:"🪨", rarity:9, value:850000, ds:"混元一气石，孕育大道。"},
+  {id:"hongmengj", name:"鸿蒙晶", cat:"矿石", ic:"🌌", rarity:9, value:880000, ds:"鸿蒙初判之晶。"},
+  {id:"hunjing", name:"混沌玄铁", cat:"矿石", ic:"⚫", rarity:10, value:1900000, ds:"混沌玄铁，重逾万钧。"},
+  {id:"chuangshij", name:"创世晶核", cat:"矿石", ic:"💠", rarity:10, value:2100000, ds:"创世遗晶，蕴含造化。"},
   {id:"herb", name:"灵草",    cat:"草药",    ic:"🌿", rarity:1, value:4,  ds:"普通灵草，药性温和。"},
   {id:"lingzhi",name:"灵芝",  cat:"草药",    ic:"🍄", rarity:2, value:25, ds:"千年灵芝，益气补灵。"},
   {id:"xuanyang",name:"玄阳花",cat:"草药",   ic:"🌺", rarity:4, value:260,ds:"玄阳之精，烈火蕴藏。"},
@@ -595,12 +595,12 @@ const MATS = [
   {id:"xianhe", name:"仙鹤草", cat:"草药", ic:"🕊️", rarity:6, value:700, ds:"仙鹤衔来之草，脱胎换骨。"},
   {id:"zixiaot", name:"紫霄藤", cat:"草药", ic:"🪺", rarity:7, value:1500, ds:"紫霄神藤，缠绕九霄。"},
   {id:"wanfuf", name:"万载茯苓", cat:"草药", ic:"🥥", rarity:7, value:1550, ds:"万载茯苓，延年益寿。"},
-  {id:"yinyangh", name:"阴阳花", cat:"草药", ic:"☯️", rarity:8, value:3800, ds:"阴阳并蒂之花，太极之妙。"},
-  {id:"jiuyang", name:"九阳参", cat:"草药", ic:"☀️", rarity:8, value:3900, ds:"九阳之参，至阳至热。"},
-  {id:"taichu", name:"太初神药", cat:"草药", ic:"🌾", rarity:9, value:8600, ds:"太初神药，逆天改命。"},
-  {id:"hundung", name:"混沌果", cat:"草药", ic:"🍈", rarity:9, value:8900, ds:"混沌神果，开天辟地。"},
-  {id:"chuangshil", name:"创世莲子", cat:"草药", ic:"🪷", rarity:10, value:19500, ds:"创世遗莲之实。"},
-  {id:"changsheng", name:"长生不老药", cat:"草药", ic:"🍵", rarity:10, value:21500, ds:"传说仙药，长生不老。"},
+  {id:"yinyangh", name:"阴阳花", cat:"草药", ic:"☯️", rarity:8, value:380000, ds:"阴阳并蒂之花，太极之妙。"},
+  {id:"jiuyang", name:"九阳参", cat:"草药", ic:"☀️", rarity:8, value:390000, ds:"九阳之参，至阳至热。"},
+  {id:"taichu", name:"太初神药", cat:"草药", ic:"🌾", rarity:9, value:860000, ds:"太初神药，逆天改命。"},
+  {id:"hundung", name:"混沌果", cat:"草药", ic:"🍈", rarity:9, value:890000, ds:"混沌神果，开天辟地。"},
+  {id:"chuangshil", name:"创世莲子", cat:"草药", ic:"🪷", rarity:10, value:1950000, ds:"创世遗莲之实。"},
+  {id:"changsheng", name:"长生不老药", cat:"草药", ic:"🍵", rarity:10, value:2150000, ds:"传说仙药，长生不老。"},
 ];
 
 /* 奇珍库（稀有珍宝，炼器产出） */
@@ -1584,7 +1584,7 @@ function renderZao(body){
       <div class="nm">${r.name}<span class="cat">${cur.cat}</span>${r.slot?`<span class="cat">装备</span><span class="cat">${SLOT_NAMES[r.slot]}</span>`:""}</div>
       <div class="ds">${r.ds||"无"}</div>
       <div class="ln" style="color:var(--jade)">效果：${isEquip(r.id)?eqText(r):effText(r)}</div>
-      <div class="ln">持有 <b>${fmt(isEquip(r.id)?equipCount(r.id):S.tres[r.id]||0)}</b> · 价值 ${r.value} 下品灵石</div>
+      <div class="ln">持有 <b>${fmt(isEquip(r.id)?equipCount(r.id):S.tres[r.id]||0)}</b> · 价值 ${priceLText(splitPriceL(r.value))}</div>
       <div class="cost">配方：${needTxt}</div>
     </div>`;
     const busy=S.making&&S.making.rId===r.id; const mkTxt=busy?("炼制中 "+Math.max(0,Math.ceil((S.making.end-Date.now())/1000))+"s"):"合成";
@@ -1747,8 +1747,8 @@ function sellEquip(id){
   if(idx<0){ banner("已穿戴的装备不可出售，请先卸下"); return; }
   const uid=S.equip[idx].uid; S.equip.splice(idx,1);
   for(const sl in S.equipped){ if(S.equipped[sl]===uid) S.equipped[sl]=null; }
-  S.stoneL+=r.value;
-  logEvent("出售装备「"+r.name+"」，获 "+fmt(r.value)+" 下品灵石",'sys'); sound(520,.15); save(); render();
+  addL(splitPriceL(r.value));
+  logEvent("出售装备「"+r.name+"」，获 "+priceLText(splitPriceL(r.value))+"（"+fmt(r.value)+" 下品）",'sys'); sound(520,.15); save(); render();
 }
 function equipCount(id){ return (S.equip||[]).filter(x=>x.id===id).length; }
 function petCost(){ return floorPriceL(80); }
@@ -2028,14 +2028,14 @@ function renderXu(body){
         let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return;
         if(!kf(r.name)) return;
         const useable=!!(r.eff||r.heal); const gIs=GONGFAS.some(g=>g.id===r.id);
-        const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${cn}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${gIs?("功法 · 灵气倍率 ×"+r.ess):(useable?"效果："+effText(r):"珍宝收藏，无可使用效果，可出售")}</span><br>价值 ${r.value} 下品灵石 · 持有 ${fmt(S.tres[id])}`;
+        const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${cn}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${gIs?("功法 · 灵气倍率 ×"+r.ess):(useable?"效果："+effText(r):"珍宝收藏，无可使用效果，可出售")}</span><br>价值 ${priceLText(splitPriceL(r.value))} · 持有 ${fmt(S.tres[id])}`;
         const acts=[];
         if(gIs){ const o2=S.gongs.includes(r.id); acts.push([o2?false:true,()=>{o2?(S.activeGong===r.id?banner("已是当前激活功法"):actGong(r.id)):studyGong(r.id);},"已激活"]);
           if(o2) acts[0]=[S.activeGong!==r.id,()=>{actGong(r.id);},S.activeGong===r.id?"已激活":"激活"]; }
         else if(useable) acts.push([true,()=>{useTres(r);render();},"使用"]);
         else acts.push([true,()=>{banner("「"+r.name+"」为珍宝收藏，无可使用效果");},"珍宝"]);
         acts.push([true,()=>{openSell("tres",r);},"出售"]);
-        body.appendChild(whRow(`<span class="whName"><span class="ic">${icOf(r)}</span>${r.name}<span class="cat">${cn}</span></span><div class="whSub">持有 ${fmt(S.tres[id])} · 稀有${r.rarity} · 价值 ${r.value}</div>`,tip,acts));
+        body.appendChild(whRow(`<span class="whName"><span class="ic">${icOf(r)}</span>${r.name}<span class="cat">${cn}</span></span><div class="whSub">持有 ${fmt(S.tres[id])} · 稀有${r.rarity} · 价值 ${priceLText(splitPriceL(r.value))}</div>`,tip,acts));
       });
     });
   }
@@ -2045,7 +2045,7 @@ function renderXu(body){
       const r=REC_BY_ID[id]; if(!r) return;
       if(!kf(r.name)) return;
       const n=unwornEq.filter(x=>x.id===id).length;
-      const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${SLOT_NAMES[r.slot]}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${eqText(r)}</span><br>价值 ${r.value} 下品灵石 · 持有 ${n}`;
+      const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${SLOT_NAMES[r.slot]}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${eqText(r)}</span><br>价值 ${priceLText(splitPriceL(r.value))} · 持有 ${n}`;
       body.appendChild(whRow(`<span class="whName"><span class="ic">${icOf(r)}</span>${r.name}<span class="cat">${SLOT_NAMES[r.slot]}</span></span><div class="whSub">持有 ${n} · 稀有${r.rarity} · ${eqText(r)}</div>`,tip,[[true,()=>wearEquip(id),"穿戴"],[true,()=>sellEquip(id),"出售"]]));
     });
   }
@@ -2056,8 +2056,8 @@ function renderXu(body){
       if(!list.length) return;
       if(!xuSec(body,cat,cat==="妖兽材料"?"matBeast":cat==="矿石"?"matOre":"matHerb",list.length)) return;
       list.forEach(m=>{
-        const tip=`<b>${m.name}</b>（稀有${m.rarity} · ${m.cat}）<br>${m.ds||"无"}<br>单价 ${m.value} 下品灵石 · 持有 ${fmt(S.mats[m.id]||0)}`;
-        body.appendChild(whRow(`<span class="whName"><span class="ic">${m.ic}</span>${m.name}<span class="cat">${cat}</span></span><div class="whSub">持有 ${fmt(S.mats[m.id]||0)} · 稀有${m.rarity} · 单价 ${m.value}</div>`,tip,[[true,()=>{openSell("mat",m);},"出售"]]));
+        const tip=`<b>${m.name}</b>（稀有${m.rarity} · ${m.cat}）<br>${m.ds||"无"}<br>单价 ${priceLText(splitPriceL(m.value))} · 持有 ${fmt(S.mats[m.id]||0)}`;
+        body.appendChild(whRow(`<span class="whName"><span class="ic">${m.ic}</span>${m.name}<span class="cat">${cat}</span></span><div class="whSub">持有 ${fmt(S.mats[m.id]||0)} · 稀有${m.rarity} · 单价 ${priceLText(splitPriceL(m.value))}</div>`,tip,[[true,()=>{openSell("mat",m);},"出售"]]));
       });
     });
   }
@@ -2070,7 +2070,7 @@ function openSell(kind,obj){
   sellRef={kind,obj}; if(!obj) return;
   const n = kind==="mat" ? (S.mats[obj.id]||0) : (S.tres[obj.id]||0);
   $("sellTitle").textContent="— 出售「"+obj.name+"」—";
-  $("sellInfo").innerHTML="持有 <b>"+n+"</b> · 单价 <b>"+obj.value+"</b> 下品灵石";
+  $("sellInfo").innerHTML="持有 <b>"+n+"</b> · 单价 <b>"+priceLText(splitPriceL(obj.value))+"</b>";
   const q=$("sellQty"); q.max=Math.max(1,n); q.min=1; q.value=Math.max(1,n);
   $("sellOverlay").classList.add("show");
 }
@@ -2081,8 +2081,8 @@ function sellTres(qty){
   const key = kind==="mat" ? "mats" : "tres";
   const n=S[key][obj.id]||0; if(qty<=0||n<qty) return;
   S[key][obj.id]=n-qty; if(S[key][obj.id]<=0) delete S[key][obj.id];
-  const gain=obj.value*qty; S.stoneL+=gain;
-  logEvent("出售「"+obj.name+"」×"+qty+"，获 "+fmt(gain)+" 下品灵石",'sys');
+  const gain=obj.value*qty; addL(splitPriceL(gain));
+  logEvent("出售「"+obj.name+"」×"+qty+"，获 "+priceLText(splitPriceL(gain))+"（"+fmt(gain)+" 下品）",'sys');
   sound(520,.15); save(); render();
 }const SHOP_W={1:16,2:8,3:4,4:2,5:1,6:0.5}; // 稀有度→刷新权重（越稀有越低，坊市仅 1~6）
 const SHOP_STOCK={1:10,2:8,3:5,4:3,5:1,6:1}; // 稀有度→库存（越稀有越少，最多10最少1）
@@ -3845,7 +3845,11 @@ function gameTick(now){
     const t=$("aucTimer"); if(t){ const left=Math.max(0,S.auction.end-Date.now()); const mm=Math.floor(left/60000),ss=Math.floor((left%60000)/1000); t.textContent=mm+"分"+ss+"秒"; }
     S.auction.list.forEach((en,i)=>{ const el=$("aucBid"+i); if(el){ const who=en.bidder==="player"?"你":en.bidder==="npc"?"虚灵商客":"无人出价"; el.textContent=ceilPriceText(en.bid)+"（"+who+"）"; } });
   }
-  if(!S.exp && S.hp<S.hpMax){ S.hp=Math.min(S.hpMax, S.hp+S.hpMax*0.00005*dt); }
+  if(!S.exp && S.hp<S.hpMax){
+    S.hp+=S.hpMax*dt/7200; // v26.9 自然回血：任意等级 2 小时（7200s）从 0 回满
+    if(S.hpMax-S.hp<1) S.hp=S.hpMax; // 收尾补满：规避浮点累加误差
+    S.hp=Math.min(S.hpMax,S.hp);
+  }
   let mult=1;
   if(evt.prodBoost>Date.now()) mult*=2;
   if(evt.prodBoost3>Date.now()) mult*=3;
