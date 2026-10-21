@@ -429,7 +429,8 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 <div class="banner" id="banner"></div>
 <div class="overlay" id="overlay"><div class="modal"><h3 id="mTitle"></h3><div class="mbody" id="mBody"></div><div class="btnPair"><button id="mBtn">确定</button></div></div></div>
 <div class="overlay" id="expOverlay"><div class="modal" style="width:960px;max-width:96vw"><h3 id="expTitle"></h3><div class="expTabs"><button id="expTabExplore" class="expTab active">🗺️ 探索</button><button id="expTabLoot" class="expTab">🎒 战利品</button></div><div id="expViewExplore"><div id="expInfo" style="color:var(--ink-dim);font-size:12px;margin:2px 0 8px"></div><svg id="expSvg" viewBox="0 0 560 500" style="display:block;margin:0 auto;background:rgba(0,0,0,.25);border-radius:12px;width:100%;max-width:640px"></svg><div id="expLegend" style="font-size:12px;color:var(--ink-dim);text-align:center;margin-top:8px;line-height:1.7"></div></div><div id="expViewLoot" style="display:none;font-size:13px;color:var(--ink);min-height:120px;max-height:46vh;overflow-y:auto"></div><div class="btnPair"><button id="expRetreatBtn" style="background:linear-gradient(135deg,#d9534f,#b03a35);color:#fff">撤出秘境（-50%气血 · -50%战利品）</button><button id="expCloseBtn">关闭</button></div></div></div>
-<div class="overlay" id="battleOverlay"><div class="modal battleModal" style="width:1000px;max-width:97vw;padding:0;overflow:hidden"><div class="bhTop"><span class="bhChip gold" id="battleTitle">回合 1</span><span class="bhChip" id="battleChipTarget">🔒 锁定</span><span class="bhChip" id="battleChipPlace">秘境</span><span class="bhChip jade" id="battleChipSpirit">灵力</span><span class="bhChip" id="battleChipThreat">无克制</span><span class="bhChip" id="battleChipEffs">我方无状态</span></div><div class="bhBody"><aside class="bhTarget" id="battleTargetCard"></aside><div class="bhStage" id="battleTop"><div class="duelLine"><span id="battleRange">对峙</span></div><div class="unit" id="battlePlayer"></div><div class="unit" id="battleEnemy"></div><div class="bhInfo" id="battleInfo"></div></div><aside class="bhPanel"><div class="ph">⚙ 行动 / 法术列表 <em id="battleSlotCap"></em></div><div id="battleActions"></div></aside></div><div class="bhFoot"><div id="battleLog"></div><div class="sideBtns"><button id="battleAutoBtn">自动战斗</button><button id="battleCloseBtn" style="display:none">关闭</button></div></div></div></div>
+<div class="overlay" id="battleOverlay"><div class="modal battleModal" style="width:1000px;max-width:97vw;padding:0;overflow:hidden"><div class="bhTop"><span class="bhChip gold" id="battleTitle">回合 1</span><span class="bhChip" id="battleChipTarget">🔒 锁定</span><span class="bhChip" id="battleChipPlace">秘境</span><span class="bhChip jade" id="battleChipSpirit">灵力</span><span class="bhChip" id="battleChipThreat">无克制</span><span class="bhChip" id="battleChipEffs">我方无状态</span></div><div class="bhBody"><aside class="bhTarget" id="battleTargetCard"></aside><div class="bhStage" id="battleTop"><div class="duelLine"><span id="battleRange">对峙</span></div><div class="unit" id="battlePlayer"></div><div class="unit" id="battleEnemy"></div><div class="bhInfo" id="battleInfo"></div></div><aside class="bhPanel"><div class="ph">⚙ 行动 / 法术列表 <em id="battleSlotCap"></em></div><div id="battleActions"></div></aside></div><div class="bhFoot"><div id="battleLog"></div><div class="sideBtns"><button id="battleBagBtn">🎒 背包</button><button id="battleAutoBtn">自动战斗</button><button id="battleCloseBtn" style="display:none">关闭</button></div></div></div></div>
+<div class="overlay" id="battleBagOverlay"><div class="modal" style="width:640px;max-width:95vw"><h3>🎒 战斗背包</h3><div class="mbody" id="battleBagList" style="min-height:80px;max-height:52vh;overflow-y:auto;line-height:1.8"></div><div class="btnPair"><button id="battleBagClose">关闭</button></div></div></div>
 <div class="overlay" id="slotsOverlay"><div class="modal"><h3 id="slotsTitle">— 战前技能槽配置 —</h3><div class="mbody" id="slotsBody" style="line-height:1.9"></div><div class="btnPair"><button id="slotsClose">完成</button></div></div></div>
 <div class="overlay" id="cycQtyOverlay">
   <div class="modal">
@@ -451,11 +452,11 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v30.5（成就多领显示总次数）
+   修仙挂机 · 问道长生  v30.7.1（含敌方技能战斗系统 v30.7；拍卖当前出价每秒刷新保留灵石单位）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v30.5";
+const VERSION = "v30.7.1";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -2540,6 +2541,30 @@ function battleAttrs(){
 }
 /* 敌方模板（8.1）：强度复用 enemyPower，气血=强度×0.8，敌攻=强度/9，减伤按层段
    平衡验收：同战力玩家（筑基·三灵根 战力174）打洞天普通怪，20 种子全胜且回合结束保留 ≥60% 气血 */
+/* 敌方技能元素池（按区域）：敌人从池中抽取 2-3 个元素法术复用 SPELLS 施放，
+   使玩家的减伤 / 五行抗性 / 闪避 / 控制（冰冻·眩晕·束缚）对敌方技能同样生效 */
+const ENEMY_POOL={dt:["金","木","水","火","土"],yl:["木","水","火","土","冰"],sg:["火","土","冰","雷","风"],kj:["冰","雷","风","毒","阴阳"]};
+const ENEMY_CONTROL=["pierce","freeze","stun","slow","bind","burn","poison","atkDown"];
+const ENEMY_SELF=["shield","dmgRed","immune","reflect","allUp","atkUp","invuln","dodge"];
+function enemySpells(area,kind){
+  const pool=ENEMY_POOL[area]||ENEMY_POOL.dt;
+  const cands=SPELLS.filter(s=>pool.includes(s.elem));
+  const rnd=a=>a[Math.floor(Math.random()*a.length)];
+  const out=[];
+  // 1 个带控制/破甲特效的伤害法术（打玩家）
+  const dmgC=cands.filter(s=>s.type==="dmg");
+  const ctl=dmgC.filter(s=>(s.eff||[]).some(e=>ENEMY_CONTROL.includes(e.k)));
+  if(ctl.length) out.push(rnd(ctl));
+  // 1 个自保身法（护盾/免伤/反伤/强化/闪避）
+  const selfS=cands.filter(s=>s.type==="shen"&&(s.eff||[]).some(e=>ENEMY_SELF.includes(e.k)));
+  if(selfS.length) out.push(rnd(selfS));
+  // BOSS 额外补 1 个伤害法术
+  if(kind==="boss"){
+    const rest=dmgC.filter(s=>!out.includes(s));
+    if(rest.length) out.push(rnd(rest));
+  }
+  return out;
+}
 function enemyElement(area,kind){
   const BASE={dt:["木","水"],yl:["火","土"],sg:["金","雷"],kj:["金","木","水","火","土"]};
   const pool=BASE[area]||["金"];
@@ -2554,7 +2579,8 @@ function enemyTemplate(floor,area,kind){
   const atk=Math.max(1,Math.floor(power/9));
   const dmgRed=kind==="fight"?0.05:kind==="elite"?0.12:0.20;
   const speed=Math.floor(80+power/90);
-  return {power,hp,hpMax:hp,atk,dmgRed,speed,elems:enemyElement(area,kind),kind};
+  const skillChance=kind==="boss"?0.55:kind==="elite"?0.45:0.35;
+  return {power,hp,hpMax:hp,atk,dmgRed,speed,elems:enemyElement(area,kind),kind,skills:enemySpells(area,kind),skillChance};
 }
 /* ---------- 战斗引擎 ---------- */
 let BATTLE=null;
@@ -2776,7 +2802,9 @@ function battleUse(kind,id){
   bEndRound();
   renderBattleUI();
 }
-/* 敌方 AI（3.4）：优先伤害；气血<40%概率强化/回血；被克制明显且多属性换属性 */
+/* 敌方 AI（3.4）：优先伤害；气血<40%概率强化/回血；被克制明显且多属性换属性；
+   v30.7 敌人按区域元素池持有 2-3 个元素法术，概率出手（复用 battleStrike/applySpellEffects，
+   使玩家减伤 / 五行抗性 / 闪避 / 控制对敌方技能生效） */
 function battleEnemyAct(){
   const b=BATTLE; if(b.over) return;
   if(b.enemy.buffs&&b.enemy.buffs.freeze&&b.enemy.buffs.freeze.t>0){ bLog("敌方被冰冻，跳过行动"); return; }
@@ -2787,7 +2815,22 @@ function battleEnemyAct(){
     if(r<0.25){ const h=Math.floor(e.hpMax*0.20); e.hp=Math.min(e.hpMax,e.hp+h); bLog("敌方施展回气，恢复气血 "+h); }
     else if(r<0.45){ buffAdd(e,"atkUp",30,2); bLog("敌方运功蓄势，攻击提升30%"); }
   }
-  battleStrike(e,p,{mult:1.0,label:"敌方攻击",elem:e.elems[0]}); // 敌方普攻（以主属性元素结算，使五行克制/抗性生效）
+  // 技能出手：非冷却技能中随机施放（概率 skillChance）
+  const usable=(e.skills||[]).filter(s=>cdLeft(e,s.id)===0);
+  let cast=false;
+  if(usable.length&&Math.random()<e.skillChance){
+    const s=usable[Math.floor(Math.random()*usable.length)];
+    if(s.type==="shen"){
+      const tg=(s.target==="enemy")?[p]:[e]; // 敌方身法：target enemy→对玩家，self→加自身
+      applySpellEffects(e,tg,s,{});
+      bLog("敌方施展身法「"+s.name+"」");
+    } else { // 伤害法术：打玩家，控制/破甲特效命中后附加
+      battleStrike(e,p,{mult:s.mult,hits:s.hits,elem:s.elem,hitB:s.hitB,guaranteed:s.guaranteed,eff:s.eff,isSpell:true,label:"敌方「"+s.name+"」"});
+    }
+    if(s.cd>0) setCd(e,s.id,s.cd);
+    cast=true;
+  }
+  if(!cast) battleStrike(e,p,{mult:1.0,label:"敌方攻击",elem:e.elems[0]}); // 敌方普攻（以主属性元素结算，使五行克制/抗性生效）
   bEndCheck();
 }
 /* 回合末：持续伤害结算 + 进入下一回合（回灵/状态递减/冷却） */
@@ -3067,6 +3110,53 @@ function renderBattleLog(){
   const b=BATTLE; const box=$("battleLog"); if(!box)return;
   box.innerHTML=b.roundLog.slice(-40).map(m=>'<div>'+m+'</div>').join("")+(b.over?('<div style="color:var(--jade)">战斗结束：'+({win:"胜利",lose:"失败",flee:"逃跑"}[b.result])+'</div>'):"");
 }
+/* 战斗背包：战斗中可使用的道具（回血丹药 / 战力·减伤·会心符箓丹药阵图），直接作用于当前战斗 */
+function battleItems(){
+  const out=[];
+  for(const id in S.tres){
+    if((S.tres[id]||0)<1) continue;
+    const r=REC_BY_ID[id]; if(!r) continue;
+    if(r.slot||GONGFAS.some(g=>g.id===id)) continue; // 装备 / 功法不可在战斗中使用
+    if(r.heal||r.eff==="combat"||r.eff==="dmg_reduce"||r.eff==="crit") out.push(r);
+  }
+  return out;
+}
+function renderBattleBag(){
+  const box=$("battleBagList"); if(!box) return;
+  const items=battleItems();
+  if(!items.length){ box.innerHTML='<div style="color:var(--ink-dim)">背包中没有可在战斗中使用的道具（回血丹药 / 战力·减伤·会心符箓丹药阵图）。</div>'; return; }
+  box.innerHTML="";
+  items.forEach(r=>{
+    const row=document.createElement("div"); row.style.cssText="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.06)";
+    const ic=document.createElement("span"); ic.innerHTML=icOf(r,26);
+    const info=document.createElement("span"); info.style.flex="1"; info.innerHTML="<b>"+r.name+"</b> ×"+S.tres[r.id]+' <span style="color:var(--ink-dim);font-size:12px">'+effText(r)+'</span>';
+    const btn=document.createElement("button"); btn.textContent="使用"; btn.addEventListener("click",()=>useBattleItem(r));
+    row.appendChild(ic); row.appendChild(info); row.appendChild(btn);
+    box.appendChild(row);
+  });
+}
+function openBattleBag(){
+  if(!BATTLE||BATTLE.over){ banner("当前没有进行中的战斗"); return; }
+  $("battleBagOverlay").classList.add("show");
+  renderBattleBag();
+}
+function useBattleItem(r){
+  const b=BATTLE; if(!b||b.over) return;
+  if((S.tres[r.id]||0)<1){ renderBattleBag(); return; }
+  if(b.phase!=="play"){ banner("等待你的回合再使用道具"); return; }
+  S.tres[r.id]--; b.phase="resolving";
+  let used=false;
+  if(r.heal){ const h=Math.floor(b.player.hpMax*(r.heal/100)); b.player.hp=Math.min(b.player.hpMax,b.player.hp+h); bLog("使用「"+r.name+"」恢复气血 "+h); used=true; }
+  if(r.eff==="combat"){ buffAdd(b.player,"atkUp",r.val,3); bLog("使用「"+r.name+"」，攻击 +"+r.val+"%（3回合）"); used=true; }
+  if(r.eff==="dmg_reduce"){ buffAdd(b.player,"dmgRed",r.val,3); bLog("使用「"+r.name+"」，减伤 +"+r.val+"%（3回合）"); used=true; }
+  if(r.eff==="crit"){ b.player.crit=Math.min(0.75,b.player.crit+r.val/100); bLog("使用「"+r.name+"」，会心 +"+r.val+"%"); used=true; }
+  if(!used){ S.tres[r.id]++; b.phase="play"; banner("该物品战斗中不可使用"); return; }
+  save(); renderBattleBag();
+  bEndCheck(); if(b.over) return;
+  battleEnemyAct(); if(b.over) return;
+  bEndRound();
+  renderBattleUI();
+}
 /* 自动战斗（供测试与便捷）：低血优先开护盾/回血/减伤身法，否则用最低耗可用法术/身法 */
 function autoBattle(){
   const b=BATTLE; if(!b||b.over)return;
@@ -3086,6 +3176,8 @@ function autoBattle(){
   renderBattleUI();
 }
 /* 战斗覆盖层按钮监听 */
+if($("battleBagBtn"))$("battleBagBtn").addEventListener("click",openBattleBag);
+if($("battleBagClose"))$("battleBagClose").addEventListener("click",()=>{ $("battleBagOverlay").classList.remove("show"); });
 if($("battleAutoBtn"))$("battleAutoBtn").addEventListener("click",autoBattle);
 window.addEventListener("resize",()=>placeBattleBar());
 if($("battleCloseBtn"))$("battleCloseBtn").addEventListener("click",()=>{ if(BATTLE&&BATTLE.over){ $("battleOverlay").classList.remove("show"); } });
@@ -3751,7 +3843,7 @@ function gameTick(now){
   if(activeTab==="shop" && shopCat==="auction" && S.auction && S.auction.live && Date.now()-lastAucTick>=1000){
     lastAucTick=Date.now();
     const t=$("aucTimer"); if(t){ const left=Math.max(0,S.auction.end-Date.now()); const mm=Math.floor(left/60000),ss=Math.floor((left%60000)/1000); t.textContent=mm+"分"+ss+"秒"; }
-    S.auction.list.forEach((en,i)=>{ const el=$("aucBid"+i); if(el){ const who=en.bidder==="player"?"你":en.bidder==="npc"?"虚灵商客":"无人出价"; el.textContent=fmt(en.bid)+"（"+who+"）"; } });
+    S.auction.list.forEach((en,i)=>{ const el=$("aucBid"+i); if(el){ const who=en.bidder==="player"?"你":en.bidder==="npc"?"虚灵商客":"无人出价"; el.textContent=ceilPriceText(en.bid)+"（"+who+"）"; } });
   }
   if(!S.exp && S.hp<S.hpMax){ S.hp=Math.min(S.hpMax, S.hp+S.hpMax*0.00005*dt); }
   let mult=1;
