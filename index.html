@@ -456,7 +456,7 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v30.7.5";
+const VERSION = "v30.7.6";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -1292,9 +1292,11 @@ function triggerEvent(){
 /* ================================================================
    日志
    ================================================================ */
+let logDirty=false;
 function logEvent(msg, cls, cat){
   S.log.push({t:Date.now(), msg, cls:cls||'', cat:cat||'sys'});
   if(S.log.length>50) S.log.splice(0, S.log.length-50);
+  logDirty=true;
 }
 let logF="all";
 function renderLog(){
@@ -1312,6 +1314,7 @@ function renderLog(){
     d1.innerHTML=`<span class="lt">${hh}:${mm}:${ss}</span> ${msg}`;
     el.appendChild(d1);
   });
+  logDirty=false;
 }
 $("logFilter").addEventListener("click",e=>{ const b=e.target.closest(".lfBtn"); if(!b) return; logF=b.dataset.lf; document.querySelectorAll("#logFilter .lfBtn").forEach(x=>x.classList.toggle("active",x===b)); renderLog(); });
 
@@ -1986,6 +1989,9 @@ function whRow(infoHtml,tipHtml,acts){
   return row;
 }
 let xuFilter="all", xuKw="";
+// v30.7.6 须弥空间物品按稀有度排序（升序；同稀有度按 id 稳定排序）
+const rarOf=id=>{ let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); return r?r.rarity:99; };
+const byRarity=(a,b)=>((rarOf(a))-(rarOf(b)))||(a<b?-1:1);
 function renderXu(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 须弥空间 · 背包 —";body.appendChild(st);
@@ -2022,7 +2028,7 @@ function renderXu(body){
       const gids=gmap[cn]; if(!gids||!gids.length) return;
       if(xuFilter==="gong"&&cn!=="功法") return;
       if(xuFilter==="tres"&&cn==="功法") return;
-      gids.sort();
+      gids.sort(byRarity); // v30.7.6 成品/功法组内按稀有度排序
       if(!xuSec(body,cn,"tres",gids.length)) return;
       gids.forEach(id=>{
         let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return;
@@ -2041,6 +2047,7 @@ function renderXu(body){
   }
   // 装备
   if(eqIds.length && (xuFilter==="all"||xuFilter==="eq") && xuSec(body,"装备","equip",eqIds.length)){
+    eqIds.sort(byRarity); // v30.7.6 装备按稀有度排序
     eqIds.forEach(id=>{
       const r=REC_BY_ID[id]; if(!r) return;
       if(!kf(r.name)) return;
@@ -2055,6 +2062,7 @@ function renderXu(body){
       const list=MATS.filter(m=>m.cat===cat && (S.mats[m.id]||0)>0 && kf(m.name));
       if(!list.length) return;
       if(!xuSec(body,cat,cat==="妖兽材料"?"matBeast":cat==="矿石"?"matOre":"matHerb",list.length)) return;
+      list.sort((a,b)=>(a.rarity-b.rarity)||(a.id<b.id?-1:1)); // v30.7.6 材料按稀有度排序
       list.forEach(m=>{
         const tip=`<b>${m.name}</b>（稀有${m.rarity} · ${m.cat}）<br>${m.ds||"无"}<br>单价 ${priceLText(splitPriceL(m.value))} · 持有 ${fmt(S.mats[m.id]||0)}`;
         body.appendChild(whRow(`<span class="whName"><span class="ic">${m.ic}</span>${m.name}<span class="cat">${cat}</span></span><div class="whSub">持有 ${fmt(S.mats[m.id]||0)} · 稀有${m.rarity} · 单价 ${priceLText(splitPriceL(m.value))}</div>`,tip,[[true,()=>{openSell("mat",m);},"出售"]]));
@@ -3871,7 +3879,7 @@ function gameTick(now){
       for(let i=0;i<n;i++){ const m=randMatOfCat(c); if(m){ S.mats[m.id]=(S.mats[m.id]||0)+1; caiProduced=true; logEvent("挂机采集到「"+m.name+"」×1",'','collect'); } else { caiProduced=true; logEvent("挂机采集失败，一无所获",'dim'); } }
     }
   }
-  if(caiProduced && activeTab==="cai") renderTab();
+  if(caiProduced && (activeTab==="cai"||activeTab==="xu")) renderTab(); // v30.7.6 须弥空间页同步刷新
   // 单次采集冷却：实时倒计时 + 到期自动恢复（轻量更新按钮，不重建中列避免闪烁；三框共享冷却）
   if(S.collectCd>0 && activeTab==="cai"){
     const left=Math.max(0,Math.ceil((S.collectCd-Date.now())/1000));
@@ -3898,7 +3906,7 @@ function gameTick(now){
         S.cycle=null;
       }
     }
-    if(activeTab==="zao"||activeTab==="pu") renderTab();
+    if(activeTab==="zao"||activeTab==="pu"||activeTab==="xu") renderTab(); // v30.7.6 须弥空间页同步刷新
   }
   // 傀儡自动采集 / 制造
   let svProduced=false;
@@ -3922,7 +3930,7 @@ function gameTick(now){
       while(s.prog>=iv){ s.prog-=iv; s.curR=null; for(const k in r.need) S.mats[k]-=r.need[k]; if(isEquip(r.id)){ S.equip.push(newEquip(r.id)); logEvent((LV_NM[s.lv]||s.lv)+"傀炼制出「"+r.name+"」",'sys','craft'); } else { S.tres[r.id]=(S.tres[r.id]||0)+1; logEvent((LV_NM[s.lv]||s.lv)+"傀制成「"+r.name+"」×1",'sys','craft'); } svProduced=true; }
     }
   });
-  if(svProduced && activeTab==="pu") renderTab();
+  if(svProduced && (activeTab==="pu"||activeTab==="xu")) renderTab(); // v30.7.6 须弥空间页同步刷新
   // 傀儡任务进度：轻量更新倒计时文本（不重建中列避免闪烁）
   if(activeTab==="pu"){
     S.servants.forEach((s,i)=>{
@@ -3939,6 +3947,8 @@ function gameTick(now){
       if(el.textContent!==t) el.textContent=t;
     });
   }
+  // v30.7.6 挂机日志即时刷新（置于可能抛错的 renderStats 之前，保证采集/傀儡/buff 日志不因该 tick 异常而积压）
+  if(logDirty){ logDirty=false; renderLog(); }
   checkAchievements();
   renderStats();
   // 中列不再于 100ms 循环重建，避免按钮闪烁 / 单击丢失；仅采集产出与坊市刷新时按需渲染
