@@ -251,6 +251,10 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 .craftBar button{flex:1;min-width:64px;padding:9px 4px;border-radius:8px;cursor:pointer;color:var(--ink);background:var(--panel2);border:1px solid var(--line);font-size:13px;}
 .craftBar button.active{color:#0b0f14;background:var(--jade);border-color:var(--jade);font-weight:700;}
 #itemTip{position:fixed;z-index:9999;pointer-events:none;display:none;max-width:280px;background:var(--panel);border:1px solid var(--mystic);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--ink);box-shadow:0 6px 18px rgba(0,0,0,.45);line-height:1.6;}
+.tipFlex{display:flex;gap:12px;align-items:flex-start;}
+.tipIcon{flex:0 0 auto;font-size:60px;line-height:1.2;min-width:68px;text-align:center;}
+.tipIcon .icImg{width:60px !important;height:60px !important;border-radius:10px;margin-right:0;vertical-align:middle;}
+.tipBody{flex:1 1 auto;min-width:0;}
 .sw{position:relative;display:inline-block;width:34px;height:18px;vertical-align:middle;flex:none}
 .sw input{opacity:0;width:0;height:0}
 .sw .sl{position:absolute;cursor:pointer;inset:0;background:#88888880;border-radius:18px;transition:.2s}
@@ -452,11 +456,11 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v30.7.5（出售按高品灵石入账）
+   修仙挂机 · 问道长生  v30.7.9（悬浮贴图图片尺寸放大）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v30.7.6";
+const VERSION = "v30.8";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -603,30 +607,8 @@ const MATS = [
   {id:"changsheng", name:"长生不老药", cat:"草药", ic:"🍵", rarity:10, value:2150000, ds:"传说仙药，长生不老。"},
 ];
 
-/* 奇珍库（稀有珍宝，炼器产出） */
-const TRES = [
-  // (奇珍索引在下方构建)
-  {id:"qinglian", name:"青莲宝座", ic:"🪷", rarity:3, value:1600, ds:"青莲所化宝座，法力+。"},
-  {id:"dingling", name:"定灵珠",  ic:"🔮", rarity:4, value:2500,ds:"可定住灵力之珠。"},
-  {id:"xingtian", name:"星辰鉴",  ic:"🌠", rarity:5, value:8000,ds:"映照周天星斗之镜。"},
-  {id:"zixiaoj", name:"紫霄剑",   ic:"⚔️", rarity:6, value:9000, ds:"紫霄神剑，剑出惊鸿。"},
-  {id:"putixin", name:"菩提心",   ic:"🧿", rarity:6, value:7000, ds:"菩提妙心，万邪不侵。"},
-  {id:"zaohua",  name:"造化玉碟", ic:"📀", rarity:6, value:8500, ds:"造化玉碟，演绎大道。"},
-  {id:"jinta",   name:"金塔",     ic:"🛕", rarity:7, value:20000,ds:"金刚宝塔，镇压诸邪。"},
-  {id:"linglongt",name:"玲珑塔",  ic:"🗼", rarity:7, value:12000,ds:"玲珑宝塔，层层藏宝。"},
-  {id:"posuo",   name:"破妄杵",   ic:"🔱", rarity:7, value:8000, ds:"破妄金杵，荡尽虚妄。"},
-  {id:"mingyun", name:"命运罗盘", ic:"🧭", rarity:7, value:15000,ds:"命运罗盘，测算天机。"},
-  {id:"qianqiu", name:"千秋印",   ic:"📜", rarity:8, value:30000,ds:"千秋大印，帝皇之威。"},
-  {id:"jiutian", name:"九天玄女镜",ic:"🌙", rarity:8, value:25000,ds:"九天玄镜，映照诸天。"},
-  {id:"donghuang",name:"东皇钟",  ic:"🛎️", rarity:8, value:40000,ds:"东皇神钟，钟声震世。"},
-  {id:"tianji",  name:"天机伞",   ic:"☂️", rarity:8, value:22000,ds:"天机神伞，遮蔽天象。"},
-  {id:"panlong", name:"蟠龙印",   ic:"🐲", rarity:9, value:60000,ds:"蟠龙大印，龙气冲天。"},
-  {id:"hongmeng",name:"鸿蒙珠",   ic:"🌌", rarity:9, value:80000,ds:"鸿蒙之珠，天地本源。"},
-  {id:"zudi",    name:"祖地莲",   ic:"🪷", rarity:9, value:50000,ds:"祖地之莲，根源之宝。"},
-  {id:"hunyuan_san",name:"混元伞",ic:"🌂", rarity:10,value:100000,ds:"混元神伞，遮天蔽日。"},
-  {id:"chuangshid",name:"创世鼎", ic:"⚱️", rarity:10,value:200000,ds:"创世神鼎，鼎定乾坤。"},
-  {id:"sansheng",name:"三生石",   ic:"💫", rarity:10,value:160000,ds:"三生神石，三世因果。"},
-];
+/* 奇珍库（预留空库：旧版奇珍数据已清空，待后续版本填充启用） */
+const TRES = [];
 const MATS_BY_ID={}; MATS.forEach(m=>MATS_BY_ID[m.id]=m);
 const TRES_BY_ID={}; TRES.forEach(t=>TRES_BY_ID[t.id]=t);
 const BEAS=[
@@ -902,6 +884,12 @@ function normalizeState(){
   if(!S.gongs.includes(S.activeGong)) S.activeGong=S.gongs[0]||null;
   if(S.equipped.t!=null){ const uid=S.equipped.t; delete S.equipped.t; if(uid!=null){ const it=(S.equip||[]).find(x=>x.uid===uid); const r=it?REC_BY_ID[it.id]:null; if(r&&r.slot) S.equipped[r.slot]=uid; } }
   for(const k in S.tres){ if(isEquip(k)&&(S.tres[k]||0)>0){ for(let i=0;i<S.tres[k];i++) S.equip.push({uid:++S.uid,id:k}); delete S.tres[k]; } }
+  // v30.8 清理旧档废弃奇珍（TRES 库已清空，奇珍不再参与制造/出售/采集/购买/装备/战斗/修炼等任何活动）
+  let clearedTres=0;
+  for(const k in S.tres){
+    if((S.tres[k]||0)>0 && !isEquip(k) && !GONGFAS.some(g=>g.id===k) && !CRAFT.some(c=>c.rec.some(r=>r.id===k))){ delete S.tres[k]; clearedTres++; }
+  }
+  if(clearedTres>0) logEvent("已清理 "+clearedTres+" 种废弃奇珍（奇珍体系已停用）",'warn');
   S.making=S.making||null; S.collectCd=S.collectCd||0; S.cycle=S.cycle||null; S.collectZone=S.collectZone||{beast:"外",ore:"外",herb:"外"};
   if(!S.servants || !S.servants.length) S.servants=[{lv:"丁",task:null,prog:0,curR:null}];
   S.servants.forEach(s=>{ s.lv=s.lv||"丁"; s.task=s.task||null; if(s.task&&s.task.kind==="cai"&&!s.task.zone)s.task.zone="外"; s.prog=s.prog||0; s.curR=s.curR||null; });
@@ -1213,7 +1201,7 @@ function craftItem(r){
 }
 function useTres(r){
   if(!r || (S.tres[r.id]||0)<1) return;
-  if(!r.eff && !r.heal){ logEvent("「"+r.name+"」为珍宝收藏，无可使用效果",'dim'); banner("「"+r.name+"」为珍宝，无可使用效果"); return; }
+  if(!r.eff && !r.heal){ logEvent("「"+r.name+"」无可使用效果，可出售",'dim'); banner("「"+r.name+"」无可使用效果"); return; }
   S.tres[r.id]--;
   if(r.heal){ const h=Math.ceil(S.hpMax*r.heal/100); S.hp=Math.min(S.hpMax,S.hp+h); logEvent("服用「"+r.name+"」，恢复 "+h+" 气血","sys"); }
   const now=Date.now();
@@ -1277,7 +1265,7 @@ function claimAch(a){
   S.achPending=S.achPending.filter(x=>x!==a.id);
   // v30.4 奖励支持递增函数（第 g 次领取 rw(g)），发放后自动换算显示
   const rwVal = typeof a.rw==="function" ? a.rw(got+1) : (a.rw||0);
-  if(rwVal>0){ S.stoneL+=rwVal; const tx=priceLText(splitPriceL(rwVal)); logEvent("领取成就「"+a.nm+"」奖励 "+tx+"（"+fmt(rwVal)+" 下品）",'sys'); banner("领取成就："+a.nm+" +"+tx); }
+  if(rwVal>0){ addL(splitPriceL(rwVal)); const tx=priceLText(splitPriceL(rwVal)); logEvent("领取成就「"+a.nm+"」奖励 "+tx+"（"+fmt(rwVal)+" 下品）",'sys'); banner("领取成就："+a.nm+" +"+tx); }
   else { logEvent("达成成就「"+a.nm+"」",'sys'); banner("成就达成："+a.nm); }
   sound(620,.15); updateBadges(); save(); render();
 }
@@ -1565,7 +1553,7 @@ function toggleCycle(rId){
 function renderZao(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 制造 —";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="以材料合成物品，分制符 / 炼丹 / 炼器 / 阵法四类配方。点击上方分类按钮查看对应配方，炼器产出奇珍，其余产出各类物品，均存入背包（须弥空间）。"+(S.yunning?'<br><b style="color:#e05555">运功进行中，制造已暂停，请先停止运功。</b>':"");body.appendChild(p);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="以材料合成物品，分制符 / 炼丹 / 炼器 / 阵法四类配方。点击上方分类按钮查看对应配方，炼器产出装备，其余产出各类物品，均存入背包（须弥空间）。"+(S.yunning?'<br><b style="color:#e05555">运功进行中，制造已暂停，请先停止运功。</b>':"");body.appendChild(p);
   // 分类按钮 sticky 置顶中列（不随配方列表滚动）：点按切换显示对应分类明细
   const bar=document.createElement("div");bar.className="craftBar";
   bar.style.cssText="position:sticky;top:0;z-index:5;background:var(--bg,#1a1f2e);padding:8px 0;margin:6px 0;border-bottom:1px solid var(--line);";
@@ -1978,14 +1966,14 @@ function xuSec(body,title,key,count){
   d.addEventListener("click",()=>{ xumiFold[key]=!xumiFold[key]; render(); });
   body.appendChild(d); return xumiFold[key];
 }
-function whRow(infoHtml,tipHtml,acts){
+function whRow(infoHtml,tipHtml,acts,iconHtml){
   const row=document.createElement("div");row.className="whRow";
   const inf=document.createElement("div");inf.className="whInfo";inf.innerHTML=infoHtml;
   row.appendChild(inf);
   const ac=document.createElement("div");ac.className="whActs";
   (acts||[]).forEach(a=>{ const b=buyBtn(a[0],a[1],a[2]); ac.appendChild(b); });
   row.appendChild(ac);
-  if(tipHtml) bindTip(row,tipHtml);
+  if(tipHtml) bindTip(row,iconHtml||"",tipHtml);
   return row;
 }
 let xuFilter="all", xuKw="";
@@ -2017,11 +2005,11 @@ function renderXu(body){
   });
   body.appendChild(fbar);
   const kf=s=>!xuKw||s.indexOf(xuKw)>=0;
-  const catOf=id=>{ let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return "未知"; if(GONGFAS.some(g=>g.id===id)) return "功法"; if(TRES_BY_ID[id]) return "奇珍"; for(const c of CRAFT){ if(c.rec.some(x=>x.id===r.id)) return c.cat; } return "成品"; };
+  const catOf=id=>{ let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return "未知"; if(GONGFAS.some(g=>g.id===id)) return "功法"; for(const c of CRAFT){ if(c.rec.some(x=>x.id===r.id)) return c.cat; } return "成品"; };
   // 成品 / 功法：按分类分组
   const gmap={};
   tresIds.forEach(id=>{ const cn=catOf(id); (gmap[cn]=gmap[cn]||[]).push(id); });
-  const GROUP_ORDER=["功法","制符","炼丹","炼器","阵法","奇珍"];
+  const GROUP_ORDER=["功法","制符","炼丹","炼器","阵法"];
   const showG=xuFilter==="all"||xuFilter==="gong"||xuFilter==="tres";
   if(showG){
     GROUP_ORDER.forEach(cn=>{
@@ -2034,14 +2022,14 @@ function renderXu(body){
         let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return;
         if(!kf(r.name)) return;
         const useable=!!(r.eff||r.heal); const gIs=GONGFAS.some(g=>g.id===r.id);
-        const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${cn}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${gIs?("功法 · 灵气倍率 ×"+r.ess):(useable?"效果："+effText(r):"珍宝收藏，无可使用效果，可出售")}</span><br>价值 ${priceLText(splitPriceL(r.value))} · 持有 ${fmt(S.tres[id])}`;
+        const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${cn}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${gIs?("功法 · 灵气倍率 ×"+r.ess):(useable?"效果："+effText(r):"无可使用效果，可出售")}</span><br>价值 ${priceLText(splitPriceL(r.value))} · 持有 ${fmt(S.tres[id])}`;
         const acts=[];
         if(gIs){ const o2=S.gongs.includes(r.id); acts.push([o2?false:true,()=>{o2?(S.activeGong===r.id?banner("已是当前激活功法"):actGong(r.id)):studyGong(r.id);},"已激活"]);
           if(o2) acts[0]=[S.activeGong!==r.id,()=>{actGong(r.id);},S.activeGong===r.id?"已激活":"激活"]; }
         else if(useable) acts.push([true,()=>{useTres(r);render();},"使用"]);
-        else acts.push([true,()=>{banner("「"+r.name+"」为珍宝收藏，无可使用效果");},"珍宝"]);
+        else acts.push([true,()=>{banner("「"+r.name+"」无可使用效果，可出售");},"查看"]);
         acts.push([true,()=>{openSell("tres",r);},"出售"]);
-        body.appendChild(whRow(`<span class="whName"><span class="ic">${icOf(r)}</span>${r.name}<span class="cat">${cn}</span></span><div class="whSub">持有 ${fmt(S.tres[id])} · 稀有${r.rarity} · 价值 ${priceLText(splitPriceL(r.value))}</div>`,tip,acts));
+        body.appendChild(whRow(`<span class="whName"><span class="ic">${icOf(r)}</span>${r.name}<span class="cat">${cn}</span></span><div class="whSub">持有 ${fmt(S.tres[id])} · 稀有${r.rarity} · 价值 ${priceLText(splitPriceL(r.value))}</div>`,tip,acts,icOf(r)));
       });
     });
   }
@@ -2053,7 +2041,7 @@ function renderXu(body){
       if(!kf(r.name)) return;
       const n=unwornEq.filter(x=>x.id===id).length;
       const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${SLOT_NAMES[r.slot]}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${eqText(r)}</span><br>价值 ${priceLText(splitPriceL(r.value))} · 持有 ${n}`;
-      body.appendChild(whRow(`<span class="whName"><span class="ic">${icOf(r)}</span>${r.name}<span class="cat">${SLOT_NAMES[r.slot]}</span></span><div class="whSub">持有 ${n} · 稀有${r.rarity} · ${eqText(r)}</div>`,tip,[[true,()=>wearEquip(id),"穿戴"],[true,()=>sellEquip(id),"出售"]]));
+      body.appendChild(whRow(`<span class="whName"><span class="ic">${icOf(r)}</span>${r.name}<span class="cat">${SLOT_NAMES[r.slot]}</span></span><div class="whSub">持有 ${n} · 稀有${r.rarity} · ${eqText(r)}</div>`,tip,[[true,()=>wearEquip(id),"穿戴"],[true,()=>sellEquip(id),"出售"]],icOf(r)));
     });
   }
   // 材料：按妖兽材料/矿石/草药分组
@@ -2065,14 +2053,14 @@ function renderXu(body){
       list.sort((a,b)=>(a.rarity-b.rarity)||(a.id<b.id?-1:1)); // v30.7.6 材料按稀有度排序
       list.forEach(m=>{
         const tip=`<b>${m.name}</b>（稀有${m.rarity} · ${m.cat}）<br>${m.ds||"无"}<br>单价 ${priceLText(splitPriceL(m.value))} · 持有 ${fmt(S.mats[m.id]||0)}`;
-        body.appendChild(whRow(`<span class="whName"><span class="ic">${m.ic}</span>${m.name}<span class="cat">${cat}</span></span><div class="whSub">持有 ${fmt(S.mats[m.id]||0)} · 稀有${m.rarity} · 单价 ${priceLText(splitPriceL(m.value))}</div>`,tip,[[true,()=>{openSell("mat",m);},"出售"]]));
+        body.appendChild(whRow(`<span class="whName"><span class="ic">${m.ic}</span>${m.name}<span class="cat">${cat}</span></span><div class="whSub">持有 ${fmt(S.mats[m.id]||0)} · 稀有${m.rarity} · 单价 ${priceLText(splitPriceL(m.value))}</div>`,tip,[[true,()=>{openSell("mat",m);},"出售"]],m.ic));
       });
     });
   }
 }
 let tipEl=null;
 function ensureTip(){ if(!tipEl){ tipEl=document.createElement("div"); tipEl.id="itemTip"; document.body.appendChild(tipEl); document.addEventListener("mousemove",e=>{ if(tipEl && tipEl.style.display==="block"){ tipEl.style.left=Math.min(e.clientX+14,window.innerWidth-300)+"px"; tipEl.style.top=Math.min(e.clientY+14,window.innerHeight-160)+"px"; } }); } return tipEl; }
-function bindTip(el,html){ ensureTip(); el.addEventListener("mouseenter",()=>{ tipEl.innerHTML=html; tipEl.style.display="block"; }); el.addEventListener("mouseleave",()=>{ tipEl.style.display="none"; }); }
+function bindTip(el,iconHtml,html){ ensureTip(); el.addEventListener("mouseenter",()=>{ tipEl.innerHTML=`<div class="tipFlex"><div class="tipIcon">${iconHtml}</div><div class="tipBody">${html}</div></div>`; tipEl.style.display="block"; }); el.addEventListener("mouseleave",()=>{ tipEl.style.display="none"; }); }
 let sellRef=null;
 function openSell(kind,obj){
   sellRef={kind,obj}; if(!obj) return;
@@ -2103,7 +2091,8 @@ let shopCat="shop"; // "shop" 坊市 / "auction" 拍卖会
 function auctionPool(minR,maxR){
   const a=[];
   MATS.forEach(m=>{ if(m.rarity>=minR&&m.rarity<=maxR) a.push({kind:"mat",obj:m}); });
-  TRES.forEach(t=>{ if(t.rarity>=minR&&t.rarity<=maxR && !REC_BY_ID[t.id]) a.push({kind:"tres",obj:t}); });
+  // v30.8 旧奇珍库已清空不再上架；恢复三件装备可拍卖（青莲宝座/定灵珠/星辰鉴）
+  ["qinglian","dingling","xingtian"].forEach(id=>{ const r=REC_BY_ID[id]; if(r && r.rarity>=minR && r.rarity<=maxR) a.push({kind:"tres",obj:r}); });
   CRAFT.forEach(c=>c.rec.forEach(r=>{ if(r.rarity>=minR&&r.rarity<=maxR && !r.slot) a.push({kind:"tres",obj:r}); }));
   GONGFAS.forEach(g=>{ if(g.rarity>=minR&&g.rarity<=maxR) a.push({kind:"gong",obj:g}); });
   return a;
@@ -2120,7 +2109,7 @@ function itemCat(it){
     return "饰品";
   }
   if(it.kind==="tres"){ const c=CRAFT.find(x=>x.rec.indexOf(r)>=0); if(c) return c.cat; }
-  return "奇珍";
+  return "成品";
 }
 function shopTipHtml(it,en){
   const r=it.obj;
@@ -2129,7 +2118,7 @@ function shopTipHtml(it,en){
   else if(it.kind==="skill") eff="购后习得，可装配至战前技能槽 · "+battleSkillDesc("spell",r);
   else if(it.kind==="mat"){ /* 材料无效果段 */ }
   else if(r.slot) eff=eqText(r);
-  else { const useable=!!(r.eff||r.heal); eff=useable?("效果："+effText(r)):"珍宝收藏，无可使用效果，可出售"; }
+  else { const useable=!!(r.eff||r.heal); eff=useable?("效果："+effText(r)):"无可使用效果，可出售"; }
   let held="";
   if(it.kind==="mat") held=" · 持有 "+fmt(S.mats[en.id]||0);
   else if(it.kind==="gong") held=" · "+(S.gongs.includes(en.id)?"已习得":"未习得");
@@ -2147,14 +2136,13 @@ function auctionTipHtml(it,en){
   let eff="";
   if(it.kind==="gong") eff="功法 · 灵气倍率 ×"+r.ess;
   else if(it.kind==="mat"){ /* 材料无效果段 */ }
-  else { const useable=!!(r.eff||r.heal); eff=useable?("效果："+effText(r)):"珍宝收藏，无可使用效果，可出售"; }
+  else { const useable=!!(r.eff||r.heal); eff=useable?("效果："+effText(r)):"无可使用效果，可出售"; }
   const who=en.bidder==="player"?"你":en.bidder==="npc"?"虚灵商客":"无人出价";
   return `<b>${r.name}</b>（稀有${r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>底价 ${ceilPriceText(en.base)} · 当前 ${ceilPriceText(en.bid)}（${who}）`;
 }
 function auctionItem(kind,id){
   if(kind==="mat"){ const m=MATS_BY_ID[id]; return m?{kind:"mat",obj:m}:null; }
   const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g};
-  const t=TRES.find(x=>x.id===id); if(t) return {kind:"tres",obj:t};
   const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r};
   return null;
 }
@@ -2203,7 +2191,7 @@ function settleAuction(now){
   S.auction.list.forEach(en=>{
     const it=auctionItem(en.kind,en.id);
     if(en.bidder==="player"){
-      if(it){ if(it.kind==="mat") S.mats[en.id]=(S.mats[en.id]||0)+1; else S.tres[en.id]=(S.tres[en.id]||0)+1; }
+      if(it){ if(it.kind==="mat") S.mats[en.id]=(S.mats[en.id]||0)+1; else if(isEquip(en.id)){ S.equip.push(newEquip(en.id)); } else { S.tres[en.id]=(S.tres[en.id]||0)+1; } }
       won++; if(it) logEvent("拍卖成交：以 "+fmt(en.bid)+" 下品灵石拍得「"+it.obj.name+"」",'sys','trade');
     } else if(en.bidder==="npc"){
       if(en.pPaid>0){ addL(splitPriceL(en.pPaid)); refund+=en.pPaid; }
@@ -2236,7 +2224,7 @@ function renderAuction(body){
     const row=document.createElement("div");row.className="exchRow";
     row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 底价 ${ceilPriceText(en.base)} · 当前 <span id="aucBid${idx}">${ceilPriceText(en.bid)}（${who}）</span></span>`;
     row.appendChild(buyBtn((canPayL(splitPriceL(extra))||canPayAutoL(extra)),()=>{bidAuction(en);},"出价 "+ceilPriceText(nb)));
-    bindTip(row,auctionTipHtml(it,en)); // v28 拍卖会货物悬浮详情框（与坊市随机出售一致）
+    bindTip(row,icOf(it.obj),auctionTipHtml(it,en)); // v30.7.7 拍卖会悬浮详情左侧加物品贴图
     body.appendChild(row);
   });
   else if(!live){ const e=document.createElement("div");e.className="hint";e.textContent="拍卖已结算或等待开场，请稍候。";body.appendChild(e); }
@@ -2264,7 +2252,7 @@ function renderShop(body){
   let st=document.createElement("div");st.className="sectionTitle";st.textContent="— 坊市 · 随机出售（每10分钟刷新）—";body.appendChild(st);
   const p=document.createElement("div");p.className="hint";p.innerHTML="随机上架 10 种材料 / 成品，越稀有刷新率越低、库存越少（稀有度1~5 → 库存10~1）。以灵石购买：<b>下品不足时自动以高品折抵</b>（高→低折算含 1% 手续费，多余找回下品）；<b>高品不足不自动低换高</b>，需先至「灵石兑换」手动凑齐。"+(S.shop.list.length?(" 距下次刷新 <b>"+Math.ceil((S.shop.until-Date.now())/60000)+"</b> 分钟。"):"");body.appendChild(p);
   if(!S.shop.list.length){ const e=document.createElement("div");e.className="hint";e.textContent="暂无上架商品。";body.appendChild(e); }
-  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const rEl=S.root?rootSpellElems(S.root):[]; const wrong=it.kind==="skill"&&!rEl.includes(it.obj.elem); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name}${it.kind==="skill"?"（"+it.obj.elem+"灵根）":""}${wrong?'<b style="color:#e05555"> · 本灵根不可用</b>':""} · 稀有${it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; bindTip(row,shopTipHtml(it,en)); const learned=it.kind==="skill"&&(S.skills||[]).includes(en.id); row.appendChild(buyBtn(en.stock>0&&(canPayL(pr)||canPayAutoL(it.obj.value))&&!learned&&!wrong,()=>{buyShop(en);render();},learned?"已习得":(wrong?"不可用":"购买"))); body.appendChild(row); });
+  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const rEl=S.root?rootSpellElems(S.root):[]; const wrong=it.kind==="skill"&&!rEl.includes(it.obj.elem); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name}${it.kind==="skill"?"（"+it.obj.elem+"灵根）":""}${wrong?'<b style="color:#e05555"> · 本灵根不可用</b>':""} · 稀有${it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; bindTip(row,icOf(it.obj),shopTipHtml(it,en)); const learned=it.kind==="skill"&&(S.skills||[]).includes(en.id); row.appendChild(buyBtn(en.stock>0&&(canPayL(pr)||canPayAutoL(it.obj.value))&&!learned&&!wrong,()=>{buyShop(en);render();},learned?"已习得":(wrong?"不可用":"购买"))); body.appendChild(row); });
 }
 function renderExch(body){
   const st2=document.createElement("div");st2.className="sectionTitle";st2.textContent="— 坊市 · 灵石兑换（手续费1%）—";body.appendChild(st2);
@@ -3790,7 +3778,7 @@ $("importBtn").addEventListener("click",()=>{
 });
 $("pathBtn").addEventListener("click",()=>{ if(window.showSaveFilePicker){ showSaveFilePicker().then(h=>h.createWritable().then(w=>w.write(JSON.stringify({r:RULESET_ID,s:S})).then(()=>w.close())).then(()=>banner("已保存至所选路径"))).catch(()=>banner("未选择路径")); } else banner("当前环境不支持选择路径，请用导出存档"); });
 $("rebirthBtn").addEventListener("click",()=>{
-  if(confirm("【重生】将删除全部修仙数据（灵根、强化、神通、货币、境界、材料、奇珍、成就与日志），并重置为开局状态。此操作不可撤销，确定继续吗？")){
+  if(confirm("【重生】将删除全部修仙数据（灵根、强化、神通、货币、境界、材料、成品、成就与日志），并重置为开局状态。此操作不可撤销，确定继续吗？")){
     suppressSave=true; localStorage.removeItem(CFG.saveKey); location.reload();
   }
 });
