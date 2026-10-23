@@ -262,16 +262,17 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 .sw input:checked+.sl{background:var(--jade)}
 .sw input:checked+.sl:before{transform:translateX(16px)}
 .dummyWrap{display:flex;gap:16px;align-items:flex-start;margin:10px 0}
-.dummy{position:relative;width:250px;height:312px;flex:none;border-radius:12px;overflow:hidden;background:#14141e}
+.dummy{position:relative;width:320px;height:400px;flex:none;border-radius:14px;overflow:hidden;background:#14141e;box-shadow:0 10px 26px rgba(0,0,0,.45)}
 .dummy .equipBarImg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block;z-index:0}
-.dummy .avatarImg{position:absolute;left:5%;top:4%;width:52%;height:90%;object-fit:contain;border-radius:10px;z-index:1;pointer-events:none}
-.dummy .slotBtn{position:absolute;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;background:rgba(255,255,255,.10);border:1px dashed var(--line,#8a8aaa);border-radius:8px;color:var(--ink,#ddd);cursor:pointer;font-size:11px;text-align:center;transition:background .15s;padding:2px 3px;min-width:42px;min-height:40px;transform:translate(-50%,-50%);z-index:2}
-.dummy .slotBtn:hover{background:rgba(120,180,255,.25);border-color:#6aa8ff}
+.dummy .avatarImg{position:absolute;left:6.94%;top:5.21%;width:57.92%;height:89.5%;object-fit:contain;object-position:center center;border-radius:6px;z-index:1;pointer-events:none;filter:drop-shadow(0 8px 20px rgba(0,0,0,.55))}
+.dummy .slotBtn{position:absolute;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;width:14.5%;height:11.2%;min-width:0;min-height:0;padding:0;background:rgba(160,200,240,.06);border:1px dashed rgba(170,200,230,.45);border-radius:9px;color:var(--ink,#ddd);cursor:pointer;font-size:10px;line-height:1.1;text-align:center;transition:background .15s,border-color .15s,box-shadow .15s;transform:translate(-50%,-50%);z-index:2}
+.dummy .slotBtn:hover{background:rgba(120,180,255,.28);border-color:#6aa8ff;box-shadow:0 0 12px rgba(106,168,255,.45)}
 .dummy .slotBtn .plus{font-size:20px;line-height:1;font-weight:700;color:var(--mystic,#8e7cf0)}
-.dummy .slotBtn.worn{border-style:solid;border-color:var(--jade,#59b97a)}
+.dummy .slotBtn.worn{border-style:solid;border-color:var(--jade,#59b97a);background:rgba(69,208,160,.14);box-shadow:0 0 10px rgba(69,208,160,.28),inset 0 0 12px rgba(69,208,160,.18)}
 .dummy .slotBtn.worn .plus{display:none}
-.dummy .slotBtn .eqname{max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dummy .slotBtn .eqname{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dummy .slotLbl{position:absolute;left:6px;font-size:10px;color:var(--ink-dim,#888)}
+@media(max-width:900px){.dummy{width:260px;height:325px}}
 .avGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;max-height:210px;overflow-y:auto}
 .avGrid .avCell{cursor:pointer;text-align:center;border:2px solid var(--line,#3a3a4a);border-radius:10px;padding:6px;background:rgba(0,0,0,.18);transition:border-color .15s}
 .avGrid .avCell.sel{border-color:#6aa8ff}
@@ -296,6 +297,72 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 .whSub{font-size:11px;color:var(--ink-dim);margin-top:2px}
 .whActs{display:flex;gap:5px;flex:none}
 .gcount{font-size:11px;color:var(--ink-dim);font-weight:400;margin-left:auto}
+/* ================= v32 视觉美化：全局质感 ================= */
+body{background:radial-gradient(1200px 720px at 12% -12%,rgba(69,208,160,.10),transparent 62%),radial-gradient(1000px 620px at 92% -6%,rgba(154,165,240,.10),transparent 58%),var(--bg);}
+#topbar,#curbar{background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),var(--panel);box-shadow:0 0 0 1px rgba(224,185,94,.10),0 10px 26px rgba(0,0,0,.32);}
+.menu-item{background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(0,0,0,.06)),var(--panel);transition:transform .16s,box-shadow .16s,filter .16s;}
+.menu-item:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.36);}
+.menu-item.active{box-shadow:0 0 0 1px rgba(224,185,94,.5),0 10px 22px rgba(224,185,94,.22),inset 0 1px 0 rgba(255,255,255,.28);}
+.sectionTitle{display:flex;align-items:center;gap:8px;}
+.sectionTitle:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(224,185,94,.55),transparent);}
+.mainCard,.item,.exchRow,.whRow,.bhTarget,.bhPanel,.bhStage{box-shadow:0 8px 20px rgba(0,0,0,.22);}
+.item{transition:transform .16s,border-color .16s,box-shadow .16s;}
+.item:hover{transform:translateY(-1px);border-color:rgba(224,185,94,.45);box-shadow:0 12px 24px rgba(0,0,0,.32);}
+.item .ic img,.item .ic .icImg,.item .ic img.icImg{border-radius:9px;box-shadow:0 3px 12px rgba(0,0,0,.5);}
+.item.afford{border-color:rgba(69,208,160,.55);}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(224,185,94,.55),rgba(224,185,94,.2));border-radius:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+#itemTip{border:1px solid rgba(154,165,240,.5);box-shadow:0 14px 34px rgba(0,0,0,.55);}
+.whRow:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.3);}
+button{transition:filter .14s,transform .14s,box-shadow .14s;}
+button:hover:not(:disabled){filter:brightness(1.08);}
+/* 蛋与灵兽 */
+.eggImg{width:52px;height:52px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));animation:eggBreath 3.2s ease-in-out infinite;}
+@keyframes eggBreath{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-2px) scale(1.04);}}
+#hatchFx{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,rgba(0,0,0,.55),rgba(0,0,0,.86));}
+#hatchFx.show{display:flex;}
+#hatchFx .hxCard{text-align:center;}
+#hatchFx img{width:186px;height:186px;filter:drop-shadow(0 0 30px rgba(224,185,94,.55));animation:hxPop .7s cubic-bezier(.2,1.6,.4,1);}
+#hatchFx .hxName{font-size:22px;font-weight:800;color:var(--gold);margin-top:10px;letter-spacing:2px;}
+#hatchFx .hxSub{font-size:12px;color:var(--ink-dim);margin-top:5px;}
+@keyframes hxPop{0%{transform:scale(.35) rotate(-12deg);opacity:0;}60%{transform:scale(1.12) rotate(4deg);opacity:1;}100%{transform:scale(1);}}
+/* 技能图标 */
+.skIcon{width:26px;height:26px;border-radius:7px;vertical-align:middle;margin-right:6px;box-shadow:0 2px 8px rgba(0,0,0,.45);}
+#battleActions button{grid-template-columns:auto 1fr auto;}
+#battleActions button .btIcon{width:22px;height:22px;border-radius:6px;grid-column:1;grid-row:1;}
+#battleActions button .btMain{grid-column:2;grid-row:1;}
+#battleActions button .btTag{grid-column:3;grid-row:1;}
+#battleActions button .btDesc{grid-column:1/-1;grid-row:2;}
+/* 掉血残影 + 受击抖动 */
+.uBar{position:relative;}
+.uBar .ghostBar{position:absolute;left:0;top:0;height:100%;border-radius:4px;z-index:1;
+  background:linear-gradient(90deg,rgba(255,90,70,.9),rgba(255,180,120,.55));transition:width .55s ease-out .16s;}
+.uBar i{position:relative;z-index:2;}
+.figShake{animation:figHurt .34s cubic-bezier(.36,.07,.19,.97);}
+@keyframes figHurt{10%,90%{transform:translateX(-2px);}20%,80%{transform:translateX(4px);}30%,50%,70%{transform:translateX(-6px);}40%,60%{transform:translateX(6px);}}
+/* 招式播报 */
+#castBanner{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%) scale(.85);z-index:7;pointer-events:none;opacity:0;
+  display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:rgba(8,10,14,.88);border:1px solid rgba(224,185,94,.55);
+  white-space:nowrap;font-weight:800;font-size:15px;letter-spacing:1px;}
+#castBanner img{width:26px;height:26px;border-radius:7px;}
+#castBanner .cbWho{font-size:11px;font-weight:600;opacity:.85;letter-spacing:0;}
+#castBanner.show{animation:castPop 1.25s ease-out;}
+@keyframes castPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7);}18%{opacity:1;transform:translate(-50%,-50%) scale(1.05);}72%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-62%) scale(1);}}
+/* ================= 灵兽动图美术管线（v32.1） ================= */
+.petArt{width:64px;height:64px;object-fit:contain;vertical-align:middle;
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(224,185,94,.18));
+  animation:petFloat 4s ease-in-out infinite;transition:transform .22s ease-out,filter .22s;}
+.item:hover .petArt{transform:translateY(-2px) scale(1.06);}
+@keyframes petFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+.petPh{position:relative;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;
+  border-radius:14px;font-size:28px;line-height:1;
+  background:radial-gradient(circle at 38% 28%,rgba(255,255,255,.12),rgba(0,0,0,.42));
+  border:1px dashed rgba(224,185,94,.45);box-shadow:inset 0 0 16px rgba(0,0,0,.35);}
+.petPh .phR{position:absolute;right:3px;bottom:1px;font-size:9px;color:#e0b95e;}
+.petPh .phTip{position:absolute;left:-2px;top:-2px;font-size:9px;color:var(--ink-dim);}
+#hatchFx img.petArt{width:190px;height:190px;animation:petFloat 4s ease-in-out infinite;}
+#hatchFx .hxEmoji{font-size:96px;line-height:1;filter:drop-shadow(0 0 26px rgba(224,185,94,.55));animation:hxPop .7s cubic-bezier(.2,1.6,.4,1);}
 </style>
 </head>
 <body>
@@ -433,7 +500,7 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 <div class="banner" id="banner"></div>
 <div class="overlay" id="overlay"><div class="modal"><h3 id="mTitle"></h3><div class="mbody" id="mBody"></div><div class="btnPair"><button id="mBtn">确定</button></div></div></div>
 <div class="overlay" id="expOverlay"><div class="modal" style="width:960px;max-width:96vw"><h3 id="expTitle"></h3><div class="expTabs"><button id="expTabExplore" class="expTab active">🗺️ 探索</button><button id="expTabLoot" class="expTab">🎒 战利品</button></div><div id="expViewExplore"><div id="expInfo" style="color:var(--ink-dim);font-size:12px;margin:2px 0 8px"></div><svg id="expSvg" viewBox="0 0 560 500" style="display:block;margin:0 auto;background:rgba(0,0,0,.25);border-radius:12px;width:100%;max-width:640px"></svg><div id="expLegend" style="font-size:12px;color:var(--ink-dim);text-align:center;margin-top:8px;line-height:1.7"></div></div><div id="expViewLoot" style="display:none;font-size:13px;color:var(--ink);min-height:120px;max-height:46vh;overflow-y:auto"></div><div class="btnPair"><button id="expRetreatBtn" style="background:linear-gradient(135deg,#d9534f,#b03a35);color:#fff">撤出秘境（-50%气血 · -50%战利品）</button><button id="expCloseBtn">关闭</button></div></div></div>
-<div class="overlay" id="battleOverlay"><div class="modal battleModal" style="width:1000px;max-width:97vw;padding:0;overflow:hidden"><div class="bhTop"><span class="bhChip gold" id="battleTitle">回合 1</span><span class="bhChip" id="battleChipTarget">🔒 锁定</span><span class="bhChip" id="battleChipPlace">秘境</span><span class="bhChip jade" id="battleChipSpirit">灵力</span><span class="bhChip" id="battleChipThreat">无克制</span><span class="bhChip" id="battleChipEffs">我方无状态</span></div><div class="bhBody"><aside class="bhTarget" id="battleTargetCard"></aside><div class="bhStage" id="battleTop"><div class="duelLine"><span id="battleRange">对峙</span></div><div class="unit" id="battlePlayer"></div><div class="unit" id="battleEnemy"></div><div class="bhInfo" id="battleInfo"></div></div><aside class="bhPanel"><div class="ph">⚙ 行动 / 法术列表 <em id="battleSlotCap"></em></div><div id="battleActions"></div></aside></div><div class="bhFoot"><div id="battleLog"></div><div class="sideBtns"><button id="battleBagBtn">🎒 背包</button><button id="battleAutoBtn">自动战斗</button><button id="battleCloseBtn" style="display:none">关闭</button></div></div></div></div>
+<div class="overlay" id="battleOverlay"><div class="modal battleModal" style="width:1000px;max-width:97vw;padding:0;overflow:hidden"><div class="bhTop"><span class="bhChip gold" id="battleTitle">回合 1</span><span class="bhChip" id="battleChipTarget">🔒 锁定</span><span class="bhChip" id="battleChipPlace">秘境</span><span class="bhChip jade" id="battleChipSpirit">灵力</span><span class="bhChip" id="battleChipThreat">无克制</span><span class="bhChip" id="battleChipEffs">我方无状态</span></div><div class="bhBody"><aside class="bhTarget" id="battleTargetCard"></aside><div class="bhStage" id="battleTop"><div class="duelLine"><span id="battleRange">对峙</span></div><div class="unit" id="battlePlayer"></div><div class="unit" id="battleEnemy"></div><div id="castBanner"></div><div class="bhInfo" id="battleInfo"></div></div><aside class="bhPanel"><div class="ph">⚙ 行动 / 法术列表 <em id="battleSlotCap"></em></div><div id="battleActions"></div></aside></div><div class="bhFoot"><div id="battleLog"></div><div class="sideBtns"><button id="battleBagBtn">🎒 背包</button><button id="battleAutoBtn">自动战斗</button><button id="battleCloseBtn" style="display:none">关闭</button></div></div></div></div>
 <div class="overlay" id="battleBagOverlay"><div class="modal" style="width:640px;max-width:95vw"><h3>🎒 战斗背包</h3><div class="mbody" id="battleBagList" style="min-height:80px;max-height:52vh;overflow-y:auto;line-height:1.8"></div><div class="btnPair"><button id="battleBagClose">关闭</button></div></div></div>
 <div class="overlay" id="slotsOverlay"><div class="modal"><h3 id="slotsTitle">— 战前技能槽配置 —</h3><div class="mbody" id="slotsBody" style="line-height:1.9"></div><div class="btnPair"><button id="slotsClose">完成</button></div></div></div>
 <div class="overlay" id="cycQtyOverlay">
@@ -456,11 +523,11 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v30.7.9（悬浮贴图图片尺寸放大）
+   修仙挂机 · 问道长生  v31.1（拍卖悬浮实时竞价：竞拍/NPC 抬价后悬浮框即时显示最新价与竞拍者）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v30.8";
+const VERSION = "v31.1";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -625,6 +692,239 @@ const BEAS=[
 ];
 const BEAS_BY_ID={}; BEAS.forEach(x=>BEAS_BY_ID[x.id]=x);
 
+/* ================================================================
+   灵兽系统 v31：探索出蛋 → 蛋仓 → 孵化槽 → 温养 → 兽栏养成
+   设计依据：《灵兽系统设计》v0.1（探索出蛋 / 10 蛋 / 30 灵兽 / 温养
+   / 饱食亲密叛变 / 炼化精魄 / 货币体系：1 上品=100 中品=10000 下品）
+   ================================================================ */
+const NEW_BEAS=[
+  /* 蛋1 木灵蛋（草药 · 修炼） */
+  {id:"mulingt", name:"木灵兔", ic:"🐰", rarity:1, band:"凡", egg:"eg1", type:"修", attr:1, traits:{}},
+  {id:"qingtengy", name:"青藤猿", ic:"🐵", rarity:5, band:"灵", egg:"eg1", type:"修", attr:5, traits:{}},
+  {id:"jianmusl", name:"建木神鹿", ic:"🦒", rarity:9, band:"圣", egg:"eg1", type:"修", attr:9, traits:{ess:3}},
+  /* 蛋2 土灵蛋（矿石 · 修炼） */
+  {id:"yanjiaxg", name:"岩甲玄龟", ic:"🐢", rarity:2, band:"凡", egg:"eg2", type:"修", attr:2, traits:{}},
+  {id:"dimaikn", name:"地脉夔牛", ic:"🐃", rarity:6, band:"灵", egg:"eg2", type:"修", attr:6, traits:{}},
+  {id:"houtuoql", name:"后土麒麟", ic:"🦄", rarity:10, band:"圣", egg:"eg2", type:"修", attr:10, traits:{dmgR:3,ess:3}},
+  /* 蛋3 水灵蛋（草药 · 修炼） */
+  {id:"yululil", name:"玉露灵鲤", ic:"🐟", rarity:1, band:"凡", egg:"eg3", type:"修", attr:1, traits:{}},
+  {id:"biboxs", name:"碧波玄蛇", ic:"🐍", rarity:5, band:"灵", egg:"eg3", type:"修", attr:5, traits:{}},
+  {id:"beimilk", name:"北冥灵鲲", ic:"🐳", rarity:9, band:"圣", egg:"eg3", type:"修", attr:9, traits:{crit:3}},
+  /* 蛋4 火灵蛋（妖兽 · 攻击） */
+  {id:"chiyanlm", name:"赤焰灵猫", ic:"🐱", rarity:2, band:"凡", egg:"eg4", type:"攻", attr:4, traits:{}},
+  {id:"yanlinhp", name:"炎鳞火蟒", ic:"🔥", rarity:6, band:"灵", egg:"eg4", type:"攻", attr:12, traits:{}},
+  {id:"chiyanzq", name:"赤炎朱雀", ic:"🦩", rarity:9, band:"圣", egg:"eg4", type:"攻", attr:18, traits:{crit:3}},
+  /* 蛋5 金灵蛋（矿石 · 攻击） */
+  {id:"jinjiax", name:"金甲玄犀", ic:"🦏", rarity:3, band:"凡", egg:"eg5", type:"攻", attr:6, traits:{}},
+  {id:"xuanjinjh", name:"玄金剑虎", ic:"🐯", rarity:7, band:"灵", egg:"eg5", type:"攻", attr:14, traits:{}},
+  {id:"baihusb", name:"白虎圣兽", ic:"🐅", rarity:10, band:"圣", egg:"eg5", type:"攻", attr:20, traits:{dmgR:3,brk:3}},
+  /* 蛋6 风灵蛋（妖兽 · 攻击） */
+  {id:"jifenglq", name:"疾风灵雀", ic:"🐦", rarity:3, band:"凡", egg:"eg6", type:"攻", attr:6, traits:{}},
+  {id:"zhuifengtl", name:"追风天狼", ic:"🐺", rarity:7, band:"灵", egg:"eg6", type:"攻", attr:14, traits:{}},
+  {id:"jinchidp", name:"金翅大鹏", ic:"🦅", rarity:9, band:"圣", egg:"eg6", type:"攻", attr:18, traits:{crit:3}},
+  /* 蛋7 冰灵蛋（草药 · 修炼） */
+  {id:"shuangjxs", name:"霜晶雪貂", ic:"🐾", rarity:4, band:"凡", egg:"eg7", type:"修", attr:4, traits:{}},
+  {id:"hanyuanbp", name:"寒渊冰蟒", ic:"❄️", rarity:7, band:"灵", egg:"eg7", type:"修", attr:7, traits:{}},
+  {id:"xuanbingth", name:"玄冰天凰", ic:"🦢", rarity:10, band:"圣", egg:"eg7", type:"修", attr:10, traits:{crit:3,brk:3}},
+  /* 蛋8 雷灵蛋（妖兽 · 攻击） */
+  {id:"leiwenzd", name:"雷纹紫貂", ic:"🐁", rarity:4, band:"凡", egg:"eg8", type:"攻", attr:8, traits:{}},
+  {id:"zidianlb", name:"紫电雷豹", ic:"🐆", rarity:8, band:"灵", egg:"eg8", type:"攻", attr:16, traits:{}},
+  {id:"tianleiql", name:"天雷麒麟", ic:"🐉", rarity:10, band:"圣", egg:"eg8", type:"攻", attr:20, traits:{crit:3,brk:3}},
+  /* 蛋9 毒灵蛋（妖兽 · 攻击） */
+  {id:"biduch", name:"碧毒蟾", ic:"🐸", rarity:3, band:"凡", egg:"eg9", type:"攻", attr:6, traits:{}},
+  {id:"jiuyoump", name:"九幽毒蟒", ic:"☠️", rarity:8, band:"灵", egg:"eg9", type:"攻", attr:16, traits:{}},
+  {id:"wanguwdm", name:"万蛊毒母", ic:"🕷️", rarity:9, band:"圣", egg:"eg9", type:"攻", attr:18, traits:{dmgR:3}},
+  /* 蛋10 阴阳蛋（草药 · 修炼+战力双属性） */
+  {id:"shuangwlm", name:"双尾灵猫", ic:"🐈", rarity:4, band:"凡", egg:"eg10", type:"修", attr:4, traits:{}},
+  {id:"taijixg", name:"太极玄龟", ic:"🐚", rarity:8, band:"灵", egg:"eg10", type:"修", attr:8, traits:{}},
+  {id:"hundunys", name:"混沌阴阳兽", ic:"☯️", rarity:10, band:"圣", egg:"eg10", type:"修", attr:10, extra:{atk:10}, traits:{dmgR:3,crit:3}},
+];
+const NEW_BEAS_BY_ID={}; NEW_BEAS.forEach(x=>NEW_BEAS_BY_ID[x.id]=x);
+/* 10 种蛋：概率为 基础→满温养；圣品随蛋稀有度单调递减（基础 15%→5%、满温养 25%→10%），三档合计恒 100% */
+const EGGS=[
+  {id:"eg1",  name:"木灵蛋",   ic:"🌱", rarity:1,  pref:"草药",     hatchSec:7200,  probs:{fan:[60,35],ling:[25,40],sheng:[15,25]}, pool:["mulingt","qingtengy","jianmusl"]},
+  {id:"eg2",  name:"土灵蛋",   ic:"🗿", rarity:2,  pref:"矿石",     hatchSec:7200,  probs:{fan:[57,34],ling:[29,43],sheng:[14,23]}, pool:["yanjiaxg","dimaikn","houtuoql"]},
+  {id:"eg3",  name:"水灵蛋",   ic:"💧", rarity:3,  pref:"草药",     hatchSec:10800, probs:{fan:[55,33],ling:[32,46],sheng:[13,21]}, pool:["yululil","biboxs","beimilk"]},
+  {id:"eg4",  name:"火灵蛋",   ic:"🔥", rarity:4,  pref:"妖兽材料", hatchSec:14400, probs:{fan:[53,32],ling:[36,49],sheng:[11,19]}, pool:["chiyanlm","yanlinhp","chiyanzq"]},
+  {id:"eg5",  name:"金灵蛋",   ic:"⚔️", rarity:5,  pref:"矿石",     hatchSec:21600, probs:{fan:[51,31],ling:[39,52],sheng:[10,17]}, pool:["jinjiax","xuanjinjh","baihusb"]},
+  {id:"eg6",  name:"风灵蛋",   ic:"🌪️", rarity:6,  pref:"妖兽材料", hatchSec:28800, probs:{fan:[49,30],ling:[42,55],sheng:[9,15]},  pool:["jifenglq","zhuifengtl","jinchidp"]},
+  {id:"eg7",  name:"冰灵蛋",   ic:"❄️", rarity:7,  pref:"草药",     hatchSec:43200, probs:{fan:[47,29],ling:[45,58],sheng:[8,13]},  pool:["shuangjxs","hanyuanbp","xuanbingth"]},
+  {id:"eg8",  name:"雷灵蛋",   ic:"⚡", rarity:8,  pref:"妖兽材料", hatchSec:57600, probs:{fan:[45,28],ling:[48,60],sheng:[7,12]},  pool:["leiwenzd","zidianlb","tianleiql"]},
+  {id:"eg9",  name:"毒灵蛋",   ic:"☠️", rarity:9,  pref:"妖兽材料", hatchSec:72000, probs:{fan:[42,27],ling:[52,62],sheng:[6,11]},  pool:["biduch","jiuyoump","wanguwdm"]},
+  {id:"eg10", name:"阴阳蛋",   ic:"☯️", rarity:10, pref:"草药",     hatchSec:86400, probs:{fan:[40,27],ling:[55,63],sheng:[5,10]},  pool:["shuangwlm","taijixg","hundunys"]},
+];
+const EGG_BY_ID={}; EGGS.forEach(x=>EGG_BY_ID[x.id]=x);
+function petByUid(uid){ return (S.pets||[]).find(x=>x.uid===uid); }
+function eggByUid(uid){ return (S.eggs||[]).find(x=>x.uid===uid); }
+/* 出战上限：筑基 1 / 金丹 2 / 元婴及以上 3 */
+function petCap(){ return S.realm<=0?0:S.realm===1?1:S.realm===2?2:3; }
+function petActiveUids(){ const cap=petCap(); return (S.petActive||[]).slice(0,cap); }
+/* 属性生效系数：亲密 40%→100% 线性（40%+60%×亲密/100）；饱食 0 时 ×0.5 */
+function petCoef(it){ const c=0.4+0.6*Math.max(0,Math.min(100,it.int))/100; return it.sat<=0?c*0.5:c; }
+/* 出战灵兽加成聚合：修炼型=修炼速度%、攻击型=战力%、圣品特性=灵气/会心/突破/减伤 */
+function petSum(key){
+  const cap=petCap(); if(cap<=0) return 0;
+  const act=S.petActive||[]; let sum=0;
+  for(let i=0;i<Math.min(cap,act.length);i++){
+    const it=petByUid(act[i]); if(!it) continue;
+    const b=NEW_BEAS_BY_ID[it.id]; if(!b) continue;
+    const c=petCoef(it);
+    if(key==="atk"){ if(b.type==="攻") sum+=b.attr*c; if(b.extra&&b.extra.atk) sum+=b.extra.atk*c; }
+    else if(key==="cult"){ if(b.type==="修") sum+=b.attr*c; }
+    else if(b.traits&&b.traits[key]) sum+=b.traits[key]*c;
+  }
+  return sum;
+}
+/* 探索战斗胜利出蛋判定（设计 3.1）：区域基础出蛋率 + 层数×0.15%，封顶 10% */
+function maybeDropEgg(area, floor){
+  if(!S.root || S.realm<1) return;
+  /* 新手保底（3.3）：筑基后首场战斗胜利必得木灵蛋 */
+  if(!S.petGuide){ S.petGuide=true; addEgg("eg1"); logEvent("首战告捷！获得新手引导蛋「木灵蛋」×1",'sys'); banner("获得木灵蛋"); save(); return; }
+  const base={dt:2.0,yl:3.5,sg:5.0,kj:6.5}[area]||2.0;
+  const rate=Math.min(10, base+floor*0.15);
+  if(Math.random()*100>=rate) return;
+  const dist={dt:[[1,40],[2,30],[3,20],[4,10]],yl:[[2,25],[3,25],[4,20],[5,20],[6,10]],sg:[[4,15],[5,20],[6,20],[7,20],[8,15],[9,10]],kj:[[6,10],[7,15],[8,20],[9,25],[10,30]]}[area]||[[1,100]];
+  let rr=Math.random()*100, pick=dist[0][0];
+  for(const d of dist){ rr-=d[1]; if(rr<=0){ pick=d[0]; break; } }
+  addEgg("eg"+pick);
+}
+function addEgg(id){
+  const ed=EGG_BY_ID[id]; if(!ed) return;
+  S.eggs.push({uid:++S.uid, id, warm:0});
+  logEvent("获得「"+ed.name+"」×1（可前往灵兽页孵化）",'sys');
+  banner("获得 "+ed.name);
+}
+/* 孵化：入槽（蛋仓中蛋移入槽，温养度随身）→ 倒计时 → 破壳掷档位 */
+function startHatch(uid){
+  const egg=eggByUid(uid); if(!egg) return;
+  const slot=S.hatch.findIndex(x=>!x);
+  if(slot<0){ banner("孵化槽已满，请等待空位"); return; }
+  const ed=EGG_BY_ID[egg.id];
+  S.eggs=S.eggs.filter(e=>e.uid!==uid);
+  S.hatch[slot]={id:egg.id, warm:egg.warm, endAt:Date.now()+ed.hatchSec*1000};
+  logEvent("「"+ed.name+"」放入孵化槽"+(slot+1)+"，需 "+Math.round(ed.hatchSec/3600)+" 小时",'sys'); sound(560,.12); save(); renderTab();
+}
+function hatchDone(slot){
+  const h=S.hatch[slot]; if(!h) return;
+  if(h.endAt>Date.now()){ banner("孵化尚未完成"); return; }
+  const ed=EGG_BY_ID[h.id]; if(!ed){ S.hatch[slot]=null; save(); renderTab(); return; }
+  const w=Math.max(0,Math.min(100,h.warm||0));
+  const p=ed.probs;
+  const fan=p.fan[0]+(p.fan[1]-p.fan[0])*w/100;
+  const ling=p.ling[0]+(p.ling[1]-p.ling[0])*w/100;
+  const rr=Math.random()*100;
+  const band= rr<fan?"凡" : rr<fan+ling?"灵" : "圣";
+  const bid=ed.pool[band==="凡"?0:band==="灵"?1:2];
+  const nb=NEW_BEAS_BY_ID[bid];
+  S.hatch[slot]=null;
+  const full=w>=100;
+  const it={uid:++S.uid, id:nb.id, sat:full?100:80, int:full?100:80, lastFeedAt:Date.now(), betrayAt:null};
+  S.pets.push(it);
+  if(!S.petDex[nb.id]) S.petDex[nb.id]=1;
+  if(S.petActive.length<petCap()) S.petActive.push(it.uid);
+  logEvent("「"+ed.name+"」破壳，孵化出「"+nb.name+"」（"+(band==="凡"?"凡品":band==="灵"?"灵品":"圣品")+" · 稀"+nb.rarity+"）"+(full?"（满温养：初始饱食/亲密+20）":""),'sys');
+  banner("孵化出 "+nb.name); sound(660,.18); showHatchFx(ed.id,nb,band,full); save(); renderTab();
+}
+/* 温养收益：普通材料 0.5×材料稀有度、偏好材料 1×材料稀有度（设计 4.3 新口径） */
+function warmGain(ed, mat){ return mat.cat===ed.pref ? mat.rarity : mat.rarity*0.5; }
+function warmEggByMat(uid, matId){
+  const egg=eggByUid(uid); if(!egg) return;
+  const m=MATS_BY_ID[matId]; if(!m||(S.mats[matId]||0)<1) return;
+  const ed=EGG_BY_ID[egg.id]; const g=warmGain(ed,m);
+  S.mats[matId]--; egg.warm=Math.min(100, egg.warm+g);
+  logEvent("温养「"+ed.name+"」"+m.name+"：温养度 +"+(g%1?g.toFixed(1):g),'','collect'); sound(520,.1); save(); renderTab();
+}
+function warmHatchByMat(slot, matId){
+  const h=S.hatch[slot]; if(!h) return;
+  const m=MATS_BY_ID[matId]; if(!m||(S.mats[matId]||0)<1) return;
+  const ed=EGG_BY_ID[h.id]; if(!ed) return; const g=warmGain(ed,m);
+  S.mats[matId]--; h.warm=Math.min(100, (h.warm||0)+g);
+  logEvent("温养孵化中的「"+ed.name+"」"+m.name+"：温养度 +"+(g%1?g.toFixed(1):g),'','collect'); sound(520,.1); save(); renderTab();
+}
+function warmByEss(uid){
+  if(S.petEss<1){ banner("灵兽精魄不足"); return; }
+  const egg=eggByUid(uid); if(!egg) return;
+  S.petEss--; egg.warm=Math.min(100, egg.warm+1);
+  logEvent("以 1 枚精魄温养「"+EGG_BY_ID[egg.id].name+"」，温养度 +1",'sys'); sound(520,.1); save(); renderTab();
+}
+function warmHatchByEss(slot){
+  if(S.petEss<1){ banner("灵兽精魄不足"); return; }
+  const h=S.hatch[slot]; if(!h) return;
+  S.petEss--; h.warm=Math.min(100,(h.warm||0)+1);
+  logEvent("以 1 枚精魄温养孵化中的蛋，温养度 +1",'sys'); sound(520,.1); save(); renderTab();
+}
+/* 喂养：消耗 1 份任意材料，饱食+10×稀有度、亲密+2×稀有度（上限 100），重置叛变倒计时 */
+function feedPetByMat(uid, matId){
+  const it=petByUid(uid); if(!it) return;
+  const m=MATS_BY_ID[matId]; if(!m||(S.mats[matId]||0)<1) return;
+  S.mats[matId]--;
+  it.sat=Math.min(100, it.sat+10*m.rarity);
+  it.int=Math.min(100, it.int+2*m.rarity);
+  it.lastFeedAt=Date.now(); it.betrayAt=null;
+  const b=NEW_BEAS_BY_ID[it.id];
+  logEvent("喂养「"+b.name+"」"+m.name+"：饱食 +"+(10*m.rarity)+"、亲密 +"+(2*m.rarity),'sys'); sound(560,.12); save(); renderTab();
+}
+/* 炼化：移除灵兽得精魄（数量=稀有度），图鉴保留；放生：返还 稀有度×(1上品+100下品)（略高于炼化） */
+function refinePet(uid){
+  const it=petByUid(uid); if(!it) return;
+  const b=NEW_BEAS_BY_ID[it.id]; if(!b) return;
+  S.pets=S.pets.filter(x=>x.uid!==uid);
+  S.petActive=S.petActive.filter(u=>u!==uid);
+  S.petEss+=b.rarity;
+  logEvent("炼化「"+b.name+"」，获得 "+b.rarity+" 枚灵兽精魄",'sys'); sound(620,.15); save(); renderTab();
+}
+function releasePet(uid){
+  const it=petByUid(uid); if(!it) return;
+  const b=NEW_BEAS_BY_ID[it.id]; if(!b) return;
+  S.pets=S.pets.filter(x=>x.uid!==uid);
+  S.petActive=S.petActive.filter(u=>u!==uid);
+  addL(splitPriceL(b.rarity*10100));
+  logEvent("放生「"+b.name+"」，返还 "+priceLText(splitPriceL(b.rarity*10100))+"，图鉴收录保留",'sys'); sound(520,.12); save(); renderTab();
+}
+/* 精魄出售：每枚 1 上品灵石 */
+function sellPetEss(){
+  if(S.petEss<1){ banner("没有灵兽精魄"); return; }
+  S.petEss--; addL(splitPriceL(10000));
+  logEvent("出售 1 枚灵兽精魄，得 1 上品灵石",'sys'); sound(520,.1); save(); renderTab();
+}
+/* 孵化槽：默认 1 个，可扩至 4 槽（100 下品 / 1 中品 / 10 中品） */
+const HATCH_FEES=[null,{g:0,t:0,h:0,m:0,l:100},{g:0,t:0,h:0,m:1,l:0},{g:0,t:0,h:0,m:10,l:0}];
+function expandHatch(){
+  if(S.hatchSlots>=4){ banner("已达孵化槽上限（4 槽）"); return; }
+  const fee=HATCH_FEES[S.hatchSlots]; if(!canPayL(fee)){ banner("灵石不足，扩容需 "+priceLText(fee)); return; }
+  payL(fee); S.hatchSlots++;
+  logEvent("扩容孵化槽至 "+S.hatchSlots+" 槽，花费 "+priceLText(fee),'sys'); sound(560,.12); save(); renderTab();
+}
+/* 出战切换（受境界解锁上限） */
+function togglePetActive(uid){
+  const it=petByUid(uid); if(!it) return;
+  const idx=(S.petActive||[]).indexOf(uid);
+  if(idx>=0){ S.petActive.splice(idx,1); }
+  else{
+    if(S.petActive.length>=petCap()){ banner("出战上限 "+petCap()+" 只（筑基1/金丹2/元婴3），请先休战一只"); return; }
+    S.petActive.push(uid);
+  }
+  save(); renderTab();
+}
+/* 养成 tick：饱食/亲密衰减 + 叛变倒计时（设计 6.1-6.4；每秒随 gameTick 调用） */
+function petTick(dt){
+  if(!S.pets||!S.pets.length) return;
+  const now=Date.now();
+  for(const it of S.pets){
+    const b=NEW_BEAS_BY_ID[it.id]; if(!b) continue;
+    const dec={凡:2,灵:3,圣:4}[b.band]||2;
+    it.sat=Math.max(0, it.sat - dec*dt/3600);
+    if(it.sat<=0) it.int=Math.max(0, it.int - dt/3600);
+    else it.int=Math.max(0, it.int - dt/7200);
+    if(it.int<=0){
+      if(it.betrayAt==null){ it.betrayAt=now + ((it.sat<=0?48:72)*3600*1000); }
+      else if(it.betrayAt<=now){ S.pets=S.pets.filter(x=>x.uid!==it.uid); S.petActive=S.petActive.filter(u=>u!==it.uid); logEvent("灵兽「"+b.name+"」叛变逃离（长期未喂养）",'warn'); banner("「"+b.name+"」叛变逃离"); }
+      else if(it.sat<=0 && it.betrayAt>now+49*3600*1000){ it.betrayAt=now+48*3600*1000; }
+    } else it.betrayAt=null;
+  }
+}
+
+
 /* 制造配方库（制符/炼丹/炼器/阵法）— v20 四套 88 种 */
 const CRAFT = [
   {cat:"制符", ic:"🧧", ds:"以材料炼制符箓", rec:[
@@ -672,6 +972,7 @@ const CRAFT = [
     {id:"wujijinshen",name:"无极金身丹",ic:"🛡️",value:186160,eff:"dmg_reduce",val:30,durMin:120,maxStack:1,heal:60,ds:"无极金身，金刚不坏，兼能恢复气血。", need:{"wanfuf":18,"zixiaot":16,"tianwai":10,"biluoy":4,"xuanwubei":2,"taotieg":1,"chuangshij":1}},
   ]},
   {cat:"炼器", ic:"⚒️", ds:"炼器成装备，穿戴生效", rec:[
+    {id:"mu_kui",name:"木傀",ic:"🪵",isPu:true,puLv:"丁",value:30000,ds:"地火淬形、玄阳注灵、蛟鳞点睛、青金塑骨、内丹启智，制成初阶木傀儡，可代劳采集与制造。", need:{dihuo:40,xuanyang:30,jiao:30,qing:30,core:10}},
     {id:"qingfengjian",name:"青锋剑",ic:"🗡️",slot:"w",atk:6,hp:0,ess:0,crit:0,brk:0,dmgR:0,value:819,ds:"青锋三尺，锋芒初露，斩妖除魔。", need:{"iron":24,"gold":10,"skin":18,"bone":12}},
     {id:"xuantiekui",name:"玄铁盔",ic:"⛑️",slot:"h",atk:0,hp:8,ess:0,crit:0,brk:0,dmgR:0,value:749,ds:"玄铁铸盔，坚不可摧，气血绵长。", need:{"iron":22,"bone":18,"skin":12,"gold":8}},
     {id:"tielinjia",name:"铁鳞甲",ic:"🛡️",slot:"a",atk:0,hp:0,ess:0,crit:0,brk:0,dmgR:10,value:910,ds:"铁鳞覆甲，刀枪难入，减免伤势。", need:{"iron":20,"skin":22,"tort":10,"tong":12}},
@@ -724,7 +1025,7 @@ const CRAFT = [
     {id:"jiuzhuanzheng",name:"九转证道大阵",ic:"🪷",value:238940,eff:"brk",val:40,durMin:120,maxStack:1,ds:"九转证道，大道可期，突破无碍。", need:{"qilinj":18,"xinghui":14,"jiuyang":10,"fenghuangy":8,"chuangshil":1,"zulongy":1,"changsheng":1}},
   ]},
 ];
-const REC_RARE={jufu:1,ningshen:2,dundi:1,yuhuo:2,pojun:3,xuanling:4,zhenfu:5,jiadun:4,fentian:5,zixiao:6,taichufu:7,dinghun:8,hundunfu:7,jiuyangfu:8,zhuxianpo:9,hunyuanqi:10,taiyizhen:10,wujidun:10,hundunpo:10,hongmengzheng:10,juqi:1,chuiti:1,yangshen:2,zhuji:2,jinganghu:3,huiling:4,huoyuancu:4,qiqiao:5,pojing:5,xuanguihu:6,tianyuan:7,jiuzhuanlian:8,taiyiding:8,poxudujie:9,hundunhu:9,hundunzaohua:10,daoticuihuo:10,hongmengding:10,jiuzhuanpoxu:10,wujijinshen:10,juling:1,jingxin:1,hushen:2,jianzhen:2,taiji:3,wuxing:4,xingdou:5,xuanjia:4,tiangang:5,liangyi:6,jiuyao:7,taiyin:8,hundunhudun:7,zhuxian:8,fengshen:9,hongmengjuling:10,hundunding:10,wujijinshenz:10,wanjian:10,jiuzhuanzheng:10,qingfengjian:1,xuantiekui:2,tielinjia:1,xuantiejie:2,feicui:3,yunling:1,zihulu:3,liangtianchi:4,zijinguan:5,fuyaosuo:4,chiyanhuan:5,qiankun:6,dingling:4,qinglian:5,yinyangjing:7,taixuguan:8,xingtian:7,jiuyaohuan:8,dayan:9,suoling:9,hundundingq:8,haotianjing:10,hongmengzjg:10,taiyixuanjia:10,hundunhuan:10,taiyijie:10,dadao:10,chuangshiding:10};
+const REC_RARE={jufu:1,ningshen:2,dundi:1,yuhuo:2,pojun:3,xuanling:4,zhenfu:5,jiadun:4,fentian:5,zixiao:6,taichufu:7,dinghun:8,hundunfu:7,jiuyangfu:8,zhuxianpo:9,hunyuanqi:10,taiyizhen:10,wujidun:10,hundunpo:10,hongmengzheng:10,juqi:1,chuiti:1,yangshen:2,zhuji:2,jinganghu:3,huiling:4,huoyuancu:4,qiqiao:5,pojing:5,xuanguihu:6,tianyuan:7,jiuzhuanlian:8,taiyiding:8,poxudujie:9,hundunhu:9,hundunzaohua:10,daoticuihuo:10,hongmengding:10,jiuzhuanpoxu:10,wujijinshen:10,juling:1,jingxin:1,hushen:2,jianzhen:2,taiji:3,wuxing:4,xingdou:5,xuanjia:4,tiangang:5,liangyi:6,jiuyao:7,taiyin:8,hundunhudun:7,zhuxian:8,fengshen:9,hongmengjuling:10,hundunding:10,wujijinshenz:10,wanjian:10,jiuzhuanzheng:10,mu_kui:3,qingfengjian:1,xuantiekui:2,tielinjia:1,xuantiejie:2,feicui:3,yunling:1,zihulu:3,liangtianchi:4,zijinguan:5,fuyaosuo:4,chiyanhuan:5,qiankun:6,dingling:4,qinglian:5,yinyangjing:7,taixuguan:8,xingtian:7,jiuyaohuan:8,dayan:9,suoling:9,hundundingq:8,haotianjing:10,hongmengzjg:10,taiyixuanjia:10,hundunhuan:10,taiyijie:10,dadao:10,chuangshiding:10};
 const REC_BY_ID={}; CRAFT.forEach(c=>c.rec.forEach(r=>{ r.rarity=REC_RARE[r.id]||1; REC_BY_ID[r.id]=r; }));
 /* 符箓贴图映射（v21）：制造/背包/坊市/拍卖/增益条统一走 icOf()，无图配方回退 emoji */
 const FU_IMG={jufu:"贴图/符箓/聚灵符.png",dundi:"贴图/符箓/遁地符.png",yuhuo:"贴图/符箓/御火符.png",ningshen:"贴图/符箓/凝神符.png",pojun:"贴图/符箓/破军符.jpg",xuanling:"贴图/符箓/玄灵符.jpg",jiadun:"贴图/符箓/金甲遁地.jpg",zhenfu:"贴图/符箓/镇神符.jpg",fentian:"贴图/符箓/焚天御火.jpg",zixiao:"贴图/符箓/紫霄破阵.jpg",hundunfu:"贴图/符箓/混元遁形.jpg",dinghun:"贴图/符箓/定魂.jpg",jiuyangfu:"贴图/符箓/九阳焚天.jpg",zhuxianpo:"贴图/符箓/诛仙破妄.jpg",hunyuanqi:"贴图/符箓/混元一气.jpg",taiyizhen:"贴图/符箓/太一镇神符.jpg",wujidun:"贴图/符箓/无极遁世符.jpg",hundunpo:"贴图/符箓/混沌破天符.jpg",hongmengzheng:"贴图/符箓/鸿蒙证道符.jpg",taichufu:"贴图/符箓/太初灵符.jpeg"};
@@ -736,8 +1037,19 @@ const DANYAO_IMG={juqi:"贴图/丹药/1聚气丹.png",chuiti:"贴图/丹药/1淬
 const LQ_IMG={qingfengjian:"贴图/炼器/青锋剑.jpg",xuantiekui:"贴图/炼器/玄铁盔.jpg",tielinjia:"贴图/炼器/铁鳞甲.jpg",xuantiejie:"贴图/炼器/玄铁戒.jpg",feicui:"贴图/炼器/翡翠指环.jpg",yunling:"贴图/炼器/蕴灵珠串.jpg",liangtianchi:"贴图/炼器/量天尺_6ba4690a-f75f-4dd8-bd2d-2ea575bc56ad_PhotoGrid.png",fuyaosuo:"贴图/炼器/缚妖索.jpeg",qiankun:"贴图/炼器/乾坤戒_f3f521cc-f1fa-44fd-a58d-5a88ef5e36f5_PhotoGrid.png",dingling:"贴图/炼器/定灵珠.png",qinglian:"贴图/炼器/青莲宝座.png",yinyangjing:"贴图/炼器/阴阳镜.jpg",taixuguan:"贴图/炼器/太虚冠.jpg",xingtian:"贴图/炼器/星辰鉴.webp",jiuyaohuan:"贴图/炼器/九耀戒指.webp",dayan:"贴图/炼器/大衍戒.webp",suoling:"贴图/炼器/锁灵珠串.webp",hundundingq:"贴图/炼器/混元鼎.webp",haotianjing:"贴图/炼器/昊天镜.webp",hongmengzjg:"贴图/炼器/鸿蒙紫金冠.webp",taiyixuanjia:"贴图/炼器/太一甲.webp",hundunhuan:"贴图/炼器/混沌指环.webp",taiyijie:"贴图/炼器/太一戒.webp",dadao:"贴图/炼器/大道珠串.webp",chuangshiding:"贴图/炼器/创世鼎.webp",chiyanhuan:"贴图/炼器/火焰环.jpeg"};
 /* 阵法贴图映射（v24）：贴图/阵法/ 下 20 张 */
 const ZHENFA_IMG={juling:"贴图/阵法/聚灵阵.jpg",jingxin:"贴图/阵法/静心阵.jpg",hushen:"贴图/阵法/护身阵.jpg",jianzhen:"贴图/阵法/剑阵.jpg",taiji:"贴图/阵法/太极阵.jpg",wuxing:"贴图/阵法/五行聚灵阵.jpg",xingdou:"贴图/阵法/星斗凝神阵.jpg",xuanjia:"贴图/阵法/玄甲护身阵.jpg",tiangang:"贴图/阵法/天罡剑阵.jpg",liangyi:"贴图/阵法/两仪破境阵.jpg",jiuyao:"贴图/阵法/九曜聚灵阵.jpg",taiyin:"贴图/阵法/太阴定神阵.jpg",hundunhudun:"贴图/阵法/混元护盾阵.jpg",zhuxian:"贴图/阵法/诛仙剑阵.jpg",fengshen:"贴图/阵法/封神破妄阵.jpg",hongmengjuling:"贴图/阵法/鸿蒙聚灵大阵.jpg",hundunding:"贴图/阵法/混沌定魂阵.jpg",wujijinshenz:"贴图/阵法/无极金身大阵.jpg",wanjian:"贴图/阵法/万剑诛仙阵.jpg",jiuzhuanzheng:"贴图/阵法/九转证道大阵.jpg"};
+const EGG_IMG={"eg1":"贴图/灵兽蛋/eg1.svg","eg2":"贴图/灵兽蛋/eg2.svg","eg3":"贴图/灵兽蛋/eg3.svg","eg4":"贴图/灵兽蛋/eg4.svg","eg5":"贴图/灵兽蛋/eg5.svg","eg6":"贴图/灵兽蛋/eg6.svg","eg7":"贴图/灵兽蛋/eg7.svg","eg8":"贴图/灵兽蛋/eg8.svg","eg9":"贴图/灵兽蛋/eg9.svg","eg10":"贴图/灵兽蛋/eg10.svg"};
+const SPELL_IMG={"s-jin1":"贴图/技能/s-jin1.svg","s-jin2":"贴图/技能/s-jin2.svg","s-jin3":"贴图/技能/s-jin3.svg","s-jin4":"贴图/技能/s-jin4.svg","s-mu1":"贴图/技能/s-mu1.svg","s-mu2":"贴图/技能/s-mu2.svg","s-mu3":"贴图/技能/s-mu3.svg","s-mu4":"贴图/技能/s-mu4.svg","s-shui1":"贴图/技能/s-shui1.svg","s-shui2":"贴图/技能/s-shui2.svg","s-shui3":"贴图/技能/s-shui3.svg","s-shui4":"贴图/技能/s-shui4.svg","s-huo1":"贴图/技能/s-huo1.svg","s-huo2":"贴图/技能/s-huo2.svg","s-huo3":"贴图/技能/s-huo3.svg","s-huo4":"贴图/技能/s-huo4.svg","s-tu1":"贴图/技能/s-tu1.svg","s-tu2":"贴图/技能/s-tu2.svg","s-tu3":"贴图/技能/s-tu3.svg","s-tu4":"贴图/技能/s-tu4.svg","s-ice1":"贴图/技能/s-ice1.svg","s-ice2":"贴图/技能/s-ice2.svg","s-ice3":"贴图/技能/s-ice3.svg","s-ice4":"贴图/技能/s-ice4.svg","s-lei1":"贴图/技能/s-lei1.svg","s-lei2":"贴图/技能/s-lei2.svg","s-lei3":"贴图/技能/s-lei3.svg","s-lei4":"贴图/技能/s-lei4.svg","s-feng1":"贴图/技能/s-feng1.svg","s-feng2":"贴图/技能/s-feng2.svg","s-feng3":"贴图/技能/s-feng3.svg","s-feng4":"贴图/技能/s-feng4.svg","s-du1":"贴图/技能/s-du1.svg","s-du2":"贴图/技能/s-du2.svg","s-du3":"贴图/技能/s-du3.svg","s-du4":"贴图/技能/s-du4.svg","s-yiny1":"贴图/技能/s-yiny1.svg","s-yiny2":"贴图/技能/s-yiny2.svg","s-yiny3":"贴图/技能/s-yiny3.svg","s-yiny4":"贴图/技能/s-yiny4.svg","j1":"贴图/技能/j1.svg","x1":"贴图/技能/x1.svg","s1":"贴图/技能/s1.svg","z1":"贴图/技能/z1.svg","x2":"贴图/技能/x2.svg","s3":"贴图/技能/s3.svg","m1":"贴图/技能/m1.svg","j2":"贴图/技能/j2.svg","s2":"贴图/技能/s2.svg","z2":"贴图/技能/z2.svg","m2":"贴图/技能/m2.svg","p1":"贴图/技能/p1.svg"};
+/* 灵兽美术：贴图/灵兽/<id>.webp(动图) → .gif → .apng → .png → .jpg
+   映射由 tools/pet_art_index.py 扫描目录生成；缺图时显示占位符，不伪造美术 */
+const PET_IMG={"baihusb":"贴图/灵兽/baihusb.webp"};
+const PET_VID={"mulingt":"贴图/灵兽/木灵兔.mp4","qingtengy":"贴图/灵兽/青藤猿.mp4","jianmusl":"贴图/灵兽/建木神鹿.mp4","yanjiaxg":"贴图/灵兽/岩甲玄龟.mp4","dimaikn":"贴图/灵兽/地脉夔牛.mp4","chiyanlm":"贴图/灵兽/赤焰灵猫.mp4","leiwenzd":"贴图/灵兽/雷纹紫貂.mp4"};
+function petArtHtml(b,size){
+  const src=PET_IMG[b.id];
+  if(src) return '<img class="petArt" src="'+src+'" alt="'+b.name+'" style="width:'+(size||64)+'px;height:'+(size||64)+'px" loading="lazy">';
+  return '<span class="petPh" title="'+b.name+'：待放入 '+('贴图/灵兽/'+b.id+'.webp')+'"><span>'+b.ic+'</span><span class="phR">稀'+b.rarity+'</span></span>';
+}
 function icOf(o,size){
-  const p=o&&(FU_IMG[o.id]||GONG_IMG[o.id]||DANYAO_IMG[o.id]||LQ_IMG[o.id]||ZHENFA_IMG[o.id]);
+  const p=o&&(FU_IMG[o.id]||GONG_IMG[o.id]||DANYAO_IMG[o.id]||LQ_IMG[o.id]||ZHENFA_IMG[o.id]||PET_IMG[o.id]||EGG_IMG[o.id]||SPELL_IMG[o.id]);
   if(p) return '<img class="icImg" src="'+p+'" alt="'+o.name+'" style="width:'+(size||30)+'px;height:'+(size||30)+'px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:2px">';
   return o.ic||""; // v29.1 无图标对象（技能书/身法等无 ic 字段）回退空串，避免名字前出现 undefined
 }
@@ -866,7 +1178,7 @@ function newState(){
     realm:0, essence:0, lifetime:0, clicks:0, dao:0, daoTotal:0, hp:100, hpMax:100,
     stoneL:0, stoneM:0, stoneH:0, stoneT:0, stoneG:0,
     fa:FAC.map(()=>0), ups:Object.fromEntries(UPS.map(u=>[u.id,0])),
-    mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0, servants:[{lv:"丁",task:null,prog:0,curR:null}], pets:[], gongs:["yj"], activeGong:"yj", slots:null,
+    mats:{}, tres:{}, collect:{}, collectZone:{beast:"外",ore:"外",herb:"外"}, equip:[], equipped:{}, uid:0, servants:[{lv:"丁",task:null,prog:0,curR:null}], pets:[], eggs:[], hatch:[null], hatchSlots:1, petEss:0, petActive:[], petDex:{}, petGuide:false, petV31:false, gongs:["yj"], activeGong:"yj", slots:null,
     shen:[], shenProd:0, shenBreak:0, shenCrit:0, shenOffline:0, shenDaoProd:0,
     ach:[], achGot:{}, achPending:[], log:[], ascensions:0, yunning:false, critBoost:false, buffs:{}, buffWarned:{}, buffEnded:{}, cycle:null, shop:{list:[],until:0}, lastSaved:Date.now(), avatar:null, avatarUses:0,
     settings:{theme:"dark",lang:"zh"},
@@ -894,6 +1206,23 @@ function normalizeState(){
   if(!S.servants || !S.servants.length) S.servants=[{lv:"丁",task:null,prog:0,curR:null}];
   S.servants.forEach(s=>{ s.lv=s.lv||"丁"; s.task=s.task||null; if(s.task&&s.task.kind==="cai"&&!s.task.zone)s.task.zone="外"; s.prog=s.prog||0; s.curR=s.curR||null; });
   if(!S.pets||!Array.isArray(S.pets)) S.pets=[];
+  /* v31 灵兽系统：旧档「寻兽结缘」灵兽（带 lv 字段）折算为精魄（数量=稀有度），并初始化新字段 */
+  if(S.petV31===undefined){
+    const legacy=(S.pets||[]).filter(it=>it&&it.lv!==undefined);
+    if(legacy.length){
+      let ess=0;
+      legacy.forEach(it=>{ const b=BEAS_BY_ID[it.id]; if(b) ess+=b.rarity; });
+      S.petEss=(S.petEss||0)+ess;
+      logEvent("旧档灵兽 "+legacy.length+" 只已折算为 "+ess+" 枚灵兽精魄（v31 灵兽系统上线）",'warn');
+    }
+    S.petV31=true;
+  }
+  S.pets=(S.pets||[]).filter(it=>it&&it.lv===undefined);
+  S.eggs=S.eggs||[]; S.hatch=S.hatch||[null]; while(S.hatch.length<4) S.hatch.push(null);
+  S.hatchSlots=Math.max(1,Math.min(4,S.hatchSlots||1));
+  S.petEss=S.petEss||0; S.petActive=(S.petActive||[]).filter(u=>petByUid(u)); S.petDex=S.petDex||{}; S.petGuide=!!S.petGuide;
+  S.pets.forEach(it=>{ it.sat=it.sat===undefined?80:Math.max(0,Math.min(100,it.sat)); it.int=it.int===undefined?80:Math.max(0,Math.min(100,it.int)); it.lastFeedAt=it.lastFeedAt||Date.now(); });
+
   for(const k in S.collect){ if(!["beast","ore","herb"].includes(k)) delete S.collect[k]; }
   S.ups=S.ups||Object.fromEntries(UPS.map(u=>[u.id,0]));
   S.shen=S.shen||[]; S.ach=S.ach||[];
@@ -958,6 +1287,7 @@ function load(){
       }
       if(away>10) showModal("闭关归来","离开期间挂机采得若干材料。\n（灵气产出默认暂停，未运功不产灵气）\n离线时长 "+fmt(sec)+" 秒 · 采集效率 "+Math.round(eff*100)+"%");
     }
+    if(S.pets&&S.pets.length) petTick(sec); // v31 离线养成结算：饱食/亲密/叛变（孵化用绝对时间戳自然推进）
     S.lastSaved=Date.now();
     return;
   }
@@ -1057,7 +1387,7 @@ function essencePerSec(){
   if(S.root) m = CFG.huangBase * rootSpeed() * realm().mult * prodUpMult() * daoMult() * gongMul();
   m += facEssSec();
   m += buffEffSum("ess_flat");
-  if(m>0) m *= (1 + buffEffSum("ess_pct")/100 + eqSum("ess")/100 + petSum("ess")/100);
+  if(m>0) m *= (1 + buffEffSum("ess_pct")/100 + eqSum("ess")/100 + petSum("ess")/100 + petSum("cult")/100); // v31 修炼型灵兽：修炼速度加成并入灵气产出
   return m;
 }
 function yunEffMult(){ return 1 + UPS[0].fx(S.ups.click); }
@@ -1178,6 +1508,7 @@ function randMatOfCat(cid, z){
 const SV_EFF={甲:0.9,乙:0.75,丙:0.6,丁:0.4}; // 傀儡效率 = 玩家效率（100%）的比例
 const SV_AV={甲:"💎",乙:"⚙️",丙:"🗿",丁:"🪵"}; // 傀儡头像：玉傀 / 铁傀 / 石傀 / 木傀
 const LV_NM={甲:"玉",乙:"铁",丙:"石",丁:"木"}; // 傀儡等级显示名
+const SV_VAL={甲:300000,乙:120000,丙:60000,丁:30000}; // 傀儡价值（下品）：出售自动换算高档灵石
 function craftTime(r){ const v=r.value||1; if(v<200)return 10; if(v<1000)return 20; if(v<5000)return 40; if(v<20000)return 90; return 180; }
 function collectByCat(cid){
   if(S.exp){ banner("探索中不可采集，请先结束探索"); return; }
@@ -1190,6 +1521,7 @@ function collectByCat(cid){
 function craftItem(r){
   if(!r || S.making) return;
   if(S.exp){ banner("探索中不可制造，请先结束探索"); return; }
+  if(r.isPu && (S.servants.length+(S.tres[r.id]||0))>=5){ banner("傀儡已达上限（5/5）"); return; }
   for(const k in r.need){ if((S.mats[k]||0)<r.need[k]) return; }
   if(S.yunning){ banner("运功中不可制造，请先停止运功"); return; }
   if(Object.keys(S.collect).some(k=>S.collect[k]!==undefined)){ banner("采集挂机中不可制造，请先停止挂机采集"); return; }
@@ -1201,6 +1533,16 @@ function craftItem(r){
 }
 function useTres(r){
   if(!r || (S.tres[r.id]||0)<1) return;
+  if(r.isPu){
+    if((S.servants.length+(S.tres[r.id]||0))>=5){ banner("傀儡已达上限（5/5）"); return; }
+    S.tres[r.id]--;
+    S.servants.push({lv:r.puLv||"丁", task:null, prog:0, curR:null});
+    const nm=LV_NM[r.puLv||"丁"]||"丁";
+    logEvent("使用「"+r.name+"」，获得 1 名"+nm+"傀",'sys');
+    banner("获得「"+r.name+"」"); sound(680,.15);
+    checkAchievements(); save(); render();
+    return;
+  }
   if(!r.eff && !r.heal){ logEvent("「"+r.name+"」无可使用效果，可出售",'dim'); banner("「"+r.name+"」无可使用效果"); return; }
   S.tres[r.id]--;
   if(r.heal){ const h=Math.ceil(S.hpMax*r.heal/100); S.hp=Math.min(S.hpMax,S.hp+h); logEvent("服用「"+r.name+"」，恢复 "+h+" 气血","sys"); }
@@ -1574,7 +1916,7 @@ function renderZao(body){
     item.innerHTML=`<div class="ic">${icOf(r)}</div><div class="body">
       <div class="nm">${r.name}<span class="cat">${cur.cat}</span>${r.slot?`<span class="cat">装备</span><span class="cat">${SLOT_NAMES[r.slot]}</span>`:""}</div>
       <div class="ds">${r.ds||"无"}</div>
-      <div class="ln" style="color:var(--jade)">效果：${isEquip(r.id)?eqText(r):effText(r)}</div>
+      <div class="ln" style="color:var(--jade)">效果：${r.isPu?("制成"+(LV_NM[r.puLv||"丁"]||"丁")+"傀 · 效率"+Math.round(SV_EFF[r.puLv||"丁"]*100)+"% · 自动采集制造"):(isEquip(r.id)?eqText(r):effText(r))}</div>
       <div class="ln">持有 <b>${fmt(isEquip(r.id)?equipCount(r.id):S.tres[r.id]||0)}</b> · 价值 ${priceLText(splitPriceL(r.value))}</div>
       <div class="cost">配方：${needTxt}</div>
     </div>`;
@@ -1598,6 +1940,20 @@ function renderZao(body){
     item.querySelector(".body").appendChild(cycRow);
     body.appendChild(item);
   });
+}
+function uiConfirm(title,msgHtml,okLabel,onOk){
+  const mask=document.createElement("div");mask.className="eqPickMask";
+  mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); };
+  const box=document.createElement("div");box.className="eqPickBox";
+  box.style.cssText="align-items:stretch;gap:10px;";
+  const t=document.createElement("div");t.className="eqTitle";t.textContent=title;box.appendChild(t);
+  const m=document.createElement("div");m.style.cssText="font-size:13px;line-height:1.7;color:var(--ink,#e8e8ee);";m.innerHTML=msgHtml;box.appendChild(m);
+  const bt=document.createElement("div");bt.style.cssText="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;";
+  bt.appendChild(buyBtn(true,()=>{mask.remove();},"取消"));
+  bt.appendChild(buyBtn(true,()=>{mask.remove();onOk&&onOk();},okLabel||"确定"));
+  box.appendChild(bt);
+  mask.appendChild(box);
+  document.body.appendChild(mask);
 }
 function renderPu(body){
   body.innerHTML="";
@@ -1675,6 +2031,23 @@ function renderPu(body){
       },"指派"));
     }
     item.querySelector(".body").appendChild(wr);
+    // 出售按钮：独立挂于傀儡框最右端（不随指派按钮行），垂直居中贴右
+    const sv=SV_VAL[s.lv]||30000;
+    const svUp=Math.floor(sv/10000), svL=sv%10000;
+    const gainTxt=(svUp?svUp+" 上品":"")+(svL?svL+" 下品":"")+"灵石";
+    const nm=(LV_NM[s.lv]||s.lv)+"傀";
+    const sellBtn=buyBtn(true,()=>{
+      uiConfirm("出售"+nm, "是否确定以 <b>"+gainTxt+"</b> 出售「"+nm+"」？<br>此傀儡将被移除且任务结束。", "出售", ()=>{
+        S.servants.splice(i,1);
+        S.stoneH=(S.stoneH||0)+svUp;
+        if(svL) S.stoneL=(S.stoneL||0)+svL;
+        logEvent("出售"+nm+"，获得 "+gainTxt,'sys');
+        banner("已出售"+nm+" +"+gainTxt);
+        render();
+      });
+    },"出售");
+    sellBtn.style.cssText="align-self:center;margin-left:auto;white-space:nowrap;flex-shrink:0;";
+    item.appendChild(sellBtn);
     body.appendChild(item);
   });
 }
@@ -1696,7 +2069,7 @@ function eqText(r,it){
 }
 function equippedItems(){ const o=[]; for(const sl in S.equipped){ const uid=S.equipped[sl]; if(uid!=null){ const it=(S.equip||[]).find(x=>x.uid===uid); if(it)o.push(it); } } return o; }
 function eqSum(key){ return equippedItems().reduce((a,it)=>{ const r=REC_BY_ID[it.id]; return a+(r&&r[key]?r[key]:0); },0); }
-function petSum(key){ return (S.pets||[]).reduce((a,it)=>{ const b=BEAS_BY_ID[it.id]; if(!b) return a; const v=b[key]||0; return a+v*(1+0.1*(it.lv-1)); },0); }
+/* v31：灵兽加成改为出战灵兽聚合，petSum 新实现在「灵兽系统」数据块 */
 /* ============ 装备副属性词条（人物属性设计 7.2）：炼器装备随机 1–2 条，数值随稀有度提升 ============ */
 const SUB_DEF={spd:["速度",[1,2,3,4,5,6,8,9,10,12]],hit:["命中",[1,2,2,3,3,4,5,6,8,10]],dodge:["闪避",[1,1,2,2,3,3,4,5,6,8]],res:["五行抗性",[2,2,3,3,4,4,5,6,8,10]],critDmg:["暴击伤害",[3,4,5,6,8,10,12,15,18,22]],pool:["灵力池",[2,3,4,5,6,8,10,12,15,18]]};
 const RES_ELMS=["金","木","水","火","土"];
@@ -1742,53 +2115,195 @@ function sellEquip(id){
   logEvent("出售装备「"+r.name+"」，获 "+priceLText(splitPriceL(r.value))+"（"+fmt(r.value)+" 下品）",'sys'); sound(520,.15); save(); render();
 }
 function equipCount(id){ return (S.equip||[]).filter(x=>x.id===id).length; }
-function petCost(){ return floorPriceL(80); }
-function petFeedCost(lv){ return floorPriceL(40*lv); }
-function findPet(){
-  const p=petCost(); if(!canPayL(p)){ banner("灵石不足"); return; }
-  payL(p);
-  let wsum=0; BEAS.forEach(x=>wsum+=1/x.rarity);
-  let r=Math.random()*wsum, pick=BEAS[0];
-  for(const x of BEAS){ r-=1/x.rarity; if(r<=0){ pick=x; break; } }
-  const have=S.pets.find(q=>q.id===pick.id);
-  if(have){ have.lv++; logEvent("灵兽「"+pick.name+"」再度现身，进阶至 Lv"+have.lv,'sys'); banner("灵兽进阶 Lv"+have.lv); }
-  else { S.pets.push({uid:++S.uid,id:pick.id,lv:1}); logEvent("结缘灵兽「"+pick.name+"」（稀"+pick.rarity+"）",'sys'); banner("获得灵兽 "+pick.name); }
-  renderTab(); save();
+/* ============ 灵兽页 v31：蛋仓 · 孵化槽 · 温养 · 兽栏养成 ============ */
+function petTraitText(b){
+  const p=[];
+  if(b.type==="攻") p.push("战力 +"+b.attr+"%");
+  else p.push("修炼 +"+b.attr+"%");
+  if(b.extra&&b.extra.atk) p.push("战力 +"+b.extra.atk+"%");
+  if(b.traits){ if(b.traits.ess)p.push("灵气 +"+b.traits.ess+"%"); if(b.traits.crit)p.push("会心 +"+b.traits.crit+"%"); if(b.traits.brk)p.push("突破 +"+b.traits.brk+"%"); if(b.traits.dmgR)p.push("减伤 +"+b.traits.dmgR+"%"); }
+  return p.join(" · ")||"—";
 }
-function feedPet(i){
-  const it=S.pets[i]; if(!it) return;
-  const p=petFeedCost(it.lv); if(!canPayL(p)){ banner("灵石不足"); return; }
-  payL(p); it.lv++; const b=BEAS_BY_ID[it.id]; logEvent("灵兽「"+b.name+"」升至 Lv"+it.lv,'sys'); renderTab(); save();
-}
-function renderPetsList(box){
-  if(!S.pets.length){ box.innerHTML='<div class="hint">尚无灵兽，先「寻兽」结缘一只。</div>'; return; }
-  box.innerHTML="";
-  S.pets.forEach((it,i)=>{
-    const b=BEAS_BY_ID[it.id]; if(!b) return;
-    const m=(lv)=>1+0.1*(lv-1);
-    const parts=[];
-    if(b.atk)parts.push("战力+"+Math.round(b.atk*m(it.lv))+"%"); if(b.ess)parts.push("灵气+"+Math.round(b.ess*m(it.lv))+"%");
-    if(b.crit)parts.push("会心+"+Math.round(b.crit*m(it.lv))+"%"); if(b.brk)parts.push("突破+"+Math.round(b.brk*m(it.lv))+"%");
-    if(b.dmgR)parts.push("减伤+"+Math.round(b.dmgR*m(it.lv))+"%");
-    const item=document.createElement("div");item.className="item";
-    item.innerHTML=`<div class="ic">${b.ic}</div><div class="body">
-      <div class="nm">${b.name} <span class="cat">稀${b.rarity}</span> <span style="font-size:11px;color:var(--mystic)">Lv ${it.lv}</span></div>
-      <div class="ds">${b.ds}</div>
-      <div class="ln">${parts.join(" · ")||"—"}</div>
-    </div>`;
-    item.appendChild(buyBtn(canPayL(petFeedCost(it.lv)),()=>{feedPet(i);},"喂食 · "+priceLText(petFeedCost(it.lv))));
-    box.appendChild(item);
+function feedPickModal(uid){
+  const it=petByUid(uid); if(!it) return;
+  const b=NEW_BEAS_BY_ID[it.id];
+  const mask=document.createElement("div");mask.className="eqPickMask";mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); };
+  const box=document.createElement("div");box.className="eqPickBox";
+  const t=document.createElement("div");t.className="eqTitle";t.textContent="喂养「"+b.name+"」· 选择材料";box.appendChild(t);
+  const list=document.createElement("div");list.className="eqList";
+  const opts=Object.keys(S.mats).filter(k=>(S.mats[k]||0)>0);
+  if(!opts.length){ const e=document.createElement("div");e.className="hint";e.textContent="须弥空间中没有材料，先去采集或探索。";list.appendChild(e); }
+  opts.forEach(k=>{
+    const m=MATS_BY_ID[k]; if(!m) return;
+    const row=document.createElement("div");row.className="eqPickRow";
+    row.innerHTML=`<span class="nm">${m.ic||""} ${m.name}<div class="sub">${m.cat} · 稀${m.rarity} · 持有 ${S.mats[k]}</div></span><span class="sub">饱食+${10*m.rarity} / 亲密+${2*m.rarity}</span>`;
+    const fb=buyBtn(true,()=>{ mask.remove(); feedPetByMat(uid,k); },"喂养"); fb.className="goldBtn"; row.appendChild(fb);
+    list.appendChild(row);
   });
+  box.appendChild(list);
+  const close=document.createElement("div");close.className="btnPair";const cb=buyBtn(true,()=>mask.remove(),"关闭");cb.className="goldBtn";close.appendChild(cb);box.appendChild(close);
+  mask.appendChild(box); document.body.appendChild(mask);
+}
+function warmPickModal(uid, slot){
+  const isHatch=slot!=null;
+  const ed=isHatch?EGG_BY_ID[S.hatch[slot].id]:EGG_BY_ID[eggByUid(uid).id];
+  const mask=document.createElement("div");mask.className="eqPickMask";mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); };
+  const box=document.createElement("div");box.className="eqPickBox";
+  const t=document.createElement("div");t.className="eqTitle";t.textContent="温养「"+ed.name+"」· 材料（偏好 "+ed.pref+" ×1，其余 ×0.5）";box.appendChild(t);
+  const list=document.createElement("div");list.className="eqList";
+  const opts=Object.keys(S.mats).filter(k=>(S.mats[k]||0)>0);
+  if(!opts.length){ const e=document.createElement("div");e.className="hint";e.textContent="须弥空间中没有材料。也可用灵兽精魄温养（每枚 +1）。";list.appendChild(e); }
+  opts.forEach(k=>{
+    const m=MATS_BY_ID[k]; if(!m) return;
+    const g=warmGain(ed,m);
+    const row=document.createElement("div");row.className="eqPickRow";
+    row.innerHTML=`<span class="nm">${m.ic||""} ${m.name}<div class="sub">${m.cat} · 稀${m.rarity} · 持有 ${S.mats[k]}</div></span><span class="sub">温养度 +${g%1?g.toFixed(1):g}${m.cat===ed.pref?"（偏好）":""}</span>`;
+    const wb=buyBtn(true,()=>{ mask.remove(); if(isHatch) warmHatchByMat(slot,k); else warmEggByMat(uid,k); },"温养"); wb.className="goldBtn"; row.appendChild(wb);
+    list.appendChild(row);
+  });
+  box.appendChild(list);
+  const close=document.createElement("div");close.className="btnPair";
+  const essb=buyBtn(S.petEss>=1,()=>{ mask.remove(); if(isHatch) warmHatchByEss(slot); else warmByEss(uid); },"精魄 +1（余 "+S.petEss+"）"); essb.className="goldBtn"; close.appendChild(essb);
+  const cb2=buyBtn(true,()=>mask.remove(),"关闭"); cb2.className="goldBtn"; close.appendChild(cb2);
+  box.appendChild(close);
+  mask.appendChild(box); document.body.appendChild(mask);
+}
+function showHatchFx(eggId,pet,band,full){
+  const wrap=$("hatchFx"); if(!wrap) return;
+  const img=$("hxPet"), nm=$("hxName"), sub=$("hxSub");
+  if(img){ img.className="eggImg hatching"; img.src=EGG_IMG[eggId]||""; img.style.display=EGG_IMG[eggId]?"":"none"; }
+  if(nm) nm.textContent="破壳中…";
+  if(sub) sub.textContent=EGG_BY_ID[eggId]?EGG_BY_ID[eggId].name:"";
+  wrap.classList.add("show");
+  const close=function(){ wrap.classList.remove("show"); wrap.onclick=null; };
+  wrap.onclick=close;
+  setTimeout(function(){
+    const src=PET_IMG[pet.id];
+    if(img){
+      if(src){ img.style.display=""; img.className="petArt"; img.src=src; }
+      else { img.style.display="none"; if(nm) nm.innerHTML='<span class="hxEmoji">'+pet.ic+'</span>'; }
+    }
+    if(nm&&src) nm.textContent=pet.name;
+    if(nm&&!src) nm.innerHTML='<span class="hxEmoji">'+pet.ic+'</span><div style="margin-top:6px">'+pet.name+'</div>';
+    if(sub) sub.textContent=(band==="凡"?"凡品":band==="灵"?"灵品":"圣品")+" · 稀"+pet.rarity+(full?" · 满温养":"");
+    sound(720,.2);
+  },700);
+  setTimeout(function(){ if(wrap.classList.contains("show")) close(); },4600);
 }
 function renderPets(body){
   body.innerHTML="";
-  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 灵兽库（后台数据库 · 共 10 种）—";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="灵兽系统：寻兽消耗 <b>80 下品灵石</b> 结缘一只灵兽，稀有度越高越难相遇（青鸟 / 灵狐 / 玄龟 / 赤焰狮 / 碧水蛟 / 雷鹰 / 金翅鹏 / 九尾狐 / 麒麟 / 真龙）。重复相遇自动<b>进阶 +1 级</b>；喂食灵石升级（每级 <b>+10%</b> 基础加成），加成实时并入战力 / 灵气 / 会心 / 突破 / 探索减伤。";body.appendChild(p);
-  const row=document.createElement("div");row.style.cssText="display:flex;gap:10px;align-items:center;margin:10px 0;";
-  row.appendChild(buyBtn(canPayL(petCost()),()=>{findPet();},"寻兽 · 80 下品灵石"));
-  body.appendChild(row);
-  const dl=document.createElement("div");dl.id="petList";body.appendChild(dl);
-  renderPetsList(dl);
+  const cap=petCap();
+  const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 灵兽 · 孵化养成（v31）—";body.appendChild(st);
+  const hint=document.createElement("div");hint.className="hint";
+  hint.innerHTML="探索战斗胜利<b>低概率出蛋</b>；蛋放入孵化槽按时破壳，可用材料（偏好×1／其余×0.5）或精魄（每枚+1）温养提升孵化档位概率。灵兽需<b>喂食材料</b>维持饱食与亲密，亲密归零后长期不喂养将叛变逃离；出战上限按境界解锁（筑基1／金丹2／元婴3）。重复孵出同编号灵兽不叠加等级，入库兽栏后可<b>炼化</b>为精魄。";body.appendChild(hint);
+  const top=document.createElement("div");top.className="hint";top.style.cssText="display:flex;gap:10px;align-items:center;margin:8px 0;flex-wrap:wrap";
+  top.innerHTML="<b>灵兽精魄：</b>"+S.petEss+" 枚（每枚可温养 +1 或售 1 上品灵石）　<b>图鉴：</b>"+Object.keys(S.petDex||{}).length+"/30";
+  const sb=buyBtn(S.petEss>=1,()=>sellPetEss(),"出售精魄 ×1"); sb.className="goldBtn"; top.appendChild(sb);
+  body.appendChild(top);
+  const es=document.createElement("div");es.className="sectionTitle";es.textContent="蛋仓（"+(S.eggs||[]).length+" 枚）";body.appendChild(es);
+  if(!S.eggs.length){ const e=document.createElement("div");e.className="hint";e.textContent="蛋仓空空如也。探索秘境战斗胜利有概率掉落蛋，筑基后首战必得木灵蛋。";body.appendChild(e); }
+  (S.eggs||[]).forEach(egg=>{
+    const ed=EGG_BY_ID[egg.id];
+    const item=document.createElement("div");item.className="item";
+    const w=Math.floor((egg.warm||0)*10)/10;
+    item.innerHTML=`<div class="ic">${icOf(ed,46)}</div><div class="body">
+      <div class="nm">${ed.name} <span class="cat">稀${ed.rarity}</span> <span style="font-size:11px;color:var(--mystic)">偏好 ${ed.pref} · 孵化 ${Math.round(ed.hatchSec/3600)} 小时</span></div>
+      <div class="ds">温养度 ${w}/100（基础→满温养：凡品${ed.probs.fan[0]}%→${ed.probs.fan[1]}% · 灵品${ed.probs.ling[0]}%→${ed.probs.ling[1]}% · 圣品${ed.probs.sheng[0]}%→${ed.probs.sheng[1]}%）</div>
+      <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px;margin:4px 0"><div style="height:100%;width:${w}%;background:linear-gradient(90deg,#45d0a0,#e0b95e);border-radius:3px"></div></div>
+    </div>`;
+    item.appendChild(buyBtn(true,()=>warmPickModal(egg.uid,null),"温养"));
+    item.appendChild(buyBtn(S.petEss>=1,()=>warmByEss(egg.uid),"精魄+1"));
+    item.appendChild(buyBtn(true,()=>startHatch(egg.uid),"放入孵化槽"));
+    body.appendChild(item);
+  });
+  const hs=document.createElement("div");hs.className="sectionTitle";hs.textContent="孵化槽（已解锁 "+(S.hatchSlots||1)+"/4）";body.appendChild(hs);
+  for(let i=0;i<(S.hatchSlots||1);i++){
+    const h=S.hatch[i]||null;
+    const box2=document.createElement("div");box2.className="item";box2.id="hatchSlot"+i;
+    if(h){
+      const ed=EGG_BY_ID[h.id]; const left=h.endAt-Date.now(); const w=Math.floor((h.warm||0)*10)/10;
+      box2.innerHTML=`<div class="ic">${icOf(ed,46)}</div><div class="body">
+        <div class="nm">${ed.name} <span class="cat">稀${ed.rarity}</span> <span id="hatchTimer${i}" style="font-size:11px;color:var(--gold)"></span></div>
+        <div class="ds">温养度 ${w}/100；破壳按当前档位概率掷档位</div>
+        <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px;margin:4px 0"><div style="height:100%;width:${w}%;background:linear-gradient(90deg,#45d0a0,#e0b95e);border-radius:3px"></div></div>
+      </div>`;
+      const hb=buyBtn(left<=0,()=>hatchDone(i),"破壳"); hb.className+=" hatchGo"+i; box2.appendChild(hb);
+      box2.appendChild(buyBtn(true,()=>warmPickModal(null,i),"温养"));
+      box2.appendChild(buyBtn(S.petEss>=1,()=>warmHatchByEss(i),"精魄+1"));
+      const tEl=box2.querySelector("#hatchTimer"+i);
+      if(left<=0) tEl.textContent="✓ 可破壳";
+      else { const hh=Math.floor(left/3600000), mm=Math.floor(left%3600000/60000); tEl.textContent=hh+" 小时 "+mm+" 分"; }
+    } else {
+      box2.innerHTML=`<div class="ic">▫️</div><div class="body"><div class="nm">孵化槽 ${i+1}（空）</div><div class="ds">放入蛋仓中的蛋，按孵化时长倒计时，到期点击破壳。</div></div>`;
+    }
+    body.appendChild(box2);
+  }
+  const expBtn=document.createElement("div");expBtn.className="hint";expBtn.style.cssText="display:flex;gap:10px;align-items:center;margin:6px 0";
+  if((S.hatchSlots||1)<4){ const fee=HATCH_FEES[S.hatchSlots]; expBtn.innerHTML="扩容第 "+(S.hatchSlots+1)+" 槽："; const eb=buyBtn(canPayL(fee),()=>expandHatch(),"扩容 · "+priceLText(fee)); eb.className="goldBtn"; expBtn.appendChild(eb); }
+  else expBtn.textContent="孵化槽已满（4 槽）";
+  body.appendChild(expBtn);
+  const vs=document.createElement("div");vs.className="sectionTitle";vs.textContent="兽栏（"+(S.pets||[]).length+"/50）· 出战上限 "+cap+"（当前出战 "+(S.petActive||[]).length+"）";body.appendChild(vs);
+  if(!S.pets.length){ const e=document.createElement("div");e.className="hint";e.textContent="尚无灵兽。探索出蛋并孵化，或炼化重复灵兽获取精魄。";body.appendChild(e); }
+  (S.pets||[]).forEach((it,i)=>{
+    const b=NEW_BEAS_BY_ID[it.id]; if(!b) return;
+    const bandC={凡:"var(--ink-dim)",灵:"var(--jade)",圣:"#e0b95e"}[b.band];
+    const active=(S.petActive||[]).indexOf(it.uid)>=0;
+    const c=petCoef(it);
+    const effParts=[];
+    if(b.type==="攻")effParts.push("战力 +"+Math.round(b.attr*c)+"%"); else effParts.push("修炼 +"+Math.round(b.attr*c)+"%");
+    if(b.extra&&b.extra.atk)effParts.push("战力 +"+Math.round(b.extra.atk*c)+"%");
+    if(b.traits){ if(b.traits.ess)effParts.push("灵气 +"+Math.round(b.traits.ess*c)+"%"); if(b.traits.crit)effParts.push("会心 +"+Math.round(b.traits.crit*c)+"%"); if(b.traits.brk)effParts.push("突破 +"+Math.round(b.traits.brk*c)+"%"); if(b.traits.dmgR)effParts.push("减伤 +"+Math.round(b.traits.dmgR*c)+"%"); }
+    const item=document.createElement("div");item.className="item";
+    const betray=it.betrayAt?("　<span style='color:#d9534f'>⚠ 叛变倒计时 "+Math.max(1,Math.ceil((it.betrayAt-Date.now())/3600000))+" 小时</span>"):"";
+    item.innerHTML=`<div class="ic">${petArtHtml(b)}</div><div class="body">
+      <div class="nm">${b.name} <span class="cat" style="color:${bandC}">${b.band}品·稀${b.rarity}</span> ${active?'<span style="font-size:11px;color:var(--gold)">[出战]</span>':''}</div>
+      <div class="ds">${b.type==="攻"?"攻击型":"修炼型"} · ${petTraitText(b)}${betray}</div>
+      <div style="display:flex;gap:8px;margin-top:4px;font-size:11px;color:var(--ink-dim)"><span>饱食 <span id="petSat${i}">${Math.floor(it.sat)}</span>/100</span><span>亲密 <span id="petInt${i}">${Math.floor(it.int)}</span>/100</span></div>
+      <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px;margin:2px 0"><div id="petSatBar${i}" style="height:100%;width:${it.sat}%;background:linear-gradient(90deg,#45d0a0,#e0b95e);border-radius:3px"></div></div>
+      <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px"><div id="petIntBar${i}" style="height:100%;width:${it.int}%;background:linear-gradient(90deg,#4aa8ff,#9aa5f0);border-radius:3px"></div></div>
+    </div>`;
+    if(PET_VID[it.id]){ const vb=buyBtn(true,()=>playPetVideo(it.id),"▶ 动态"); item.appendChild(vb); }
+    item.appendChild(buyBtn(true,()=>togglePetActive(it.uid),active?"休战":"出战"));
+    item.appendChild(buyBtn(true,()=>feedPickModal(it.uid),"喂食"));
+    item.appendChild(buyBtn(true,()=>refinePet(it.uid),"炼化 · 得"+b.rarity+"精魄"));
+    item.appendChild(buyBtn(true,()=>releasePet(it.uid),"放生 · "+priceLText(splitPriceL(b.rarity*10100))));
+    body.appendChild(item);
+  });
+}
+/* 灵兽页轻量实时刷新（gameTick 调用）：进度条 / 倒计时 / 破壳按钮 */
+function petTickLiteUI(){
+  (S.pets||[]).forEach((it,i)=>{
+    const el1=$("petSat"+i), el2=$("petInt"+i);
+    if(el1) el1.textContent=Math.floor(it.sat);
+    if(el2) el2.textContent=Math.floor(it.int);
+    const b1=$("petSatBar"+i); if(b1) b1.style.width=Math.max(0,Math.min(100,it.sat))+"%";
+    const b2=$("petIntBar"+i); if(b2) b2.style.width=Math.max(0,Math.min(100,it.int))+"%";
+  });
+  for(let i=0;i<(S.hatchSlots||1);i++){
+    const h=S.hatch[i]; if(!h) continue;
+    const tEl=$("hatchTimer"+i); if(!tEl) continue;
+    const left=h.endAt-Date.now();
+    if(left<=0){ tEl.textContent="✓ 可破壳"; const hb=document.querySelector(".hatchGo"+i); if(hb&&hb.disabled){ hb.disabled=false; } }
+    else { const hh=Math.floor(left/3600000), mm=Math.floor(left%3600000/60000); const s=hh+" 小时 "+mm+" 分"; if(tEl.textContent!==s) tEl.textContent=s; }
+  }
+}
+
+/* 灵兽动态视频弹窗：播放贴图/灵兽 目录下的本地 mp4（file:// 下 video 直读本地文件） */
+function playPetVideo(id){
+  const src=PET_VID[id]; if(!src) return;
+  const b=NEW_BEAS_BY_ID[id];
+  const mask=document.createElement("div");mask.className="eqPickMask";mask.style.cssText="z-index:70;background:rgba(0,0,0,.85)";
+  mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); };
+  const box=document.createElement("div");box.className="eqPickBox";box.style.cssText="width:min(560px,92vw);align-items:center;gap:6px;z-index:71";
+  const t=document.createElement("div");t.className="eqTitle";t.textContent=(b?b.name:"灵兽")+" · 灵兽动态";box.appendChild(t);
+  const v=document.createElement("video");v.src=src;v.controls=true;v.autoplay=true;v.loop=true;v.muted=true;
+  v.style.cssText="width:100%;border-radius:10px;background:#000;max-height:52vh";
+  box.appendChild(v);
+  const close=document.createElement("div");close.className="btnPair";
+  const cb=buyBtn(true,()=>{ v.pause(); mask.remove(); },"关闭"); cb.className="goldBtn"; close.appendChild(cb);
+  box.appendChild(close);
+  mask.appendChild(box); document.body.appendChild(mask);
+  const pr=v.play(); if(pr&&pr.catch) pr.catch(()=>{});
 }
 function renderEqp(body){
   body.innerHTML="";
@@ -1798,13 +2313,13 @@ function renderEqp(body){
   const d=document.createElement("div");d.className="dummy";
   /* 装备栏贴图 7 槽位中心百分比（贴图/装备栏.png 922×1152，右侧一列）：头部/项链/防具/武器/戒指壹/戒指贰/法宝 */
   const PARTS=[
-    {sl:"h",  left:0.850, top:0.123},
-    {sl:"n",  left:0.850, top:0.252},
-    {sl:"a",  left:0.850, top:0.379},
-    {sl:"w",  left:0.850, top:0.509},
-    {sl:"r1", left:0.850, top:0.641},
-    {sl:"r2", left:0.850, top:0.765},
-    {sl:"m",  left:0.850, top:0.899},
+    {sl:"h",  left:0.857, top:0.123},
+    {sl:"n",  left:0.857, top:0.252},
+    {sl:"a",  left:0.857, top:0.379},
+    {sl:"w",  left:0.857, top:0.509},
+    {sl:"r1", left:0.857, top:0.641},
+    {sl:"r2", left:0.857, top:0.765},
+    {sl:"m",  left:0.857, top:0.899},
   ];
   d.innerHTML='<img class="avatarImg" src="'+avatarObj().src+'" alt="'+avatarObj().name+'" onerror="this.style.opacity=0"><img class="equipBarImg" src="贴图/装备栏.png" alt="装备栏">';
   PARTS.forEach(pa=>{
@@ -1884,7 +2399,7 @@ function renderAttr(body){
   lines.push("<b>功法：</b>"+(r?r.name+"（"+r.ds+(r.passive&&r.passive!=="无"?"；"+r.passive:"")+"）":"—"));
   const eq=equippedItems().map(it=>{ const rr=REC_BY_ID[it.id]; return rr?rr.name+"（"+eqText(rr,it)+"）":null; }).filter(Boolean);
   lines.push("<b>装备（7 槽）：</b>"+(eq.length?eq.join("；"):"未穿戴"));
-  const petLines=(S.pets||[]).map(it=>{ const b=BEAS_BY_ID[it.id]; if(!b)return null; const p=[]; if(b.atk)p.push("战力+"+b.atk+"%"); if(b.dmgR)p.push("减伤"+b.dmgR+"%"); if(b.crit)p.push("会心+"+b.crit+"%"); if(b.ess)p.push("灵气+"+b.ess+"%"); return b.name+(p.length?"（"+p.join("，")+"）":""); }).filter(Boolean);
+  const petLines=petActiveUids().map(uid=>{ const it=petByUid(uid); const b=it?NEW_BEAS_BY_ID[it.id]:null; if(!b)return null; const c=petCoef(it); const p=[]; if(b.type==="攻")p.push("战力+"+Math.round(b.attr*c)+"%"); else p.push("修炼+"+Math.round(b.attr*c)+"%"); if(b.extra&&b.extra.atk)p.push("战力+"+Math.round(b.extra.atk*c)+"%"); if(b.traits){ if(b.traits.ess)p.push("灵气+"+Math.round(b.traits.ess*c)+"%"); if(b.traits.crit)p.push("会心+"+Math.round(b.traits.crit*c)+"%"); if(b.traits.brk)p.push("突破+"+Math.round(b.traits.brk*c)+"%"); if(b.traits.dmgR)p.push("减伤+"+Math.round(b.traits.dmgR*c)+"%"); } return b.name+(p.length?"（"+p.join("，")+"）":""); }).filter(Boolean);
   lines.push("<b>灵兽：</b>"+(petLines.length?petLines.join("；"):"无"));
   const acts=Object.keys(S.buffs).filter(id=>S.buffs[id].until>Date.now());
   lines.push("<b>增益（丹药/符箓）：</b>"+(acts.length?acts.map(id=>{const x=REC_BY_ID[id];return x?x.name+"×"+S.buffs[id].stack:null;}).filter(Boolean).join("；"):"无"));
@@ -2021,7 +2536,7 @@ function renderXu(body){
       gids.forEach(id=>{
         let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return;
         if(!kf(r.name)) return;
-        const useable=!!(r.eff||r.heal); const gIs=GONGFAS.some(g=>g.id===r.id);
+        const useable=!!(r.eff||r.heal)||!!r.isPu; const gIs=GONGFAS.some(g=>g.id===r.id);
         const tip=`<b>${r.name}</b>（稀有${r.rarity} · ${cn}）<br>${r.ds||"无"}<br><span style="color:var(--jade)">${gIs?("功法 · 灵气倍率 ×"+r.ess):(useable?"效果："+effText(r):"无可使用效果，可出售")}</span><br>价值 ${priceLText(splitPriceL(r.value))} · 持有 ${fmt(S.tres[id])}`;
         const acts=[];
         if(gIs){ const o2=S.gongs.includes(r.id); acts.push([o2?false:true,()=>{o2?(S.activeGong===r.id?banner("已是当前激活功法"):actGong(r.id)):studyGong(r.id);},"已激活"]);
@@ -2060,7 +2575,7 @@ function renderXu(body){
 }
 let tipEl=null;
 function ensureTip(){ if(!tipEl){ tipEl=document.createElement("div"); tipEl.id="itemTip"; document.body.appendChild(tipEl); document.addEventListener("mousemove",e=>{ if(tipEl && tipEl.style.display==="block"){ tipEl.style.left=Math.min(e.clientX+14,window.innerWidth-300)+"px"; tipEl.style.top=Math.min(e.clientY+14,window.innerHeight-160)+"px"; } }); } return tipEl; }
-function bindTip(el,iconHtml,html){ ensureTip(); el.addEventListener("mouseenter",()=>{ tipEl.innerHTML=`<div class="tipFlex"><div class="tipIcon">${iconHtml}</div><div class="tipBody">${html}</div></div>`; tipEl.style.display="block"; }); el.addEventListener("mouseleave",()=>{ tipEl.style.display="none"; }); }
+function bindTip(el,iconHtml,htmlOrFn){ ensureTip(); el.addEventListener("mouseenter",()=>{ tipEl.innerHTML=`<div class="tipFlex"><div class="tipIcon">${iconHtml}</div><div class="tipBody">${typeof htmlOrFn==="function"?htmlOrFn():htmlOrFn}</div></div>`; tipEl.style.display="block"; }); el.addEventListener("mouseleave",()=>{ tipEl.style.display="none"; }); }
 let sellRef=null;
 function openSell(kind,obj){
   sellRef={kind,obj}; if(!obj) return;
@@ -2224,7 +2739,7 @@ function renderAuction(body){
     const row=document.createElement("div");row.className="exchRow";
     row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name} · 稀有${it.obj.rarity} · ${itemCat(it)} · 底价 ${ceilPriceText(en.base)} · 当前 <span id="aucBid${idx}">${ceilPriceText(en.bid)}（${who}）</span></span>`;
     row.appendChild(buyBtn((canPayL(splitPriceL(extra))||canPayAutoL(extra)),()=>{bidAuction(en);},"出价 "+ceilPriceText(nb)));
-    bindTip(row,icOf(it.obj),auctionTipHtml(it,en)); // v30.7.7 拍卖会悬浮详情左侧加物品贴图
+    bindTip(row,icOf(it.obj),()=>auctionTipHtml(it,en)); // v30.9 拍卖悬浮实时取最新竞价/竞拍者，避免快照过期
     body.appendChild(row);
   });
   else if(!live){ const e=document.createElement("div");e.className="hint";e.textContent="拍卖已结算或等待开场，请稍候。";body.appendChild(e); }
@@ -2252,7 +2767,7 @@ function renderShop(body){
   let st=document.createElement("div");st.className="sectionTitle";st.textContent="— 坊市 · 随机出售（每10分钟刷新）—";body.appendChild(st);
   const p=document.createElement("div");p.className="hint";p.innerHTML="随机上架 10 种材料 / 成品，越稀有刷新率越低、库存越少（稀有度1~5 → 库存10~1）。以灵石购买：<b>下品不足时自动以高品折抵</b>（高→低折算含 1% 手续费，多余找回下品）；<b>高品不足不自动低换高</b>，需先至「灵石兑换」手动凑齐。"+(S.shop.list.length?(" 距下次刷新 <b>"+Math.ceil((S.shop.until-Date.now())/60000)+"</b> 分钟。"):"");body.appendChild(p);
   if(!S.shop.list.length){ const e=document.createElement("div");e.className="hint";e.textContent="暂无上架商品。";body.appendChild(e); }
-  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const rEl=S.root?rootSpellElems(S.root):[]; const wrong=it.kind==="skill"&&!rEl.includes(it.obj.elem); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name}${it.kind==="skill"?"（"+it.obj.elem+"灵根）":""}${wrong?'<b style="color:#e05555"> · 本灵根不可用</b>':""} · 稀有${it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; bindTip(row,icOf(it.obj),shopTipHtml(it,en)); const learned=it.kind==="skill"&&(S.skills||[]).includes(en.id); row.appendChild(buyBtn(en.stock>0&&(canPayL(pr)||canPayAutoL(it.obj.value))&&!learned&&!wrong,()=>{buyShop(en);render();},learned?"已习得":(wrong?"不可用":"购买"))); body.appendChild(row); });
+  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const rEl=S.root?rootSpellElems(S.root):[]; const wrong=it.kind==="skill"&&!rEl.includes(it.obj.elem); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name}${it.kind==="skill"?"（"+it.obj.elem+"灵根）":""}${wrong?'<b style="color:#e05555"> · 本灵根不可用</b>':""} · 稀有${it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; bindTip(row,icOf(it.obj),()=>shopTipHtml(it,en)); const learned=it.kind==="skill"&&(S.skills||[]).includes(en.id); row.appendChild(buyBtn(en.stock>0&&(canPayL(pr)||canPayAutoL(it.obj.value))&&!learned&&!wrong,()=>{buyShop(en);render();},learned?"已习得":(wrong?"不可用":"购买"))); body.appendChild(row); });
 }
 function renderExch(body){
   const st2=document.createElement("div");st2.className="sectionTitle";st2.textContent="— 坊市 · 灵石兑换（手续费1%）—";body.appendChild(st2);
@@ -2367,7 +2882,7 @@ function putRow(box,label,opts,cap,sel,on,kind){
     const onNow=sel.includes(o.id);
     const b=document.createElement("button");b.className="slotPick"+(onNow?" on":"");
     const desc=battleSkillDesc(kind||"spell",o);
-    b.innerHTML=(onNow?"✓ ":"")+"<span class='sdName'>"+(o.name||o.id)+(o.cost?"（耗"+o.cost+"）":"")+"</span>"+(desc?"<span class='sd'>"+desc+"</span>":"");
+    b.innerHTML=(onNow?"✓ ":"")+(SPELL_IMG[o.id]?("<img class=\"skIcon\" src=\""+SPELL_IMG[o.id]+"\" alt=\"\">"):"")+"<span class='sdName'>"+(o.name||o.id)+(o.cost?"（耗"+o.cost+"）":"")+"</span>"+(desc?"<span class='sd'>"+desc+"</span>":"");
     // 始终可点选：未装备且槽满时，点选即替换当前槽中最旧的一个（自由选择技能）
     b.addEventListener("click",()=>{
       const arr=sel.slice();
@@ -2773,6 +3288,7 @@ function battleUse(kind,id){
     if(cdLeft(b.player,s.id)>0){ bLog("技能冷却中"); b.phase="play"; renderBattleUI(); return; }
     b.player.spirit-=cost;
     if(s.cd>0) setCd(b.player,s.id,Math.max(0,s.cd-b.player.shenCd));
+    bcast("player",s.name,s.elem,SPELL_IMG[s.id]);
     if(s.type==="shen"){ // 身法：按 target 分派（大地引力→敌方，其余→自身）
       const tg=(s.target==="enemy")?[b.enemy]:[b.player];
       applySpellEffects(b.player,tg,s,{});
@@ -2787,6 +3303,7 @@ function battleUse(kind,id){
     if(b.player.spirit<bs.cost){ bLog("灵力不足"); b.phase="play"; renderBattleUI(); return; }
     if(cdLeft(b.player,id)>0){ bLog("神通冷却中"); b.phase="play"; renderBattleUI(); return; }
     b.player.spirit-=bs.cost; setCd(b.player,id,bs.cd);
+    bcast("player",sh.name,bs.elem,SPELL_IMG[sh.id]);
     if(bs.kind==="dmg"){ const tgt=bs.target==="all"?[b.enemy]:[b.enemy]; battleStrike(b.player,b.enemy,{mult:bs.mult,elem:bs.elem,eff:bs.eff,label:"神通「"+sh.name+"」"}); }
     else if(bs.kind==="heal"){ const h=Math.floor(b.player.hpMax*(bs.v/100)); b.player.hp=Math.min(b.player.hpMax,b.player.hp+h); bLog("神通「"+sh.name+"」恢复气血 "+h); }
     else if(bs.kind==="buff"){ applySpellEffects(b.player,[b.player],{eff:bs.eff},{}); bLog("施放神通「"+sh.name+"」"); }
@@ -2821,6 +3338,7 @@ function battleEnemyAct(){
       applySpellEffects(e,tg,s,{});
       bLog("敌方施展身法「"+s.name+"」");
     } else { // 伤害法术：打玩家，控制/破甲特效命中后附加
+      bcast("enemy",s.name,s.elem,SPELL_IMG[s.id]);
       battleStrike(e,p,{mult:s.mult,hits:s.hits,elem:s.elem,hitB:s.hitB,guaranteed:s.guaranteed,eff:s.eff,isSpell:true,label:"敌方「"+s.name+"」"});
     }
     if(s.cd>0) setCd(e,s.id,s.cd);
@@ -2899,6 +3417,7 @@ function resolveCell(win,fleeMode){
     const gain=Math.max(1,Math.floor(realmNeed()*0.001*typeM*mult));
     S.essence+=gain; if(S.lifetime===undefined)S.lifetime=0; S.lifetime+=gain;
     logEvent("战斗胜利，灵力 +"+fmt(gain)+"（难度×"+mult+"）",'sys');
+    maybeDropEgg(exp.area, exp.floor); // v31 探索战斗胜利出蛋判定
     if(b.kind==="fight"){
       exp.loot.push({kind:"stone",tier:st.tier,qty:st.qty});
       if(Math.random()<0.5){ const m=areaMat(exp.area,exp.floor); exp.loot.push({kind:"mat",id:m.id,name:m.name,qty:1}); logEvent("击败妖兽，缴获灵石与"+m.name,'sys'); } else logEvent("击败妖兽，缴获灵石",'sys');
@@ -2994,6 +3513,17 @@ function resRow(label,v,max,cls){
   const pct=max>0?Math.max(0,Math.min(100,v/max*100)):0;
   return '<div class="resRow"><span>'+label+'</span><div class="resBar '+cls+'"><i style="width:'+pct.toFixed(1)+'%"></i></div><b>'+fmt(v)+'/'+fmt(max)+'</b></div>';
 }
+let _castT=null;
+function bcast(who,name,elem,icon){
+  const el=$("castBanner"); if(!el) return;
+  const col=(typeof ELEM_COLOR!=="undefined"&&ELEM_COLOR[elem])||"#e0b95e";
+  el.innerHTML=(icon?('<img src="'+icon+'" alt="">'):"")+"<span>"+name+"</span><span class=\"cbWho\">"+(who==="enemy"?"敌方施展":"我方施展")+"</span>";
+  el.style.borderColor=col;
+  el.style.boxShadow="0 0 28px "+col+"66, inset 0 0 18px "+col+"22";
+  el.style.color=(who==="enemy")?"#ffb3a2":"#ffe6b0";
+  el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+  clearTimeout(_castT); _castT=setTimeout(()=>{ try{ el.classList.remove("show"); }catch(e){} },1300);
+}
 function renderTargetCard(){
   const b=BATTLE; const box=$("battleTargetCard"); if(!box||!b) return;
   const e=b.enemy;
@@ -3005,6 +3535,7 @@ function renderTargetCard(){
     +'<div class="resRow"><span>护盾</span><div class="resBar sh"><i style="width:'+(shield>0?Math.min(100,shield/e.hpMax*100):0).toFixed(1)+'%"></i></div><b>'+(shield>0?fmt(shield):"—")+'</b></div>'
     +'<div class="resRow"><span>护甲</span><div class="resBar sh"><i style="width:'+red+'%"></i></div><b>'+red+'%</b></div>'
     +'<div class="tgtStats">攻 <b>'+bEffAtk(e)+'</b> · 速 <b>'+bEffSpeed(e)+'</b><br>强度 <b>'+e.power+'</b> · 第 '+(S.exp?(S.exp.floor||1):1)+' 层</div>'
+    +'<div class="tgtStats" style="margin-top:2px;border:0;padding-top:0">招式：'+((e.skills||[]).map(function(s){return s.name;}).join(" / ")||"普通攻击")+'</div>'
     +'<div class="tgtStats" style="margin-top:2px;border:0;padding-top:0">状态</div>'
     +(effs.length?'<div class="effChips">'+effs.map(x=>'<span class="effChip">'+x+'</span>').join("")+'</div>':'<div style="font-size:10px;color:var(--ink-dim)">无异常</div>');
 }
@@ -3033,26 +3564,35 @@ function renderBattleUnit(id,u,side){
   const box=$(id); if(!box)return;
   const isP=side==="player";
   const pct=Math.max(0,Math.round(u.hp/u.hpMax*100));
+  const prev=(typeof u._shownPct==="number")?u._shownPct:null;
+  const hurt=(prev!==null&&pct<prev);
+  u._shownPct=pct;
+  const ghostPct=hurt?prev:pct;
   const name=isP?(S.name||"无名散修"):enemyLabel(BATTLE?BATTLE.kind:"fight");
   const sub=isP?("修为 · "+(realm()?realm().full:"炼气")):((u.elems||[]).join("/")+" · 强度 "+u.power);
+  const shake=hurt?" figShake":"";
   let html="";
   if(isP){
     const av=avatarObj();
-    html='<div class="figBox"><div class="pLock"></div><img class="figImg" src="'+av.src+'" alt="'+av.name+'"></div>'
+    html='<div class="figBox'+shake+'"><div class="pLock"></div><img class="figImg" src="'+av.src+'" alt="'+av.name+'"></div>'
       +'<div class="uName">'+name+'</div><div class="uSub">'+sub+'</div>'
-      +'<div class="uBar p"><i style="width:'+pct+'%"></i></div>'
+      +'<div class="uBar p"><span class="ghostBar" style="width:'+ghostPct+'%"></span><i style="width:'+pct+'%"></i></div>'
       +'<div class="uSub">气血 '+Math.floor(u.hp)+'/'+u.hpMax+'</div>'
       +'<div class="uBar s"><i style="width:'+(u.pool?Math.min(100,Math.floor(u.spirit)/u.pool*100):0)+'%"></i></div>'
       +'<div class="uSub">灵力 '+Math.floor(u.spirit)+'/'+u.pool+'</div>';
   } else {
-    html='<div class="figBox"><div class="eLock"><div class="r1"></div><div class="r2"></div></div><div class="eGlyph">'+((u.elems&&u.elems[0])||"妖")+'</div></div>'
+    html='<div class="figBox'+shake+'"><div class="eLock"><div class="r1"></div><div class="r2"></div></div><div class="eGlyph">'+((u.elems&&u.elems[0])||"妖")+'</div></div>'
       +'<div class="uName">'+name+'</div><div class="uSub">'+sub+'</div>'
-      +'<div class="uBar e"><i style="width:'+pct+'%"></i></div>'
+      +'<div class="uBar e"><span class="ghostBar" style="width:'+ghostPct+'%"></span><i style="width:'+pct+'%"></i></div>'
       +'<div class="uSub">气血 '+Math.floor(u.hp)+'/'+u.hpMax+'</div>';
   }
   box.className="unit";
   box.innerHTML=html;
+  if(hurt){
+    try{ const g=box.querySelector(".ghostBar"); if(g) setTimeout(function(){ try{ g.style.width=pct+"%"; }catch(e){} },30); }catch(e){}
+  }
 }
+
 /* 技能效果描述：状态特效 → 中文 */
 const EF_TXT={
   pierce:(v)=>"破甲"+v+"%", bind:(v)=>"束缚"+v+"%", reflectHit:(v)=>"反伤"+v+"%", heal:(v)=>"回血"+v+"%",
@@ -3086,7 +3626,8 @@ function battleSkillDesc(kind,s){
 function renderBattleActions(){
   const b=BATTLE; const box=$("battleActions"); if(!box||b.over)return;
   box.innerHTML="";
-  const add=(label,fn,disable,desc,tag)=>{ const btn=document.createElement("button"); btn.disabled=!!disable;
+  const add=(label,fn,disable,desc,tag,icon)=>{ const btn=document.createElement("button"); btn.disabled=!!disable;
+    if(icon){ const im=document.createElement("img"); im.className="btIcon"; im.src=icon; im.alt=""; btn.appendChild(im); }
     const m=document.createElement("span"); m.className="btMain"; m.textContent=label; btn.appendChild(m);
     if(tag){ const t=document.createElement("span"); t.className="btTag"; t.textContent=tag; btn.appendChild(t); }
     if(desc){ const d=document.createElement("span"); d.className="btDesc"; d.textContent=desc; btn.appendChild(d); }
@@ -3096,11 +3637,11 @@ function renderBattleActions(){
   add("防御",()=>battleUse("def"),false,"本回合受伤减半","无消耗");
   add("逃跑",()=>battleUse("flee"),false,"失败则敌方追加一次行动","成功率 "+flee+"%");
   b.spells.forEach(s=>{ const cost=Math.ceil(s.cost*b.player.costRed); const cd=cdLeft(b.player,s.id);
-    add("法术 · "+s.name,()=>battleUse("spell",s.id), b.player.spirit<cost||cd>0||b.over, battleSkillDesc("spell",s), cd>0?("冷却 "+cd):(cost+" 灵力")); });
+    add("法术 · "+s.name,()=>battleUse("spell",s.id), b.player.spirit<cost||cd>0||b.over, battleSkillDesc("spell",s), cd>0?("冷却 "+cd):(cost+" 灵力"), SPELL_IMG[s.id]); });
   b.shens.forEach(s=>{ const cost=Math.ceil(s.cost*b.player.costRed); const cd=cdLeft(b.player,s.id);
-    add("身法 · "+s.name,()=>battleUse("shen",s.id), b.player.spirit<cost||cd>0||b.over, battleSkillDesc("shen",s), cd>0?("冷却 "+cd):(cost+" 灵力")); });
+    add("身法 · "+s.name,()=>battleUse("shen",s.id), b.player.spirit<cost||cd>0||b.over, battleSkillDesc("shen",s), cd>0?("冷却 "+cd):(cost+" 灵力"), SPELL_IMG[s.id]); });
   b.shenSh.forEach(sh=>{ const bs=SHEN_BS[sh.id]; if(!bs)return; const cd=cdLeft(b.player,sh.id);
-    add("神通 · "+sh.name,()=>battleUse("shensh",sh.id), b.player.spirit<bs.cost||cd>0||b.over, battleSkillDesc("shensh",sh), cd>0?("冷却 "+cd):(bs.cost+" 灵力")); });
+    add("神通 · "+sh.name,()=>battleUse("shensh",sh.id), b.player.spirit<bs.cost||cd>0||b.over, battleSkillDesc("shensh",sh), cd>0?("冷却 "+cd):(bs.cost+" 灵力"), SPELL_IMG[sh.id]); });
 }
 function renderBattleLog(){
   const b=BATTLE; const box=$("battleLog"); if(!box)return;
@@ -3205,13 +3746,14 @@ function playerPower(){ return Math.floor(100*(1+S.realm*0.45)*(1+(S.root?S.root
 function enemyPower(floor, area, boss){
   const SEG={dt:[1,2,3],yl:[4,5,6],sg:[7,8,9],kj:[9,9,9]};
   const MUL={dt:1.15,yl:1.25,sg:1.35,kj:1.5};
+  const LATE={dt:1,yl:1.1,sg:1.1,kj:1.1}; /* v30.9：后三张地图（禁区/战场/跨界）整体难度 +10%，洞天不变 */
   const FULLKIT=2.0;
   const seg=floor<=3?0:(floor<=7?1:2);
   const r=SEG[area][seg];
   const pw=100*(1+r*0.45)*FULLKIT;
   const rate=(area==="kj")?(0.65+Math.random()*0.2):(0.5+Math.random()*0.2);
-  let p=pw*rate;
-  if(boss) p=pw*MUL[area];
+  let p=pw*rate*(LATE[area]||1);
+  if(boss) p=pw*MUL[area]*(LATE[area]||1);
   return Math.floor(p);
 }
 function randRec(cat){ const c=CRAFT.find(c=>c.cat===cat); return c?c.rec[Math.floor(Math.random()*c.rec.length)]:null; }
@@ -3846,6 +4388,8 @@ function gameTick(now){
     if(S.hpMax-S.hp<1) S.hp=S.hpMax; // 收尾补满：规避浮点累加误差
     S.hp=Math.min(S.hpMax,S.hp);
   }
+  petTick(dt); // v31 灵兽饱食/亲密衰减与叛变倒计时
+  if(activeTab==="ls") petTickLiteUI();
   let mult=1;
   if(evt.prodBoost>Date.now()) mult*=2;
   if(evt.prodBoost3>Date.now()) mult*=3;
@@ -3964,6 +4508,8 @@ window.addEventListener("resize",sizeBg);
    启动
    ================================================================ */
 function render(){
+  // v30.9 任何重渲染先关闭悬浮框：DOM 重建后旧悬浮框内容可能过期（如竞拍/购买后仍显示旧价/旧竞拍者）
+  if(tipEl) tipEl.style.display="none";
   // 弹窗自愈：定根后残留灵根弹窗 / 引导完成后残留引导弹窗 → 自动关闭，避免遮挡点击
   if(S.root && $("rrOverlay").classList.contains("show")) $("rrOverlay").classList.remove("show");
   if((S.tut==="done"||S.tut==="skip") && $("tutOverlay").classList.contains("show")) $("tutOverlay").classList.remove("show");
@@ -3984,5 +4530,6 @@ setInterval(()=>{ if(S.root && S.realm>=1 && Date.now()>=evt.nextAt) triggerEven
 window.addEventListener("beforeunload",()=>save());
 document.addEventListener("visibilitychange",()=>{ if(document.hidden) save(); });
 </script>
+<div id="hatchFx"><div class="hxCard"><img id="hxPet" src="" alt=""><div class="hxName" id="hxName"></div><div class="hxSub" id="hxSub"></div></div></div>
 </body>
 </html>
