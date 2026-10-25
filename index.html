@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -124,6 +124,8 @@ body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft 
 .bigBtn:disabled{background:var(--panel2);color:var(--ink-dim);cursor:not-allowed;}
 .bigBtn.warn{background:linear-gradient(135deg,#e05555,#a02f2f);color:#fff;}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50;}
+.overlay.tutLoose{background:transparent;pointer-events:none;}
+.overlay.tutLoose .modal{pointer-events:auto;}
 .overlay.show{display:flex;}
 .modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;max-width:420px;width:92%;max-height:86vh;overflow-y:auto;}
 .modal h3{color:var(--gold);margin-bottom:10px;}
@@ -283,6 +285,8 @@ canvas#bg{position:fixed;inset:0;z-index:-1;pointer-events:none;}
 .eqPickBox .eqTitle{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--ink,#eee)}
 .eqPickBox .eqList{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px}
 .eqPickRow{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border-radius:8px;padding:7px 9px;border:1px solid rgba(255,255,255,.08)}
+.eqPickSec{font-size:12px;color:var(--gold,#e0b95e);margin:10px 0 4px;font-weight:700;letter-spacing:.5px;display:flex;gap:6px;align-items:center}
+.eqPickSec::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.12)}
 .eqPickRow .nm{flex:1;font-size:13px}
 .eqPickRow .sub{font-size:11px;color:var(--ink-dim,#999)}
 .whTop{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0}
@@ -523,11 +527,11 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v31.1（拍卖悬浮实时竞价：竞拍/NPC 抬价后悬浮框即时显示最新价与竞拍者）
+   修仙挂机 · 问道长生  v31.9（一朝飞升奖励提高：第 n 次 100000×n 下品）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v31.1";
+const VERSION = "v31.9";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -563,15 +567,15 @@ function showModal(t,body,cb){ $("mTitle").textContent=t; $("mBody").textContent
    outM 与 costM 对齐（每级成本×M、产出×M，升级边际性价比恒定），消除"同灵石投入产出倒挂"。 */
 const FAC = [
   {id:"array",  name:"聚灵阵",   ic:"🌀", cost:20,    out:2,     costM:1.15, outM:1.15, unlock:0, ds:"吸纳四方灵气，每秒凝聚灵气。"},
-  {id:"beast",  name:"驭兽台",   ic:"🐉", cost:150,   out:15,    costM:1.15, outM:1.15, unlock:0, ds:"驭兽台上百兽驯服，灵气自聚。"},
-  {id:"cave",   name:"洞府",     ic:"🏔️", cost:1800,  out:180,   costM:1.16, outM:1.16, unlock:1, ds:"洞天福地，汇聚灵气。"},
-  {id:"pill",   name:"丹药炉",   ic:"⚗️", cost:20000, out:2000,  costM:1.16, outM:1.16, unlock:2, ds:"丹火不息，炼化灵气。"},
-  {id:"field",  name:"仙田",     ic:"🌾", cost:280000,out:28000, costM:1.17, outM:1.17, unlock:2, ds:"种植仙草，萌发灵气。"},
-  {id:"sword",  name:"剑冢",     ic:"🗡️", cost:4e6,   out:400000,costM:1.17, outM:1.17, unlock:3, ds:"万剑归宗，剑气化灵。"},
-  {id:"disciple",name:"炼丹童子",ic:"🧒", cost:7e7,   out:7e6,   costM:1.12, outM:1.12, unlock:3, ds:"童子服侍，吐纳灵气。"},
-  {id:"vein",   name:"灵脉",     ic:"⛰️", cost:1.2e9, out:1.2e8, costM:1.12, outM:1.12, unlock:4, ds:"地脉灵髓，涌出灵气。"},
-  {id:"guard",  name:"护山大阵", ic:"🛡️", cost:2e10,  out:2e9,   costM:1.13, outM:1.13, unlock:5, ds:"大阵运转，聚拢灵气。"},
-  {id:"thunder",name:"天雷淬体", ic:"⚡", cost:3.5e11,out:3.5e10,costM:1.13, outM:1.13, unlock:6, ds:"引天雷淬体，灵气温养。"},
+  {id:"beast",  name:"驭兽台",   ic:"🐉", cost:150,   out:15,    costM:1.15, outM:1.15, unlock:1, ds:"驭兽台上百兽驯服，灵气自聚。"},
+  {id:"cave",   name:"洞府",     ic:"🏔️", cost:1800,  out:180,   costM:1.16, outM:1.16, unlock:2, ds:"洞天福地，汇聚灵气。"},
+  {id:"pill",   name:"丹药炉",   ic:"⚗️", cost:20000, out:2000,  costM:1.16, outM:1.16, unlock:3, ds:"丹火不息，炼化灵气。"},
+  {id:"field",  name:"仙田",     ic:"🌾", cost:280000,out:28000, costM:1.17, outM:1.17, unlock:4, ds:"种植仙草，萌发灵气。"},
+  {id:"sword",  name:"剑冢",     ic:"🗡️", cost:4e6,   out:400000,costM:1.17, outM:1.17, unlock:5, ds:"万剑归宗，剑气化灵。"},
+  {id:"disciple",name:"炼丹童子",ic:"🧒", cost:7e7,   out:7e6,   costM:1.12, outM:1.12, unlock:6, ds:"童子服侍，吐纳灵气。"},
+  {id:"vein",   name:"灵脉",     ic:"⛰️", cost:1.2e9, out:1.2e8, costM:1.12, outM:1.12, unlock:7, ds:"地脉灵髓，涌出灵气。"},
+  {id:"guard",  name:"护山大阵", ic:"🛡️", cost:2e10,  out:2e9,   costM:1.13, outM:1.13, unlock:8, ds:"大阵运转，聚拢灵气。"},
+  {id:"thunder",name:"天雷淬体", ic:"⚡", cost:3.5e11,out:3.5e10,costM:1.13, outM:1.13, unlock:9, ds:"引天雷淬体，灵气温养。"},
 ];
 
 /* 修行升级（灵石购买，无限等级） */
@@ -817,6 +821,7 @@ function hatchDone(slot){
   const bid=ed.pool[band==="凡"?0:band==="灵"?1:2];
   const nb=NEW_BEAS_BY_ID[bid];
   S.hatch[slot]=null;
+  S.hatchCnt=(S.hatchCnt||0)+1; // v31.7 兽潮涌动成就：孵化计数
   const full=w>=100;
   const it={uid:++S.uid, id:nb.id, sat:full?100:80, int:full?100:80, lastFeedAt:Date.now(), betrayAt:null};
   S.pets.push(it);
@@ -1138,13 +1143,11 @@ function realmAt(n){ return REALMS[Math.min(n, REALMS.length-1)]; }
 
 /* 成就（v30.4：等级突破 r1-r4 合并为「境界突破」、灵气产量 p1/p2 合并为「灵气如潮」、一朝飞升改多次领取累计奖励、新增每种强化里程碑成就；rw 可为函数 g=>奖励 表示第 g 次领取的奖励） */
 const ACHS = [
-  {id:"root1", nm:"天生仙骨",   ds:"拥有单灵根",        ic:"🌟", rw:1000, cond:s=>s.root&&s.root.type==="single"},
-  {id:"root2", nm:"万中无一",   ds:"拥有变异灵根",      ic:"💎", rw:5000, cond:s=>s.root&&s.root.type==="mut"},
+  {id:"root2", nm:"万中无一",   ds:"拥有灵根（选择任意灵根）", ic:"💎", rw:5000, cond:s=>!!s.root},
   {id:"r",     nm:"境界突破",   ds:"每突破一个大境界可领一次（筑基→金丹→元婴→化神…奖励递增）", ic:"🏮", rw:g=>200*Math.pow(10,g-1), multi:true, step:1, max:10, prog:s=>s.realm, cond:s=>s.realm>=1},
-  {id:"g1",    nm:"阵起九转",   ds:"每拥有 10 座聚灵阵可领一次", ic:"🌀", rw:100, multi:true, step:10, max:20, prog:s=>s.fa[0], cond:s=>s.fa[0]>=10},
-  {id:"g2",    nm:"兽潮涌动",   ds:"每拥有 25 头驭兽可领一次",   ic:"🐉", rw:1000, multi:true, step:25, max:20, prog:s=>s.fa[1], cond:s=>s.fa[1]>=25},
-  {id:"p",     nm:"灵气如潮",   ds:"灵气产量每达一档（1K/1M/1G/1T 每秒…）可领一次，奖励随档位递增", ic:"💨", rw:g=>1000*Math.pow(100,g-1), multi:true, step:1, max:10, prog:()=>{ const v=prodPerSec(); if(v<1e3) return 0; return Math.floor(Math.log(v/1e3)/Math.log(1000))+1; }, cond:()=>prodPerSec()>=1e3},
-  {id:"d1",    nm:"一朝飞升",   ds:"每飞升一次可领一次累计奖励（第 n 次 +5000×n 下品灵石）", ic:"🦢", rw:g=>5000*g, multi:true, step:1, max:20, prog:s=>s.ascensions, cond:s=>s.ascensions>=1},
+  {id:"g2",    nm:"兽潮涌动",   ds:"每孵化 20 灵兽可领一次",     ic:"🐉", rw:g=>50*Math.pow(10,g-1), multi:true, step:20, max:20, prog:s=>s.hatchCnt||0, cond:s=>(s.hatchCnt||0)>=20},
+  {id:"p",     nm:"灵气如潮",   ds:"灵气产量每达一档（100/1K/1M/1G/1T 每秒…）可领一次，奖励随档位递增", ic:"💨", rw:g=>1000*Math.pow(100,g-1), multi:true, step:1, max:10, prog:()=>{ const v=prodPerSec(); if(v<100) return 0; if(v<1e3) return 1; return Math.floor(Math.log(v/1e3)/Math.log(1000))+2; }, cond:()=>prodPerSec()>=100},
+  {id:"d1",    nm:"一朝飞升",   ds:"每飞升一次可领一次累计奖励", ic:"🦢", rw:g=>100000*g, multi:true, step:1, max:20, prog:s=>s.ascensions, cond:s=>s.ascensions>=1},
   {id:"d2",    nm:"碎片盈身",   ds:"每累计 100 大道碎片可领一次",   ic:"💫", rw:1000, multi:true, step:100, max:20, prog:s=>s.daoTotal, cond:s=>s.daoTotal>=100},
   {id:"d3",    nm:"问道长生",   ds:"每累计 1000 大道碎片可领一次",  ic:"🌠", rw:10000, multi:true, step:1000, max:10, prog:s=>s.daoTotal, cond:s=>s.daoTotal>=1000},
   /* v30.4 每种强化里程碑：设施/修行升级达 10/50/100 级，之后每 50 级各领一次（thr 为起点阈值，超出末阈值按每 50 级一次递推） */
@@ -1781,7 +1784,7 @@ function renderGong(body){
 function renderShen(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 神通库（战斗技能）—";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="<b>神通库</b>：后台数据库，收录用于战斗的技能神通，以<b>大道碎片</b>购买习得（战斗系统实装后神通将作为可施展技能影响战斗数值）。";body.appendChild(p);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="<b>神通库</b>：收录 12 个战斗神通，以<b>大道碎片</b>购买习得；习得后作为<b>可施展神通</b>影响战斗数值（战力 +8%~+50%）。<br>大道碎片获取：<b>飞升</b>为主要来源（化神期起每次飞升按累计灵力获得）；<b>阴阳灵根</b>额外 +25%。";body.appendChild(p);
   SHEN.forEach(a=>{
     const owned=S.shen.includes(a.id);
     const item=document.createElement("div");item.className="item";
@@ -2150,18 +2153,35 @@ function warmPickModal(uid, slot){
   const mask=document.createElement("div");mask.className="eqPickMask";mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); };
   const box=document.createElement("div");box.className="eqPickBox";
   const t=document.createElement("div");t.className="eqTitle";t.textContent="温养「"+ed.name+"」· 材料（偏好 "+ed.pref+" ×1，其余 ×0.5）";box.appendChild(t);
-  const list=document.createElement("div");list.className="eqList";
-  const opts=Object.keys(S.mats).filter(k=>(S.mats[k]||0)>0);
-  if(!opts.length){ const e=document.createElement("div");e.className="hint";e.textContent="须弥空间中没有材料。也可用灵兽精魄温养（每枚 +1）。";list.appendChild(e); }
-  opts.forEach(k=>{
-    const m=MATS_BY_ID[k]; if(!m) return;
-    const g=warmGain(ed,m);
-    const row=document.createElement("div");row.className="eqPickRow";
-    row.innerHTML=`<span class="nm">${m.ic||""} ${m.name}<div class="sub">${m.cat} · 稀${m.rarity} · 持有 ${S.mats[k]}</div></span><span class="sub">温养度 +${g%1?g.toFixed(1):g}${m.cat===ed.pref?"（偏好）":""}</span>`;
-    const wb=buyBtn(true,()=>{ mask.remove(); if(isHatch) warmHatchByMat(slot,k); else warmEggByMat(uid,k); },"温养"); wb.className="goldBtn"; row.appendChild(wb);
-    list.appendChild(row);
-  });
-  box.appendChild(list);
+  const list=document.createElement("div");list.className="eqList";box.appendChild(list);
+  const CATS=["妖兽材料","矿石","草药"];
+  function refresh(){
+    list.innerHTML="";
+    const opts=Object.keys(S.mats).filter(k=>(S.mats[k]||0)>0&&MATS_BY_ID[k]);
+    if(!opts.length){ const e=document.createElement("div");e.className="hint";e.textContent="须弥空间中没有材料。也可用灵兽精魄温养（每枚 +1）。";list.appendChild(e); return; }
+    CATS.forEach(cat=>{
+      const items=opts.filter(k=>MATS_BY_ID[k].cat===cat);
+      if(!items.length) return;
+      items.sort((a,b)=>{
+        const ma=MATS_BY_ID[a],mb=MATS_BY_ID[b];
+        const pa=ma.cat===ed.pref?1:0, pb=mb.cat===ed.pref?1:0;
+        if(pa!==pb) return pb-pa;
+        return mb.rarity-ma.rarity;
+      });
+      const sec=document.createElement("div");sec.className="eqPickSec";
+      sec.textContent=cat+(cat===ed.pref?" · 偏好×1":" · ×0.5");
+      list.appendChild(sec);
+      items.forEach(k=>{
+        const m=MATS_BY_ID[k];
+        const g=warmGain(ed,m);
+        const row=document.createElement("div");row.className="eqPickRow";
+        row.innerHTML=`<span class="nm">${m.ic||""} ${m.name}<div class="sub">稀${m.rarity} · 持有 ${S.mats[k]}</div></span><span class="sub">温养度 +${g%1?g.toFixed(1):g}${m.cat===ed.pref?"（偏好）":""}</span>`;
+        const wb=buyBtn((S.mats[k]||0)>=1,()=>{ if(isHatch) warmHatchByMat(slot,k); else warmEggByMat(uid,k); refresh(); },"温养"); wb.className="goldBtn"; row.appendChild(wb);
+        list.appendChild(row);
+      });
+    });
+  }
+  refresh();
   const close=document.createElement("div");close.className="btnPair";
   const essb=buyBtn(S.petEss>=1,()=>{ mask.remove(); if(isHatch) warmHatchByEss(slot); else warmByEss(uid); },"精魄 +1（余 "+S.petEss+"）"); essb.className="goldBtn"; close.appendChild(essb);
   const cb2=buyBtn(true,()=>mask.remove(),"关闭"); cb2.className="goldBtn"; close.appendChild(cb2);
@@ -2927,7 +2947,7 @@ const SPELLS=[
   {id:"s-huo1",name:"烈焰焚身",elem:"火",type:"dmg",target:"enemy",cost:15,cd:0,mult:1.5,eff:[{k:"burn",ch:0.60,v:0.4,t:2}]},
   {id:"s-huo2",name:"火海倾天",elem:"火",type:"dmg",target:"all",cost:25,cd:2,mult:0.9},
   {id:"s-huo3",name:"火灵加持",elem:"火",type:"shen",target:"self",cost:12,cd:2,eff:[{k:"atkUp",v:25,t:2}]},
-  {id:"s-huo4",name:"焚身化火",elem:"火",type:"shen",target:"self",cost:15,cd:4,eff:[{k:"sacrifice",v:5},{k:"nextDmg",v:80}]},
+  {id:"s-huo4",name:"焚身化火",elem:"火",type:"shen",target:"self",cost:15,cd:4,eff:[{k:"sacrifice",v:2},{k:"nextDmg",v:80}]},
   // 土
   {id:"s-tu1",name:"地裂崩山",elem:"土",type:"dmg",target:"enemy",cost:15,cd:2,mult:1.4,eff:[{k:"stun",ch:0.70}]},
   {id:"s-tu2",name:"巨石轰顶",elem:"土",type:"dmg",target:"all",cost:20,cd:2,mult:1.0},
@@ -2952,7 +2972,7 @@ const SPELLS=[
   {id:"s-du1",name:"剧毒蚀骨",elem:"毒",type:"dmg",target:"enemy",cost:12,cd:0,mult:0.8,guaranteed:true,eff:[{k:"poison",v:5,t:3}]},
   {id:"s-du2",name:"万毒侵体",elem:"毒",type:"dmg",target:"all",cost:22,cd:3,mult:0.7,eff:[{k:"poison",v:4,t:2},{k:"atkDown",v:15,t:2}]},
   {id:"s-du3",name:"毒体反噬",elem:"毒",type:"shen",target:"self",cost:12,cd:3,eff:[{k:"reflect",v:20,t:3}]},
-  {id:"s-du4",name:"毒瘴护身",elem:"毒",type:"shen",target:"self",cost:10,cd:2,eff:[{k:"dmgRed",v:15,t:2},{k:"reflect",v:15,t:2}]},
+  {id:"s-du4",name:"毒瘴护身",elem:"毒",type:"shen",target:"self",cost:10,cd:2,eff:[{k:"dmgRed",v:40,t:2},{k:"reflect",v:15,t:2}]},
   // 阴阳
   {id:"s-yiny1",name:"阴阳逆转",elem:"阴阳",type:"dmg",target:"enemy",cost:18,cd:2,mult:1.3,lifesteal:0.5},
   {id:"s-yiny2",name:"混沌归一",elem:"阴阳",type:"dmg",target:"all",cost:26,cd:3,mult:0.95},
@@ -3168,7 +3188,7 @@ function dealDirect(u,dmg,src){
   if(u.invuln>0||(u.buffs&&u.buffs.invuln&&u.buffs.invuln.t>0)) return 0;
   if(u.immune>0){ u.immune--; return 0; }
   if(u.buffs&&u.buffs.shield&&u.buffs.shield.t>0&&u.buffs.shield.v>0){ const ab=Math.min(u.buffs.shield.v,d); u.buffs.shield.v-=ab; d-=ab; }
-  if(u.buffs&&u.buffs.reflect&&u.buffs.reflect.t>0&&src){ const rr=Math.floor(d*u.buffs.reflect.v/100); if(rr>0) dealDirect(src,rr,null); }
+  if(u.buffs&&u.buffs.reflect&&u.buffs.reflect.t>0&&src){ const rr=Math.floor(dmg*u.buffs.reflect.v/100); if(rr>0) dealDirect(src,rr,null); }
   const f=Math.max(0,Math.ceil(d)); u.hp=Math.max(0,u.hp-f); return f;
 }
 function applySpellEffects(caster,targets,spell,opts){
@@ -3976,18 +3996,24 @@ function renderAchs(body){
     const pend=S.achPending.includes(a.id);
     const got=(S.achGot[a.id]||0) + (a.multi?0:(S.ach.includes(a.id)?1:0));
     const can=claimableTimes(a);
-    const done=got>=can && can>0;
+    // v31.6 非 multi 成就已领判定：领取后 claimableTimes 归 0，按 got>0 判定已领取
+    const done = a.multi ? (got>=can && can>0) : got>0;
     const item=document.createElement("div");
     item.className="item"+(pend?" afford":"")+(done?"":" locked");
     // v30.4 奖励自动换算：multi 成就显示下次领取奖励，普通成就显示固定奖励
     const nextRw = typeof a.rw==="function" ? a.rw(Math.min(got+1, Math.max(can,1))) : (a.rw||0);
-    const rwTx = nextRw>0 ? priceLText(splitPriceL(nextRw))+"（"+fmt(nextRw)+" 下品）" : "无";
-    const totTxt = (a.multi && a.max && a.max<999) ? a.max : "不限";
-    const progLine = a.multi ? `<div class="ln">已领 <b>${got}</b> 次 / 总 ${totTxt} 次${done?"（已领完当前进度）":(can>0?" · 可再领 "+(can-got)+" 次":"（未达成）")}</div>` : (done?`<div class="ln">已领取</div>`:`<div class="ln">${a.cond(S)?"已达成，待领取":"未达成"}</div>`);
+    // v31.3 奖励显示：本次奖励+换算灵石，括号内显示下一级领取（换算），不再显示下品数
+    const hasNxt = a.multi && typeof a.rw==="function" && (got+1) < (a.max||999);
+    const rwTx = nextRw>0 ? "+"+priceLText(splitPriceL(nextRw))+(hasNxt?("（下一级领取 "+priceLText(splitPriceL(a.rw(got+2)))+"）"):"") : "无";
+    const progLine = a.multi
+      ? (a.max && a.max<999)
+        ? `<div class="ln">领取次数 <b>${got}</b>/${a.max}${got>=a.max?"（已达成）":""}</div>`
+        : `<div class="ln">已领 <b>${got}</b> 次 / 不限${done?"（已领完当前进度）":(can>0?" · 可再领 "+(can-got)+" 次":"（未达成）")}</div>`
+      : (done?`<div class="ln">已领取</div>`:`<div class="ln">${a.cond(S)?"已达成，待领取":"未达成"}</div>`);
     item.innerHTML=`<div class="ic">${a.ic}</div><div class="body">
       <div class="nm">${a.nm}${done?' <span style="color:var(--jade)">✔</span>':''}</div>
       <div class="ds">${a.ds}</div>
-      <div class="cost">${a.multi?"下次奖励":"奖励"} ${rwTx}</div>
+      <div class="cost">${a.multi?"本次奖励":"奖励"} ${rwTx}</div>
       ${progLine}
     </div>`;
     if(pend && !done) item.appendChild(buyBtn(true,()=>{claimAch(a);},"领取"));
@@ -4067,9 +4093,11 @@ const TUT_STEPS=[
   {t:"— 仙途伊始 · 二 —", b:"你自荒山野岭中醒来，衣衫褴褛，周身灵气稀薄，却隐隐感到体内灵根暗藏、气机勃发。这是你的新生，也是你问道长生的起点。"},
   {t:"— 仙途伊始 · 三 —", b:"临行前，为自己取一个行走修仙界的名号吧。这个名字将伴随你从炼气到飞升，被世间道友传颂。", input:true},
   {t:"— 仙途伊始 · 四 —", b:"选定你的初始形象。它将显示在装备页，伴随你行走修仙界、问道长生。", avatar:true},
-  {t:"— 修炼 —", b:"点击修炼页的『盘膝打坐 · 开始运功』即可开始积累灵气，灵气满额后可尝试『突破』冲击更高境界。<br><br>注意：灵气产出默认暂停，仅在运功时产出；运功与采集 / 制造互斥，停止运功即停止产出。"},
-  {t:"— 采集与制造 —", b:"『采集』可狩猎 / 挖矿 / 采药，随机获得妖兽材料、矿石与草药；『制造』以材料合成符箓、丹药、装备与阵法。所有材料与成品都存放在『须弥空间』，可随时使用或出售。"},
-  {t:"— 傀儡 —", b:"『傀儡』可替你自动采集或制造：玉傀效率最高（玩家 90%），木傀最低（40%）。指派任务后自动持续产出，点击红色『停止』按钮即可随时停止。"},
+  {t:"— 修炼 —", menu:"cult", b:"请点击左侧菜单栏<b>『修炼』</b>（当前即在此页）。点击『盘膝打坐 · 开始运功』即可开始积累灵气，灵气满额后可尝试『突破』冲击更高境界。<br><br>注意：灵气产出默认暂停，仅在运功时产出；运功与采集 / 制造互斥，停止运功即停止产出。"},
+  {t:"— 采集 —", menu:"cai", b:"请点击左侧菜单栏<b>『采集』</b>。『采集』可狩猎 / 挖矿 / 采药，随机获得妖兽材料、矿石与草药；还可选择外围 / 中部 / 核心区域，区域越深稀有材料越多。"},
+  {t:"— 制造 —", menu:"zao", b:"请点击左侧菜单栏<b>『制造』</b>。『制造』以材料合成符箓、丹药、装备与阵法，分制符 / 炼丹 / 炼器 / 阵法四类配方。<br><br>所有材料与成品都存放在<b>『须弥空间』</b>（菜单栏『须弥空间』），可随时使用或出售。"},
+  {t:"— 傀儡 —", menu:"pu", b:"请点击左侧菜单栏<b>『傀儡』</b>。『傀儡』可替你自动采集或制造：玉傀效率最高（玩家 90%）、木傀最低（40%）。指派任务后自动持续产出，点击红色『停止』按钮即可随时停止。"},
+  {t:"— 灵根 —", roots:true, b:""},
 ];
 let tutStep=-2; // -2 询问态
 function openTutAsk(){ tutStep=-2; renderTut(); $("tutOverlay").classList.add("show"); }
@@ -4105,9 +4133,38 @@ function renderTut(){
   $("tutTitle").textContent=st.t;
   $("tutBody").innerHTML=st.b;
   $("tutNameWrap").style.display=st.input?"block":"none";
-  $("tutSkip").style.display=st.input?"none":"inline-block";
-  $("tutNext").textContent=(tutStep===TUT_STEPS.length-1)?"完成":"下一步";
+  $("tutSkip").style.display=(tutStep===-2)?"inline-block":"none"; // v30.8.3 选择开始指引后不再显示跳过按钮
+  $("tutNext").textContent=(tutStep===TUT_STEPS.length-1)?"去选择灵根":"下一步";
   if(st.avatar) renderAvatarPick();
+  if(st.roots) renderTutRoots();
+  // v30.8.2 引导点击菜单：功能步遮罩穿透（可点左侧菜单），点击对应菜单后自动进入下一步
+  const loose=!!st.menu;
+  $("tutOverlay").classList.toggle("tutLoose", loose);
+  $("tutNext").style.display=loose?"none":"";
+  if(st.menu){
+    const tip=document.createElement("div");
+    tip.style.cssText="margin-top:10px;padding:8px 12px;border-radius:8px;background:linear-gradient(135deg,rgba(224,185,94,.18),rgba(224,185,94,.06));border:1px solid rgba(224,185,94,.4);color:var(--gold);font-weight:700;font-size:13px;";
+    tip.innerHTML="👆 请点击左侧菜单栏『"+TUT_MENU_NM[st.menu]+"』查看";
+    $("tutBody").appendChild(tip);
+  }
+}
+const TUT_MENU_NM={cult:"修炼",cai:"采集",zao:"制造",pu:"傀儡"};
+function renderTutRoots(){
+  const box=$("tutBody");
+  box.innerHTML='<div style="font-size:13px;line-height:1.7;color:var(--ink-dim)">即将为你<b>随机分配</b>一个灵根（可免费重刷 5 次）。先了解各灵根的特殊属性：</div>'
+  +'<div style="max-height:300px;overflow-y:auto;margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel)">'
+  +'<div style="font-weight:700;color:var(--gold);margin:4px 0">— 五行灵根（灵根越少修炼越快、战力越强、突破越难）—</div>'
+  +'<table style="width:100%;font-size:12px;border-collapse:collapse;margin:4px 0"><tr style="color:var(--ink-dim)"><td style="padding:2px 4px">灵根</td><td style="padding:2px 4px">修炼速度</td><td style="padding:2px 4px">突破所需灵力</td><td style="padding:2px 4px">突破上限</td><td style="padding:2px 4px">战力</td></tr>'
+  +'<tr><td style="padding:2px 4px">单灵根（金/木/水/火/土）</td><td style="padding:2px 4px">×2.0</td><td style="padding:2px 4px">×0.4</td><td style="padding:2px 4px">10%</td><td style="padding:2px 4px">+30%</td></tr>'
+  +'<tr><td style="padding:2px 4px">双灵根</td><td style="padding:2px 4px">×1.6</td><td style="padding:2px 4px">×0.6</td><td style="padding:2px 4px">20%</td><td style="padding:2px 4px">+25%</td></tr>'
+  +'<tr><td style="padding:2px 4px">三灵根</td><td style="padding:2px 4px">×1.3</td><td style="padding:2px 4px">×0.8</td><td style="padding:2px 4px">30%</td><td style="padding:2px 4px">+20%</td></tr>'
+  +'<tr><td style="padding:2px 4px">四灵根</td><td style="padding:2px 4px">×1.15</td><td style="padding:2px 4px">×1.0</td><td style="padding:2px 4px">40%</td><td style="padding:2px 4px">+15%</td></tr>'
+  +'<tr><td style="padding:2px 4px">五灵根</td><td style="padding:2px 4px">×1.0</td><td style="padding:2px 4px">×1.25</td><td style="padding:2px 4px">50%</td><td style="padding:2px 4px">+10%</td></tr>'
+  +'</table>'
+  +'<div style="font-weight:700;color:var(--gold);margin:8px 0 4px">— 变异灵根（修炼 ×1.8~2.2 · 突破所需灵力 ×0.4 · 上限 35% · 基础战力 +20%，各带特殊属性）—</div>'
+  +'<div style="line-height:1.9">❄️ 冰灵根：突破概率 +8%<br>⚡ 雷灵根：会心 +20%<br>🌪️ 风灵根：战斗速度 +15%、闪避 +10%<br>☠️ 毒灵根：战力 +25%<br>☯️ 阴阳灵根：大道碎片 +25%</div>'
+  +'<div style="font-size:12px;color:var(--ink-dim);margin-top:6px">变异灵根同样可能随机刷出，各有独立特性，不套用五行梯度。</div>'
+  +'</div>';
 }
 function renderAvatarPick(){
   const box=$("tutBody");
@@ -4328,7 +4385,11 @@ $("rebirthBtn").addEventListener("click",()=>{
 /* ================================================================
    菜单切换
    ================================================================ */
-document.querySelectorAll(".menu-item").forEach(m=>m.addEventListener("click",()=>switchTab(m.dataset.tab)));
+document.querySelectorAll(".menu-item").forEach(m=>m.addEventListener("click",()=>{
+  switchTab(m.dataset.tab);
+  // v30.8.2 新手指引：功能步要求点击对应菜单，命中后自动进入下一步
+  if(tutStep>=0 && TUT_STEPS[tutStep] && TUT_STEPS[tutStep].menu===m.dataset.tab) tutNext();
+}));
 $("breakBtn").addEventListener("click",()=>doBreak());
 $("flyBtn").addEventListener("click",()=>ascend());
 $("yunBtn").addEventListener("click",()=>{
