@@ -801,8 +801,8 @@ function addEgg(id){
 /* 孵化：入槽（蛋仓中蛋移入槽，温养度随身）→ 倒计时 → 破壳掷档位 */
 function startHatch(uid){
   const egg=eggByUid(uid); if(!egg) return;
-  const slot=S.hatch.findIndex(x=>!x);
-  if(slot<0){ banner("孵化槽已满，请等待空位"); return; }
+  const slot=S.hatch.findIndex((x,i)=>!x&&i<(S.hatchSlots||1));
+  if(slot<0){ banner("孵化槽已满，请等待空位（或扩容解锁更多槽位）"); return; }
   const ed=EGG_BY_ID[egg.id];
   S.eggs=S.eggs.filter(e=>e.uid!==uid);
   S.hatch[slot]={id:egg.id, warm:egg.warm, endAt:Date.now()+ed.hatchSec*1000};
@@ -834,12 +834,14 @@ function hatchDone(slot){
 function warmGain(ed, mat){ return mat.cat===ed.pref ? mat.rarity : mat.rarity*0.5; }
 function warmEggByMat(uid, matId){
   const egg=eggByUid(uid); if(!egg) return;
+  if((egg.warm||0)>=100){ banner("温养值已满，不可再温养"); return; }
   const m=MATS_BY_ID[matId]; if(!m||(S.mats[matId]||0)<1) return;
   const ed=EGG_BY_ID[egg.id]; const g=warmGain(ed,m);
   S.mats[matId]--; egg.warm=Math.min(100, egg.warm+g);
   logEvent("温养「"+ed.name+"」"+m.name+"：温养度 +"+(g%1?g.toFixed(1):g),'','collect'); sound(520,.1); save(); renderTab();
 }
 function warmHatchByMat(slot, matId){
+  banner("孵化中的蛋温养值已固定，不可温养"); return;
   const h=S.hatch[slot]; if(!h) return;
   const m=MATS_BY_ID[matId]; if(!m||(S.mats[matId]||0)<1) return;
   const ed=EGG_BY_ID[h.id]; if(!ed) return; const g=warmGain(ed,m);
@@ -849,10 +851,12 @@ function warmHatchByMat(slot, matId){
 function warmByEss(uid){
   if(S.petEss<1){ banner("灵兽精魄不足"); return; }
   const egg=eggByUid(uid); if(!egg) return;
+  if((egg.warm||0)>=100){ banner("温养值已满，不可再温养"); return; }
   S.petEss--; egg.warm=Math.min(100, egg.warm+1);
   logEvent("以 1 枚精魄温养「"+EGG_BY_ID[egg.id].name+"」，温养度 +1",'sys'); sound(520,.1); save(); renderTab();
 }
 function warmHatchByEss(slot){
+  banner("孵化中的蛋温养值已固定，不可温养"); return;
   if(S.petEss<1){ banner("灵兽精魄不足"); return; }
   const h=S.hatch[slot]; if(!h) return;
   S.petEss--; h.warm=Math.min(100,(h.warm||0)+1);
@@ -2149,7 +2153,10 @@ function feedPickModal(uid){
 }
 function warmPickModal(uid, slot){
   const isHatch=slot!=null;
-  const ed=isHatch?EGG_BY_ID[S.hatch[slot].id]:EGG_BY_ID[eggByUid(uid).id];
+  if(isHatch){ banner("孵化中的蛋温养值已固定，不可温养"); return; }
+  const egg=eggByUid(uid); if(!egg) return;
+  if((egg.warm||0)>=100){ banner("温养值已满，不可再温养"); return; }
+  const ed=EGG_BY_ID[egg.id];
   const mask=document.createElement("div");mask.className="eqPickMask";mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); };
   const box=document.createElement("div");box.className="eqPickBox";
   const t=document.createElement("div");t.className="eqTitle";t.textContent="温养「"+ed.name+"」· 材料（偏好 "+ed.pref+" ×1，其余 ×0.5）";box.appendChild(t);
@@ -2231,8 +2238,9 @@ function renderPets(body){
       <div class="ds">温养度 ${w}/100（基础→满温养：凡品${ed.probs.fan[0]}%→${ed.probs.fan[1]}% · 灵品${ed.probs.ling[0]}%→${ed.probs.ling[1]}% · 圣品${ed.probs.sheng[0]}%→${ed.probs.sheng[1]}%）</div>
       <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px;margin:4px 0"><div style="height:100%;width:${w}%;background:linear-gradient(90deg,#45d0a0,#e0b95e);border-radius:3px"></div></div>
     </div>`;
-    item.appendChild(buyBtn(true,()=>warmPickModal(egg.uid,null),"温养"));
-    item.appendChild(buyBtn(S.petEss>=1,()=>warmByEss(egg.uid),"精魄+1"));
+    const wfull=(egg.warm||0)>=100;
+    item.appendChild(buyBtn(!wfull,()=>warmPickModal(egg.uid,null),wfull?"温养已满":"温养"));
+    item.appendChild(buyBtn(!wfull&&S.petEss>=1,()=>warmByEss(egg.uid),wfull?"精魄已满":"精魄+1"));
     item.appendChild(buyBtn(true,()=>startHatch(egg.uid),"放入孵化槽"));
     body.appendChild(item);
   });
@@ -2244,12 +2252,10 @@ function renderPets(body){
       const ed=EGG_BY_ID[h.id]; const left=h.endAt-Date.now(); const w=Math.floor((h.warm||0)*10)/10;
       box2.innerHTML=`<div class="ic">${icOf(ed,46)}</div><div class="body">
         <div class="nm">${ed.name} <span class="cat">稀${ed.rarity}</span> <span id="hatchTimer${i}" style="font-size:11px;color:var(--gold)"></span></div>
-        <div class="ds">温养度 ${w}/100；破壳按当前档位概率掷档位</div>
+        <div class="ds">温养度 ${w}/100（孵化中温养值固定，不可再温养）；破壳按当前档位概率掷档位</div>
         <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px;margin:4px 0"><div style="height:100%;width:${w}%;background:linear-gradient(90deg,#45d0a0,#e0b95e);border-radius:3px"></div></div>
       </div>`;
       const hb=buyBtn(left<=0,()=>hatchDone(i),"破壳"); hb.className+=" hatchGo"+i; box2.appendChild(hb);
-      box2.appendChild(buyBtn(true,()=>warmPickModal(null,i),"温养"));
-      box2.appendChild(buyBtn(S.petEss>=1,()=>warmHatchByEss(i),"精魄+1"));
       const tEl=box2.querySelector("#hatchTimer"+i);
       if(left<=0) tEl.textContent="✓ 可破壳";
       else { const hh=Math.floor(left/3600000), mm=Math.floor(left%3600000/60000); tEl.textContent=hh+" 小时 "+mm+" 分"; }
