@@ -2222,13 +2222,13 @@ function renderPets(body){
   const cap=petCap();
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 灵兽 · 孵化养成（v31）—";body.appendChild(st);
   const hint=document.createElement("div");hint.className="hint";
-  hint.innerHTML="探索战斗胜利<b>低概率出蛋</b>；蛋放入孵化槽按时破壳，可用材料（偏好×1／其余×0.5）或精魄（每枚+1）温养提升孵化档位概率。灵兽需<b>喂食材料</b>维持饱食与亲密，亲密归零后长期不喂养将叛变逃离；出战上限按境界解锁（筑基1／金丹2／元婴3）。重复孵出同编号灵兽不叠加等级，入库兽栏后可<b>炼化</b>为精魄。";body.appendChild(hint);
+  hint.innerHTML="击败<b>精英守卫／秘境BOSS</b>低概率出蛋（普通妖兽不掉）；蛋放入孵化槽按时破壳，可用材料（偏好×1／其余×0.5）或精魄（每枚+1）温养提升孵化档位概率。灵兽需<b>喂食材料</b>维持饱食与亲密，亲密归零后长期不喂养将叛变逃离；出战上限按境界解锁（筑基1／金丹2／元婴3）。重复孵出同编号灵兽不叠加等级，入库兽栏后可<b>炼化</b>为精魄。";body.appendChild(hint);
   const top=document.createElement("div");top.className="hint";top.style.cssText="display:flex;gap:10px;align-items:center;margin:8px 0;flex-wrap:wrap";
   top.innerHTML="<b>灵兽精魄：</b>"+S.petEss+" 枚（每枚可温养 +1 或售 1 上品灵石）　<b>图鉴：</b>"+Object.keys(S.petDex||{}).length+"/30";
   const sb=buyBtn(S.petEss>=1,()=>sellPetEss(),"出售精魄 ×1"); sb.className="goldBtn"; top.appendChild(sb);
   body.appendChild(top);
   const es=document.createElement("div");es.className="sectionTitle";es.textContent="蛋仓（"+(S.eggs||[]).length+" 枚）";body.appendChild(es);
-  if(!S.eggs.length){ const e=document.createElement("div");e.className="hint";e.textContent="蛋仓空空如也。探索秘境战斗胜利有概率掉落蛋，筑基后首战必得木灵蛋。";body.appendChild(e); }
+  if(!S.eggs.length){ const e=document.createElement("div");e.className="hint";e.textContent="蛋仓空空如也。击败精英守卫或秘境BOSS有概率掉落蛋，筑基后首次击败精英守卫必得木灵蛋。";body.appendChild(e); }
   (S.eggs||[]).forEach(egg=>{
     const ed=EGG_BY_ID[egg.id];
     const item=document.createElement("div");item.className="item";
@@ -2910,7 +2910,7 @@ function openSlotsConfig(){
   const root=S.root; if(!root){ banner("先定灵根才能配置"); return; }
   const cap=slotCapOf(root);
   const pool=spellPoolFor(root);
-  const dmgPool=pool.filter(s=>s.type==="dmg"), shenPool=pool.filter(s=>s.type==="shen");
+  const dmgPool=pool.filter(s=>s.type==="dmg"||s.type==="fa"), shenPool=pool.filter(s=>s.type==="shen");
   const learned=SHEN.filter(x=>S.shen.includes(x.id));
   const st=S.slots||{dmg:[],shen:[],shenSh:[]};
   $("slotsTitle").textContent="— 战前技能槽配置 · "+root.name+"（法"+cap.dmg+" 身"+cap.shen+" 神"+cap.shenSh+"）—";
@@ -2965,8 +2965,8 @@ const SPELLS=[
   {id:"s-jin4",name:"锋锐入体",elem:"金",type:"shen",target:"self",cost:10,cd:2,eff:[{k:"nextPower",v:40}]},
   // 木
   {id:"s-mu1",name:"藤蔓缠身",elem:"木",type:"dmg",target:"enemy",cost:10,cd:0,mult:0.9,eff:[{k:"bind",ch:0.70,v:40,t:2}]},
-  {id:"s-mu2",name:"荆棘反噬",elem:"木",type:"dmg",target:"enemy",cost:14,cd:1,mult:1.1,eff:[{k:"reflectHit",v:20,t:2}]},
-  {id:"s-mu3",name:"春木回春",elem:"木",type:"shen",target:"self",cost:12,cd:3,eff:[{k:"heal",v:25}]},
+  {id:"s-mu2",name:"荆棘反噬",elem:"木",type:"shen",target:"enemy",cost:14,cd:1,eff:[{k:"reflectHit",v:20,t:2}]},
+  {id:"s-mu3",name:"枯木逢春",elem:"木",type:"fa",target:"self",cost:12,cd:5,eff:[{k:"regen",v:15,t:3}]},
   {id:"s-mu4",name:"木灵遁隐",elem:"木",type:"shen",target:"self",cost:10,cd:2,eff:[{k:"dodge",v:30,t:2}]},
   // 水
   {id:"s-shui1",name:"玄水冲击",elem:"水",type:"dmg",target:"enemy",cost:10,cd:0,mult:1.2,eff:[{k:"slow",ch:0.50,v:30,t:2}]},
@@ -3046,7 +3046,7 @@ function slotCapOf(root){ const t=root?root.type:"single"; return SLOT_CAP[t]||S
 function resolveSlots(root){
   const cap=slotCapOf(root);
   const pool=spellPoolFor(root);
-  const dmgPool=pool.filter(s=>s.type==="dmg"), shenPool=pool.filter(s=>s.type==="shen");
+  const dmgPool=pool.filter(s=>s.type==="dmg"||s.type==="fa"), shenPool=pool.filter(s=>s.type==="shen");
   const learned=SHEN.filter(x=>S.shen.includes(x.id));
   const st=S.slots||{};
   const dmg=(st.dmg||[]).filter(id=>dmgPool.some(s=>s.id===id)).slice(0,cap.dmg);
@@ -3251,6 +3251,9 @@ function applySpellEffects(caster,targets,spell,opts){
           case "nextPower": caster.nextPower=(caster.nextPower||0)+e.v; break;
           case "nextDmg": caster.nextDmg=(caster.nextDmg||0)+e.v; break;
           case "heal":{ const h=Math.floor(caster.hpMax*(e.v/100)); caster.hp=Math.min(caster.hpMax,caster.hp+h); bLog("恢复气血 "+h); break; }
+          case "regen":{ // 持续缓慢回血：总量为施放者气血上限 v%，分 t 回合发放，受上限封顶
+            const total=Math.floor(t.hpMax*(e.v/100)); const per=Math.max(1,Math.ceil(total/(e.t||1)));
+            buffAdd(t,"regen",per,e.t); t.buffs.regen.left=total; break; }
           case "sacrifice":{ const s=Math.ceil(caster.hp*(e.v/100)); caster.hp=Math.max(1,caster.hp-s); break; }
         }
       }
@@ -3343,6 +3346,9 @@ function battleUse(kind,id){
       const tg=(s.target==="enemy")?[b.enemy]:[b.player];
       applySpellEffects(b.player,tg,s,{});
       bLog("施展身法「"+s.name+"」");
+    } else if(s.target==="self"){ // 法术（自施型）：如持续回血，作用于自身
+      applySpellEffects(b.player,[b.player],s,{});
+      bLog("施展法术「"+s.name+"」");
     } else { // 伤害法术：命中并附加特效
       battleStrike(b.player,b.enemy,{mult:s.mult,hits:s.hits,elem:s.elem,hitB:s.hitB,guaranteed:s.guaranteed,eff:s.eff,isSpell:true,lifesteal:s.lifesteal,label:"「"+s.name+"」"});
     }
@@ -3404,6 +3410,7 @@ function bEndRound(){
   [["player",b.player],["enemy",b.enemy]].forEach(([k,u])=>{
     if(u.buffs&&u.buffs.burn&&u.buffs.burn.t>0){ const d=Math.floor((u.buffs.burn.srcAtk||b.player.atk)*u.buffs.burn.v); const dd=dealDirect(u,d,null); if(dd>0)bLog((k==="player"?"玩家":"敌方")+"受灼烧伤害 "+dd); }
     if(u.buffs&&u.buffs.poison&&u.buffs.poison.t>0){ const d=Math.floor(u.hpMax*(u.buffs.poison.v/100)); const dd=dealDirect(u,d,null); if(dd>0)bLog((k==="player"?"玩家":"敌方")+"受中毒伤害 "+dd); }
+    if(u.buffs&&u.buffs.regen&&u.buffs.regen.t>0){ const amt=Math.min(u.buffs.regen.v,(u.buffs.regen.left||u.buffs.regen.v)); if(amt>0){ u.hp=Math.min(u.hpMax,u.hp+amt); u.buffs.regen.left=(u.buffs.regen.left||u.buffs.regen.v)-amt; bLog((k==="player"?"玩家":"敌方")+"气血缓缓恢复 "+amt); } }
   });
   bEndCheck();
   if(b.over) return;
@@ -3467,15 +3474,15 @@ function resolveCell(win,fleeMode){
     const gain=Math.max(1,Math.floor(realmNeed()*0.001*typeM*mult));
     S.essence+=gain; if(S.lifetime===undefined)S.lifetime=0; S.lifetime+=gain;
     logEvent("战斗胜利，灵力 +"+fmt(gain)+"（难度×"+mult+"）",'sys');
-    maybeDropEgg(exp.area, exp.floor); // v31 探索战斗胜利出蛋判定
     if(b.kind==="fight"){
       exp.loot.push({kind:"stone",tier:st.tier,qty:st.qty});
       if(Math.random()<0.5){ const m=areaMat(exp.area,exp.floor); exp.loot.push({kind:"mat",id:m.id,name:m.name,qty:1}); logEvent("击败妖兽，缴获灵石与"+m.name,'sys'); } else logEvent("击败妖兽，缴获灵石",'sys');
     } else if(b.kind==="elite"){
+      maybeDropEgg(exp.area, exp.floor); // v31 仅精英守卫/秘境BOSS胜利判定出蛋（普通妖兽不掉）
       exp.floor++;
       if(exp.floor>=10){ exp.map=genExpMap(exp.floor,exp.area); exp.pos={q:0,r:0}; const hasBoss=Object.keys(exp.map.cells).some(k=>exp.map.cells[k].t==="boss"); logEvent("击败精英守卫！踏入第 10 层·最终层"+(hasBoss?"（BOSS 潜伏其中）":"（发现出口传送）"),'sys'); }
       else { exp.map=genExpMap(exp.floor,exp.area); exp.pos={q:0,r:0}; logEvent("击败精英守卫！深入第 "+exp.floor+" 层",'sys'); }
-    } else if(b.kind==="boss"){ logEvent("击败秘境 BOSS！",'sys'); expFinish(); return; }
+    } else if(b.kind==="boss"){ maybeDropEgg(exp.area, exp.floor); logEvent("击败秘境 BOSS！",'sys'); expFinish(); return; }
   }
   expRevealNearby();
   save(); renderExpPanel(); renderStats();
@@ -3645,7 +3652,7 @@ function renderBattleUnit(id,u,side){
 
 /* 技能效果描述：状态特效 → 中文 */
 const EF_TXT={
-  pierce:(v)=>"破甲"+v+"%", bind:(v)=>"束缚"+v+"%", reflectHit:(v)=>"反伤"+v+"%", heal:(v)=>"回血"+v+"%",
+  pierce:(v)=>"破甲"+v+"%", bind:(v)=>"束缚"+v+"%", reflectHit:(v)=>"反伤"+v+"%", heal:(v)=>"回血"+v+"%", regen:(v)=>"持续回血"+v+"%",
   dodge:(v)=>"闪避+"+v+"%", slow:(v)=>"减速"+v+"%", freeze:()=>"冰冻", dmgRed:(v)=>"减伤"+v+"%",
   immune:()=>"免负面", burn:(v)=>"灼烧"+Math.round(v*100)+"%攻", atkUp:(v)=>"攻+"+v+"%",
   sacrifice:(v)=>"自损"+v+"%", nextDmg:(v)=>"下次伤害+"+v+"%", stun:()=>"眩晕", reflect:(v)=>"反伤"+v+"%",
@@ -4325,7 +4332,7 @@ const MANUAL_SECTIONS=[
     {h:"注意事项", b:"探索结束弹出收获详细总结；BOSS 战力≈该境界×危险系数（洞天1.15/禁区1.25/战场1.35/跨界1.5），战力不足建议先强化装备与神通。"},
   ]},
   {t:"灵兽", ic:"🐉", secs:[
-    {h:"怎么得蛋", b:"探索秘境战斗胜利低概率出蛋：区域基础出蛋率（洞天福地 2.0% / 原始禁区 3.5% / 上古战场 5.0% / 跨界空间 6.5%）+ 层数×0.15%，封顶 10%。层数越高蛋品质越好；筑基后首次探索战斗胜利必得「木灵蛋」。蛋入蛋仓，在「灵兽」页放入孵化槽孵化。"},
+    {h:"怎么得蛋", b:"击败精英守卫或秘境BOSS低概率出蛋（普通妖兽不掉）：区域基础出蛋率（洞天福地 2.0% / 原始禁区 3.5% / 上古战场 5.0% / 跨界空间 6.5%）+ 层数×0.15%，封顶 10%。层数越高蛋品质越好；筑基后首次击败精英守卫必得「木灵蛋」。蛋入蛋仓，在「灵兽」页放入孵化槽孵化。"},
     {h:"蛋与孵化", b:"共 10 种蛋（木灵/土灵/水灵/火灵/金灵/风灵/冰灵/雷灵/毒灵/阴阳），稀有度 1-10，孵化时长 2~24 小时逐蛋递增（在线离线均计时）。孵化槽默认 1 个，可扩容至 4 槽（100 下品 / 1 中品 / 10 中品）。每颗蛋固定对应 3 档灵兽（凡/灵/圣各一种），破壳按当前概率掷档位，共可收集 30 种。"},
     {h:"温养", b:"入槽前可用材料温养（0-100 度）：偏好类别材料 +1×材料稀有度、其余 +0.5×材料稀有度；灵兽精魄每枚 +1。温养度越高，孵出灵品/圣品概率越高（三档合计恒 100%）；满温养孵出的灵兽初始饱食/亲密 +20（至 100）。"},
     {h:"属性与出战", b:"修炼型提供修炼速度 +1%×稀有度、攻击型提供战力 +2%×稀有度；圣品（稀9-10）额外带灵气/会心/突破/减伤 +3% 特性（稀10 两条，阴阳圣兽修炼+10% 且战力+10%）。出战上限按境界解锁：筑基 1 / 金丹 2 / 元婴 3 只，炼气不可出战；孵出灵兽自动上阵至上限。"},
