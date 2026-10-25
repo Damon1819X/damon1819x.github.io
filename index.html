@@ -1164,15 +1164,21 @@ const EVENTS=[
   {id:"rain", nm:"天降灵雨", good:true,  txt:"灵雨润泽，60秒内修炼速度翻倍！", fx:()=>{ evt.prodBoost=Date.now()+60000; }},
   {id:"heart",nm:"心魔来袭", good:false, txt:"心魔突袭，灵台蒙尘！300秒内修炼速度减半，且灵气散失一成。", fx:()=>{ evt.prodPenalty=Date.now()+300000; const l=Math.floor(S.essence*0.1); if(l>0){ S.essence-=l; logEvent("心魔之下，灵气散失 "+fmt(l)+"！",'warn'); } }},
   {id:"meet", nm:"偶得奇遇", good:true,  txt:"深山偶遇仙缘，收获一笔灵石！", fx:()=>{ const r=Math.random()*100; if(r<96){ const n=Math.max(1,Math.floor(1+Math.random()*50)); S.stoneL+=n; logEvent("奇遇得财，下品灵石 +"+fmt(n)+"！",'sys'); } else if(r<98.5){ const n=Math.floor(100+Math.random()*900); S.stoneL+=n; logEvent("奇遇得财，下品灵石 +"+fmt(n)+"！",'sys'); } else if(r<99.3){ const n=Math.floor(10+Math.random()*90); S.stoneM+=n; logEvent("奇遇得财，中品灵石 +"+fmt(n)+"！",'sys'); } else if(r<99.99){ const n=Math.floor(1+Math.random()*9); S.stoneH+=n; logEvent("奇遇得财，上品灵石 +"+fmt(n)+"！",'sys'); } else { S.stoneT+=1; logEvent("惊天奇遇！极品灵石 +1！",'sys'); } }},
-  {id:"dawn", nm:"一朝顿悟", good:true,  txt:"顿悟天道，60秒内突破成功率大增！", fx:()=>{ evt.breakBoost=Date.now()+60000; }},
+  {id:"dawn", nm:"一朝顿悟", good:true,  txt:"顿悟天道，60秒内修炼速度翻倍、突破成功率+10%！", fx:()=>{ evt.prodBoost=Date.now()+60000; evt.breakBoost=Date.now()+60000; evt.breakBoostAmt=0.10; }},
   {id:"tide", nm:"灵气潮汐", good:true,  txt:"灵气潮涌，30秒内修炼速度提升三倍！", fx:()=>{ evt.prodBoost3=Date.now()+30000; }},
   {id:"herb", nm:"仙草现世", good:true,  txt:"荒山仙草现世，采得数株灵药！", fx:()=>{ const hs=MATS.filter(m=>m.cat==="草药"); for(let i=0;i<3;i++){ const h=hs[Math.floor(Math.random()*hs.length)]; S.mats[h.id]=(S.mats[h.id]||0)+1; } }},
   {id:"beast",nm:"妖兽袭营", good:false, txt:"妖兽夜袭，撞散储物袋，损失部分材料！", fx:()=>{ const m2=MATS.filter(m=>(S.mats[m.id]||0)>0); if(m2.length){ for(let i=0;i<2;i++){ const m=m2[Math.floor(Math.random()*m2.length)]; const lose=Math.min((S.mats[m.id]||0),3); S.mats[m.id]=(S.mats[m.id]||0)-lose; logEvent("妖兽劫走 "+m.name+" ×"+lose+"！",'warn'); } } }},
   {id:"ruin", nm:"上古秘藏", good:true,  txt:"发掘上古秘藏，获得一批中品灵石！", fx:()=>{ const n=Math.floor(5+Math.random()*45); S.stoneM+=n; logEvent("秘藏开掘，中品灵石 +"+fmt(n)+"！",'sys'); }},
   {id:"drought",nm:"灵气枯竭", good:false, txt:"地脉枯竭，120秒内修炼速度降至六成。", fx:()=>{ evt.prodLow=Date.now()+120000; }},
-  {id:"dao", nm:"大道共鸣", good:true,  txt:"大道共鸣，90秒内突破成功率大增！", fx:()=>{ evt.breakBoost=Date.now()+90000; }},
+  {id:"dao", nm:"大道共鸣", good:true,  txt:"大道共鸣，90秒内突破成功率大增！", fx:()=>{ evt.breakBoost=Date.now()+90000; evt.breakBoostAmt=0.30; }},
+  /* v30.8.7 新增事件：2 吉 + 3 凶 */
+  {id:"hunt", nm:"路遇妖兽", good:true,  txt:"路遇妖兽，将其斩杀，夺得妖兽内丹！", fx:()=>{ const n=2+Math.floor(Math.random()*3); S.mats.core=(S.mats.core||0)+n; logEvent("斩杀妖兽，获得妖兽内丹 ×"+n+"！",'sys'); }},
+  {id:"forge", nm:"炉火纯青", good:true,  txt:"丹炉火旺，60秒内制造速度翻倍！", fx:()=>{ evt.craftBoost=Date.now()+60000; }},
+  {id:"wander", nm:"心猿意马", good:false, txt:"心猿意马，灵台不稳！120秒内突破成功率-20%。", fx:()=>{ evt.breakPenalty=Date.now()+120000; }},
+  {id:"thief", nm:"灵石盗匪", good:false, txt:"灵石盗匪夜袭，劫走部分下品灵石！", fx:()=>{ const l=Math.ceil((S.stoneL||0)*0.05); if(l>0){ S.stoneL-=l; logEvent("灵石被盗匪劫走 "+fmt(l)+" 下品灵石！",'warn'); } }},
+  {id:"stampede", nm:"百兽奔逃", good:false, txt:"灵兽受惊奔逃，全体出战灵兽饱食度-5！", fx:()=>{ (S.pets||[]).forEach(it=>{ it.sat=Math.max(0,it.sat-5); }); logEvent("百兽奔逃，灵兽饱食度-5",'warn'); }},
 ];
-const evt={breakBoost:0,prodBoost:0,prodBoost3:0,prodPenalty:0,prodLow:0,lastEvent:0,nextAt:Date.now()+180000+Math.random()*420000};
+const evt={breakBoost:0,breakBoostAmt:0.30,prodBoost:0,prodBoost3:0,prodPenalty:0,prodLow:0,craftBoost:0,breakPenalty:0,lastEvent:0,nextAt:Date.now()+180000+Math.random()*420000};
 
 /* ================================================================
    状态 / 存档
@@ -1408,7 +1414,8 @@ function realmNeed(){
 function breakChance(){
   let base = rootBreakCap() + UPS[3].fx(S.ups.break) + buffEffSum("brk"); // 灵根×10% + 突破升级 + 丹药buff，上限80%
   base += eqSum("brk") + petSum("brk");
-  if(evt.breakBoost>Date.now()) base += 0.30;
+  if(evt.breakBoost>Date.now()) base += (evt.breakBoostAmt||0.30); // 顿悟+10% / 大道共鸣+30%
+  if(evt.breakPenalty>Date.now()) base -= 0.20; // v30.8.7 心猿意马：突破成功率-20%
   return Math.min(0.80, base);
 }
 function offlineEfficiency(){ return 0.5 + UPS[4].fx(S.ups.offline) + rootOfflineBonus(); }
@@ -1533,7 +1540,7 @@ function craftItem(r){
   if(S.yunning){ banner("运功中不可制造，请先停止运功"); return; }
   if(Object.keys(S.collect).some(k=>S.collect[k]!==undefined)){ banner("采集挂机中不可制造，请先停止挂机采集"); return; }
   for(const k in r.need) S.mats[k]-=r.need[k];
-  S.making={rId:r.id, end:Date.now()+craftTime(r)*1000};
+  S.making={rId:r.id, end:Date.now()+(evt.craftBoost>Date.now()?craftTime(r)*0.5:craftTime(r))*1000}; // v30.8.7 炉火纯青：制造时间减半
   sound(560,.12); logEvent("开始炼制「"+r.name+"」，耗时 "+craftTime(r)+" 秒",'sys','craft');
   banner("开始炼制「"+r.name+"」（"+craftTime(r)+" 秒）");
   checkAchievements(); render();
