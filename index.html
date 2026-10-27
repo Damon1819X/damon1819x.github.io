@@ -355,9 +355,11 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 @keyframes castPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7);}18%{opacity:1;transform:translate(-50%,-50%) scale(1.05);}72%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-62%) scale(1);}}
 /* ================= 灵兽动图美术管线（v32.1） ================= */
 .petArt{width:64px;height:64px;object-fit:contain;vertical-align:middle;
-  filter:drop-shadow(0 6px 14px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(224,185,94,.18));
-  animation:petFloat 4s ease-in-out infinite;transition:transform .22s ease-out,filter .22s;}
-.item:hover .petArt{transform:translateY(-2px) scale(1.06);}
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(224,185,94,.18));}
+.item .ic.petIc{width:64px;min-width:64px;flex:0 0 64px;}
+.petBtns{display:flex;gap:6px;flex-wrap:wrap;flex:0 0 100%;margin-top:6px;}
+.item.petCard{flex-wrap:wrap;}
+.item:hover .petArt{filter:drop-shadow(0 6px 14px rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(224,185,94,.35));}
 @keyframes petFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
 .petPh{position:relative;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;
   border-radius:14px;font-size:28px;line-height:1;
@@ -527,11 +529,11 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v31.10（坊市/拍卖功法技能多本刷出 + 拍卖计时修复：整点大型、半点小型各15分钟）
+   修仙挂机 · 问道长生  v31.11（坊市每刷1功法+1技能、拍卖每场1功法，黄庭经下架停售）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v31.10";
+const VERSION = "v31.11";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -1297,9 +1299,10 @@ function load(){
   if(d && d.realm!==undefined){
     S=d; normalizeState();
     const away=(Date.now()-S.lastSaved)/1000;
+    let sec=0; // v30.9 修复：sec 提到 if 块外，否则块外 petTick(sec) 抛 ReferenceError 中断 load()，导致界面不初始化
     if(away>10 && S.root){
       const cap=CFG.offlineCapHours*3600;
-      const sec=Math.max(0,Math.min(away,cap));
+      sec=Math.max(0,Math.min(away,cap));
       const eff=offlineEfficiency();
       // 灵气默认暂停：未运功不产灵气；离线仅补发挂机采集的材料
       for(const c in S.collect){
@@ -1318,8 +1321,9 @@ function load(){
       }
       if(away>10) showModal("闭关归来","离开期间挂机采得若干材料。\n（灵气产出默认暂停，未运功不产灵气）\n离线时长 "+fmt(sec)+" 秒 · 采集效率 "+Math.round(eff*100)+"%");
     }
-    if(S.pets&&S.pets.length) petTick(sec); // v31 离线养成结算：饱食/亲密/叛变（孵化用绝对时间戳自然推进）
+    if(S.pets&&S.pets.length) petTick(sec);
     S.lastSaved=Date.now();
+    save(); // v30.9：离线结算后立即写回，避免下次 away 仍从旧值计算
     return;
   }
   S=newState();
@@ -1566,7 +1570,7 @@ function craftItem(r){
 function useTres(r){
   if(!r || (S.tres[r.id]||0)<1) return;
   if(r.isPu){
-    if((S.servants.length+(S.tres[r.id]||0))>=5){ banner("傀儡已达上限（5/5）"); return; }
+    if(S.servants.length>=5){ banner("傀儡已达上限（5/5）"); return; } // v30.9：只看激活数，库存傀儡成品应可激活至 5/5
     S.tres[r.id]--;
     S.servants.push({lv:r.puLv||"丁", task:null, prog:0, curR:null});
     const nm=LV_NM[r.puLv||"丁"]||"丁";
@@ -2262,7 +2266,7 @@ function renderPets(body){
   if(!S.eggs.length){ const e=document.createElement("div");e.className="hint";e.textContent="蛋仓空空如也。击败精英守卫或秘境BOSS有概率掉落蛋，筑基后首次击败精英守卫必得木灵蛋。";body.appendChild(e); }
   (S.eggs||[]).forEach(egg=>{
     const ed=EGG_BY_ID[egg.id];
-    const item=document.createElement("div");item.className="item";
+    const item=document.createElement("div");item.className="item petCard";
     const w=Math.floor((egg.warm||0)*10)/10;
     item.innerHTML=`<div class="ic">${icOf(ed,46)}</div><div class="body">
       <div class="nm">${ed.name} <span class="cat">稀${ed.rarity}</span> <span style="font-size:11px;color:var(--mystic)">偏好 ${ed.pref} · 孵化 ${Math.round(ed.hatchSec/3600)} 小时</span></div>
@@ -2270,9 +2274,11 @@ function renderPets(body){
       <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px;margin:4px 0"><div style="height:100%;width:${w}%;background:linear-gradient(90deg,#45d0a0,#e0b95e);border-radius:3px"></div></div>
     </div>`;
     const wfull=(egg.warm||0)>=100;
-    item.appendChild(buyBtn(!wfull,()=>warmPickModal(egg.uid,null),wfull?"温养已满":"温养"));
-    item.appendChild(buyBtn(!wfull&&S.petEss>=1,()=>warmByEss(egg.uid),wfull?"精魄已满":"精魄+1"));
-    item.appendChild(buyBtn(true,()=>startHatch(egg.uid),"放入孵化槽"));
+    const bwrap=document.createElement("div");bwrap.className="petBtns";
+    bwrap.appendChild(buyBtn(!wfull,()=>warmPickModal(egg.uid,null),wfull?"温养已满":"温养"));
+    bwrap.appendChild(buyBtn(!wfull&&S.petEss>=1,()=>warmByEss(egg.uid),wfull?"精魄已满":"精魄+1"));
+    bwrap.appendChild(buyBtn(true,()=>startHatch(egg.uid),"放入孵化槽"));
+    item.appendChild(bwrap);
     body.appendChild(item);
   });
   const hs=document.createElement("div");hs.className="sectionTitle";hs.textContent="孵化槽（已解锁 "+(S.hatchSlots||1)+"/4）";body.appendChild(hs);
@@ -2310,20 +2316,22 @@ function renderPets(body){
     if(b.type==="攻")effParts.push("战力 +"+Math.round(b.attr*c)+"%"); else effParts.push("修炼 +"+Math.round(b.attr*c)+"%");
     if(b.extra&&b.extra.atk)effParts.push("战力 +"+Math.round(b.extra.atk*c)+"%");
     if(b.traits){ if(b.traits.ess)effParts.push("灵气 +"+Math.round(b.traits.ess*c)+"%"); if(b.traits.crit)effParts.push("会心 +"+Math.round(b.traits.crit*c)+"%"); if(b.traits.brk)effParts.push("突破 +"+Math.round(b.traits.brk*c)+"%"); if(b.traits.dmgR)effParts.push("减伤 +"+Math.round(b.traits.dmgR*c)+"%"); }
-    const item=document.createElement("div");item.className="item";
+    const item=document.createElement("div");item.className="item petCard";
     const betray=it.betrayAt?("　<span style='color:#d9534f'>⚠ 叛变倒计时 "+Math.max(1,Math.ceil((it.betrayAt-Date.now())/3600000))+" 小时</span>"):"";
-    item.innerHTML=`<div class="ic">${petArtHtml(b)}</div><div class="body">
+    item.innerHTML=`<div class="ic petIc">${petArtHtml(b)}</div><div class="body">
       <div class="nm">${b.name} <span class="cat" style="color:${bandC}">${b.band}品·稀${b.rarity}</span> ${active?'<span style="font-size:11px;color:var(--gold)">[出战]</span>':''}</div>
       <div class="ds">${b.type==="攻"?"攻击型":"修炼型"} · ${petTraitText(b)}${betray}</div>
       <div style="display:flex;gap:8px;margin-top:4px;font-size:11px;color:var(--ink-dim)"><span>饱食 <span id="petSat${i}">${Math.floor(it.sat)}</span>/100</span><span>亲密 <span id="petInt${i}">${Math.floor(it.int)}</span>/100</span></div>
       <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px;margin:2px 0"><div id="petSatBar${i}" style="height:100%;width:${it.sat}%;background:linear-gradient(90deg,#45d0a0,#e0b95e);border-radius:3px"></div></div>
       <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px"><div id="petIntBar${i}" style="height:100%;width:${it.int}%;background:linear-gradient(90deg,#4aa8ff,#9aa5f0);border-radius:3px"></div></div>
     </div>`;
-    if(PET_VID[it.id]){ const vb=buyBtn(true,()=>playPetVideo(it.id),"▶ 动态"); item.appendChild(vb); }
-    item.appendChild(buyBtn(true,()=>togglePetActive(it.uid),active?"休战":"出战"));
-    item.appendChild(buyBtn(true,()=>feedPickModal(it.uid),"喂食"));
-    item.appendChild(buyBtn(true,()=>refinePet(it.uid),"炼化 · 得"+b.rarity+"精魄"));
-    item.appendChild(buyBtn(true,()=>releasePet(it.uid),"放生 · "+priceLText(splitPriceL(b.rarity*10100))));
+    const bw2=document.createElement("div");bw2.className="petBtns";
+    if(PET_VID[it.id]) bw2.appendChild(buyBtn(true,()=>playPetVideo(it.id),"▶ 动态"));
+    bw2.appendChild(buyBtn(true,()=>togglePetActive(it.uid),active?"休战":"出战"));
+    bw2.appendChild(buyBtn(true,()=>feedPickModal(it.uid),"喂食"));
+    bw2.appendChild(buyBtn(true,()=>refinePet(it.uid),"炼化 · 得"+b.rarity+"精魄"));
+    bw2.appendChild(buyBtn(true,()=>releasePet(it.uid),"放生 · "+priceLText(splitPriceL(b.rarity*10100))));
+    item.appendChild(bw2);
     body.appendChild(item);
   });
 }
@@ -2654,7 +2662,7 @@ function sellTres(qty){
   sound(520,.15); save(); render();
 }const SHOP_W={1:16,2:8,3:4,4:2,5:1,6:0.5}; // 稀有度→刷新权重（越稀有越低，坊市仅 1~6）
 const SHOP_STOCK={1:10,2:8,3:5,4:3,5:1,6:1}; // 稀有度→库存（越稀有越少，最多10最少1）
-function shopPool(){ const a=[]; MATS.forEach(m=>{if(m.rarity<=6)a.push({kind:"mat",obj:m});}); CRAFT.forEach(c=>c.rec.forEach(r=>{if(r.rarity<=6&&!r.slot)a.push({kind:"tres",obj:r});})); GONGFAS.forEach(g=>{if(g.rarity<=6)a.push({kind:"gong",obj:g});}); SPELLS.forEach(s=>{a.push({kind:"skill",obj:s});}); return a; }
+function shopPool(){ const a=[]; MATS.forEach(m=>{if(m.rarity<=6)a.push({kind:"mat",obj:m});}); CRAFT.forEach(c=>c.rec.forEach(r=>{if(r.rarity<=6&&!r.slot)a.push({kind:"tres",obj:r});})); GONGFAS.forEach(g=>{if(g.id!=="yj"&&g.rarity<=6)a.push({kind:"gong",obj:g});}); SPELLS.forEach(s=>{a.push({kind:"skill",obj:s});}); return a; }
 function spellRarityOf(s){ // v31.10 技能无 rarity 字段，按耗灵档位推定稀有度（坊市/拍卖统一口径）
   if(s.cost>=30) return 7; if(s.cost>=20) return 6; if(s.cost>=12) return 5; return 4;
 }
@@ -2663,11 +2671,12 @@ function refreshShop(now){
   const pool=shopPool();
   const chosen=new Set();
   const list=[];
-  // v31.10 每次刷新保证至少 2 本不同功法 + 2 本不同技能，其余槽位全池随机
+  // v31.11 每次刷新只出 1 本功法 + 1 本技能，其余槽位全池随机
   const take=(src,need)=>{ for(let i=0;i<need && src.length;i++){ let pick=weightedShopPick(src); let guard=0; while(chosen.has(pick.obj.id) && guard<300){ pick=weightedShopPick(src); guard++; } if(chosen.has(pick.obj.id)) continue; chosen.add(pick.obj.id); list.push({kind:pick.kind, id:pick.obj.id, stock:(SHOP_STOCK[pick.obj.rarity]||1)}); } };
-  take(pool.filter(p=>p.kind==="gong"),2);
-  take(pool.filter(p=>p.kind==="skill"),2);
-  for(let i=list.length;i<10 && chosen.size<pool.length;i++){ let pick=weightedShopPick(pool); let guard=0; while(chosen.has(pick.obj.id) && guard<300){ pick=weightedShopPick(pool); guard++; } if(chosen.has(pick.obj.id)) continue; chosen.add(pick.obj.id); list.push({kind:pick.kind, id:pick.obj.id, stock:(SHOP_STOCK[pick.obj.rarity]||1)}); }
+  take(pool.filter(p=>p.kind==="gong"),1);
+  take(pool.filter(p=>p.kind==="skill"),1);
+  const fill=pool.filter(p=>p.kind!=="gong"&&p.kind!=="skill"); // v31.11 补货只出材料/成品，功法技能恒各1本
+  for(let i=list.length;i<10 && chosen.size<fill.length;i++){ let pick=weightedShopPick(fill); let guard=0; while(chosen.has(pick.obj.id) && guard<300){ pick=weightedShopPick(fill); guard++; } if(chosen.has(pick.obj.id)) continue; chosen.add(pick.obj.id); list.push({kind:pick.kind, id:pick.obj.id, stock:(SHOP_STOCK[pick.obj.rarity]||1)}); }
   S.shop={list, until:now+10*60*1000};
 }
 function shopItem(id){ const m=MATS_BY_ID[id]; if(m) return {kind:"mat",obj:m}; const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g}; const s=SPELLS_BY_ID[id]; if(s) return {kind:"skill",obj:s}; const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r}; return null; }
@@ -2679,7 +2688,7 @@ function auctionPool(minR,maxR){
   // v30.8 旧奇珍库已清空不再上架；恢复三件装备可拍卖（青莲宝座/定灵珠/星辰鉴）
   ["qinglian","dingling","xingtian"].forEach(id=>{ const r=REC_BY_ID[id]; if(r && r.rarity>=minR && r.rarity<=maxR) a.push({kind:"tres",obj:r}); });
   CRAFT.forEach(c=>c.rec.forEach(r=>{ if(r.rarity>=minR&&r.rarity<=maxR && !r.slot) a.push({kind:"tres",obj:r}); }));
-  GONGFAS.forEach(g=>{ if(g.rarity>=minR&&g.rarity<=maxR) a.push({kind:"gong",obj:g}); });
+  GONGFAS.forEach(g=>{ if(g.id!=="yj" && g.rarity>=minR&&g.rarity<=maxR) a.push({kind:"gong",obj:g}); }); // v31.11 黄庭经不再出售
   SPELLS.forEach(s=>{ const r=spellRarityOf(s); if(r>=minR&&r<=maxR) a.push({kind:"skill",obj:s}); }); // v31.10 拍卖池加入技能
   return a;
 }
@@ -2745,13 +2754,13 @@ function refreshAuction(now, startAt){
   const minR = large?5:4, maxR = large?8:6;
   const n = large?10:5;
   const pool=auctionPool(minR,maxR);
-  // v31.10 保证功法/技能可同时多本：大型至少 2 功法+2 技能、小型至少 1 功法+1 技能
+  // v31.11 拍卖会每场只刷 1 本功法；技能保底：大型 2 本、小型 1 本
   const picked=[];
   const take=(src,need)=>{ for(let i=0;i<need && src.length;i++){ picked.push(src.splice(Math.floor(Math.random()*src.length),1)[0]); } };
-  take(pool.filter(p=>p.kind==="gong"), large?2:1);
+  take(pool.filter(p=>p.kind==="gong"), 1);
   take(pool.filter(p=>p.kind==="skill"), large?2:1);
   const taken=new Set(picked.map(p=>p.kind+":"+p.obj.id));
-  const rest=pool.filter(p=>!taken.has(p.kind+":"+p.obj.id));
+  const rest=pool.filter(p=>p.kind!=="gong"&&!taken.has(p.kind+":"+p.obj.id)); // v31.11 补货不含功法，拍卖每场恒1本功法
   [...rest].sort(()=>Math.random()-0.5).slice(0,Math.max(0,n-picked.length)).forEach(p=>picked.push(p));
   S.auction={list:picked.map(p=>{const base=Math.max(1,Math.ceil(p.obj.value*2)); return {kind:p.kind,id:p.obj.id,base:base,bid:base,bidder:null,pPaid:0};}), mode:large?"大型":"小型", start:st, end:st+15*60*1000, live:true, npcLast:st, settled:false};
   logEvent("拍卖会开场："+S.auction.mode+"拍卖（"+S.auction.list.length+" 件 · 15 分钟竞价）",'sys','trade');
