@@ -620,7 +620,7 @@ const GONGFAS = [
 const MATS = [
   {id:"skin", name:"妖狼皮",  cat:"妖兽材料", ic:"🐺", rarity:1, value:5,  ds:"妖狼之皮，可制甲。"},
   {id:"bone", name:"玄兽骨",  cat:"妖兽材料", ic:"🦴", rarity:1, value:8,  ds:"妖兽骨骼，坚固温润。"},
-  {id:"core", name:"妖兽内丹", cat:"妖兽材料", ic:"💠", rarity:3, value:120,ds:"妖兽精华，价值不菲。"},
+  {id:"core", name:"妖兽内丹", cat:"妖兽材料", ic:"💠", rarity:2, value:120,ds:"妖兽精华，价值不菲。"},
   {id:"tort", name:"玄龟甲",  cat:"妖兽材料", ic:"🐢", rarity:2, value:35, ds:"玄龟甲壳，坚硬异常。"},
   {id:"fea",  name:"赤羽",    cat:"妖兽材料", ic:"🪶", rarity:1, value:12, ds:"赤羽火鸟之羽，轻灵。"},
   {id:"jiao", name:"蛟龙鳞",  cat:"妖兽材料", ic:"🐍", rarity:3, value:150,ds:"蛟龙逆鳞，蕴藏龙气。"},
@@ -1319,7 +1319,16 @@ function load(){
         for(let i=0;i<n2;i++){ const m=randMatOfCat(sv.task.t, sv.task.zone); if(m) S.mats[m.id]=(S.mats[m.id]||0)+1; }
         sv.prog=Math.max(0,sec-n2*iv2);
       }
-      if(away>10) showModal("闭关归来","离开期间挂机采得若干材料。\n（灵气产出默认暂停，未运功不产灵气）\n离线时长 "+fmt(sec)+" 秒 · 采集效率 "+Math.round(eff*100)+"%");
+      // v30.10：离线前在运功则离线期间继续结算灵力
+      let essenceGain=0;
+      if(S.yunning){ essenceGain=prodPerSec()*eff*sec; S.essence+=essenceGain; S.lifetime+=essenceGain; }
+      if(away>10){
+        const capped = away>cap;
+        const head = S.yunning
+          ? "离开期间继续运功修炼，获得灵力 +"+fmt(essenceGain)+"，并采得若干材料。\n"
+          : "离开期间挂机采得若干材料。\n（灵气产出默认暂停，未运功不产灵气）\n";
+        showModal("闭关归来", head+"离线时长 "+fmt(sec)+" 秒 · "+(S.yunning?"修炼":"采集")+"效率 "+Math.round(eff*100)+(capped?"%\n（离线收益上限 12 小时，超出部分不计）":"%"));
+      }
     }
     if(S.pets&&S.pets.length) petTick(sec);
     S.lastSaved=Date.now();
