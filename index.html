@@ -423,7 +423,10 @@ button:hover:not(:disabled){filter:brightness(1.08);}
         <div class="mb">突破所需灵力<b id="breakNeed">0</b></div>
       </div>
       <div style="font-size:13px;color:var(--ink)" id="essenceProg">0 / 0</div>
-      <button class="bigBtn" id="breakBtn" disabled>灵力不足，继续积累</button>
+      <div id="breakWrap" style="position:relative;margin-top:8px;border-radius:12px;overflow:hidden;background:var(--panel2)">
+        <div id="breakProg" style="position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(135deg,rgba(184,145,42,.5),rgba(255,215,120,.45));transition:width .35s ease"></div>
+        <button class="bigBtn" id="breakBtn" disabled style="position:relative;margin-top:0;background:transparent">灵力不足，继续积累</button>
+      </div>
       <button class="bigBtn" id="flyBtn" style="display:none;background:linear-gradient(135deg,#7b5cff,#4a2fb0);color:#fff">飞升（需 0 灵力）</button>
       <button class="bigBtn" id="rollBtn">点击刷取灵根</button>
       <div id="rollTip" style="font-size:12px;color:var(--ink-dim);margin-top:4px">开局免费刷 10 次 · 单灵根修炼最快 / 突破最易（最高10%）· 变异灵根各有加成</div>
@@ -529,11 +532,11 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v31.11（坊市每刷1功法+1技能、拍卖每场1功法，黄庭经下架停售）
+   修仙挂机 · 问道长生  v31.13（拍卖悬浮详情显示当前持有数量）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v31.11";
+const VERSION = "v31.13";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -1736,7 +1739,10 @@ function renderStats(){
   const bb=$("breakBtn");
   const aff=S.essence>=need;
   bb.disabled=!aff;
-  bb.textContent = aff? ("冲击突破（"+Math.round(breakChance()*100)+"%·失败损失40%所需灵力）") : "灵力不足，继续积累";
+  const pct=need>0?Math.min(100,S.essence/need*100):0;
+  const bp=$("breakProg"); if(bp) bp.style.width=pct+"%";
+  if(aff){ bb.style.background=""; bb.textContent="冲击突破（"+Math.round(breakChance()*100)+"%·失败损失40%所需灵力）"; }
+  else { bb.style.background="transparent"; bb.textContent="灵力不足 · 已积累 "+pct.toFixed(1)+"%"; }
   const fb=$("flyBtn");
   if(fb){
     const canFly=S.realm>=4; // 化神期及以上开启飞升之门
@@ -2175,17 +2181,24 @@ function feedPickModal(uid){
   const mask=document.createElement("div");mask.className="eqPickMask";mask.onclick=(ev)=>{ if(ev.target===mask) mask.remove(); };
   const box=document.createElement("div");box.className="eqPickBox";
   const t=document.createElement("div");t.className="eqTitle";t.textContent="喂养「"+b.name+"」· 选择材料";box.appendChild(t);
-  const list=document.createElement("div");list.className="eqList";
-  const opts=Object.keys(S.mats).filter(k=>(S.mats[k]||0)>0);
-  if(!opts.length){ const e=document.createElement("div");e.className="hint";e.textContent="须弥空间中没有材料，先去采集或探索。";list.appendChild(e); }
-  opts.forEach(k=>{
-    const m=MATS_BY_ID[k]; if(!m) return;
-    const row=document.createElement("div");row.className="eqPickRow";
-    row.innerHTML=`<span class="nm">${m.ic||""} ${m.name}<div class="sub">${m.cat} · 稀${m.rarity} · 持有 ${S.mats[k]}</div></span><span class="sub">饱食+${10*m.rarity} / 亲密+${2*m.rarity}</span>`;
-    const fb=buyBtn(true,()=>{ mask.remove(); feedPetByMat(uid,k); },"喂养"); fb.className="goldBtn"; row.appendChild(fb);
-    list.appendChild(row);
-  });
-  box.appendChild(list);
+  const stat=document.createElement("div");stat.className="hint";stat.style.cssText="margin:6px 0 8px;font-size:12px;color:var(--jade)";box.appendChild(stat);
+  const list=document.createElement("div");list.className="eqList";box.appendChild(list);
+  function refresh(){
+    stat.textContent="饱食 "+Math.floor(it.sat)+"/100 · 亲密 "+Math.floor(it.int)+"/100";
+    list.innerHTML="";
+    const full=it.sat>=100&&it.int>=100;
+    if(full){ const e=document.createElement("div");e.className="hint";e.textContent="饱食与亲密均已满，无需再喂养。";list.appendChild(e); }
+    const opts=Object.keys(S.mats).filter(k=>(S.mats[k]||0)>0&&MATS_BY_ID[k]);
+    if(!opts.length&&!full){ const e=document.createElement("div");e.className="hint";e.textContent="须弥空间中没有材料，先去采集或探索。";list.appendChild(e); }
+    opts.forEach(k=>{
+      const m=MATS_BY_ID[k];
+      const row=document.createElement("div");row.className="eqPickRow";
+      row.innerHTML=`<span class="nm">${m.ic||""} ${m.name}<div class="sub">${m.cat} · 稀${m.rarity} · 持有 ${S.mats[k]}</div></span><span class="sub">饱食+${10*m.rarity} / 亲密+${2*m.rarity}</span>`;
+      const fb=buyBtn(!full&&(S.mats[k]||0)>=1,()=>{ feedPetByMat(uid,k); refresh(); },"喂养"); fb.className="goldBtn"; row.appendChild(fb);
+      list.appendChild(row);
+    });
+  }
+  refresh();
   const close=document.createElement("div");close.className="btnPair";const cb=buyBtn(true,()=>mask.remove(),"关闭");cb.className="goldBtn";close.appendChild(cb);box.appendChild(close);
   mask.appendChild(box); document.body.appendChild(mask);
 }
@@ -2742,7 +2755,12 @@ function auctionTipHtml(it,en){
   else if(it.kind==="mat"){ /* 材料无效果段 */ }
   else { const useable=!!(r.eff||r.heal); eff=useable?("效果："+effText(r)):"无可使用效果，可出售"; }
   const who=en.bidder==="player"?"你":en.bidder==="npc"?"虚灵商客":"无人出价";
-  return `<b>${r.name}</b>（稀有${it.kind==="skill"?spellRarityOf(r):r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>底价 ${ceilPriceText(en.base)} · 当前 ${ceilPriceText(en.bid)}（${who}）`;
+  let held=""; // v31.13 拍卖悬浮显示当前持有数量
+  if(it.kind==="mat") held=" · 持有 "+fmt(S.mats[en.id]||0);
+  else if(it.kind==="tres") held=" · 持有 "+fmt(S.tres[en.id]||0);
+  else if(it.kind==="gong") held=" · "+(S.gongs.includes(en.id)?"已习得":"未习得");
+  else if(it.kind==="skill") held=" · "+(S.skills.includes(en.id)?"已习得":"未习得");
+  return `<b>${r.name}</b>（稀有${it.kind==="skill"?spellRarityOf(r):r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>底价 ${ceilPriceText(en.base)} · 当前 ${ceilPriceText(en.bid)}（${who}）${held}`;
 }
 function auctionItem(kind,id){
   if(kind==="mat"){ const m=MATS_BY_ID[id]; return m?{kind:"mat",obj:m}:null; }
