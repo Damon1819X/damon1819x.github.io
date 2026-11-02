@@ -508,7 +508,7 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 
 <div class="banner" id="banner"></div>
 <div class="overlay" id="overlay"><div class="modal"><h3 id="mTitle"></h3><div class="mbody" id="mBody"></div><div class="btnPair"><button id="mBtn">确定</button></div></div></div>
-<div class="overlay" id="expOverlay"><div class="modal" style="width:960px;max-width:96vw"><h3 id="expTitle"></h3><div class="expTabs"><button id="expTabExplore" class="expTab active">🗺️ 探索</button><button id="expTabLoot" class="expTab">🎒 战利品</button></div><div id="expViewExplore"><div id="expInfo" style="color:var(--ink-dim);font-size:12px;margin:2px 0 8px"></div><svg id="expSvg" viewBox="0 0 560 500" style="display:block;margin:0 auto;background:rgba(0,0,0,.25);border-radius:12px;width:100%;max-width:640px"></svg><div id="expLegend" style="font-size:12px;color:var(--ink-dim);text-align:center;margin-top:8px;line-height:1.7"></div></div><div id="expViewLoot" style="display:none;font-size:13px;color:var(--ink);min-height:120px;max-height:46vh;overflow-y:auto"></div><div class="btnPair"><button id="expRetreatBtn" style="background:linear-gradient(135deg,#d9534f,#b03a35);color:#fff">撤出秘境（-50%气血 · -50%战利品）</button><button id="expCloseBtn">关闭</button></div></div></div>
+<div class="overlay" id="expOverlay"><div class="modal" style="width:960px;max-width:96vw"><h3 id="expTitle"></h3><div class="expTabs"><button id="expTabExplore" class="expTab active">🗺️ 探索</button><button id="expTabLoot" class="expTab">🎒 战利品</button></div><div id="expViewExplore"><div id="expInfo" style="color:var(--ink-dim);font-size:12px;margin:2px 0 8px"></div><svg id="expSvg" viewBox="0 0 560 500" style="display:block;margin:0 auto;background:rgba(0,0,0,.25);border-radius:12px;width:100%;max-width:640px"></svg><div id="expLegend" style="font-size:12px;color:var(--ink-dim);text-align:center;margin-top:8px;line-height:1.7"></div></div><div id="expViewLoot" style="display:none;font-size:13px;color:var(--ink);min-height:120px;max-height:46vh;overflow-y:auto"></div><div class="btnPair"><button id="expBattleBtn" style="display:none;background:linear-gradient(135deg,#e0b95e,#b8912a);color:#1a1406;font-weight:700">⚔ 返回战斗</button><button id="expRetreatBtn" style="background:linear-gradient(135deg,#d9534f,#b03a35);color:#fff">撤出秘境（-50%气血 · -50%战利品）</button><button id="expCloseBtn">关闭</button></div></div></div>
 <div class="overlay" id="battleOverlay"><div class="modal battleModal" style="width:1000px;max-width:97vw;padding:0;overflow:hidden"><div class="bhTop"><span class="bhChip gold" id="battleTitle">回合 1</span><span class="bhChip" id="battleChipTarget">🔒 锁定</span><span class="bhChip" id="battleChipPlace">秘境</span><span class="bhChip jade" id="battleChipSpirit">灵力</span><span class="bhChip" id="battleChipThreat">无克制</span><span class="bhChip" id="battleChipEffs">我方无状态</span></div><div class="bhBody"><aside class="bhTarget" id="battleTargetCard"></aside><div class="bhStage" id="battleTop"><div class="duelLine"><span id="battleRange">对峙</span></div><div class="unit" id="battlePlayer"></div><div class="unit" id="battleEnemy"></div><div id="castBanner"></div><div class="bhInfo" id="battleInfo"></div></div><aside class="bhPanel"><div class="ph">⚙ 行动 / 法术列表 <em id="battleSlotCap"></em></div><div id="battleActions"></div></aside></div><div class="bhFoot"><div id="battleLog"></div><div class="sideBtns"><button id="battleBagBtn">🎒 背包</button><button id="battleAutoBtn">自动战斗</button><button id="battleCloseBtn" style="display:none">关闭</button></div></div></div></div>
 <div class="overlay" id="battleBagOverlay"><div class="modal" style="width:640px;max-width:95vw"><h3>🎒 战斗背包</h3><div class="mbody" id="battleBagList" style="min-height:80px;max-height:52vh;overflow-y:auto;line-height:1.8"></div><div class="btnPair"><button id="battleBagClose">关闭</button></div></div></div>
 <div class="overlay" id="slotsOverlay"><div class="modal"><h3 id="slotsTitle">— 战前技能槽配置 —</h3><div class="mbody" id="slotsBody" style="line-height:1.9"></div><div class="btnPair"><button id="slotsClose">完成</button></div></div></div>
@@ -867,16 +867,16 @@ function warmHatchByEss(slot){
   S.petEss--; h.warm=Math.min(100,(h.warm||0)+1);
   logEvent("以 1 枚精魄温养孵化中的蛋，温养度 +1",'sys'); sound(520,.1); save(); renderTab();
 }
-/* 喂养：消耗 1 份任意材料，饱食+10×稀有度、亲密+2×稀有度（上限 100），重置叛变倒计时 */
+/* 喂养：消耗 1 份任意材料，饱食+10×稀有度、亲密+1×稀有度（原 +2×稀有度 ÷2 取整；上限 100），重置叛变倒计时 */
 function feedPetByMat(uid, matId){
   const it=petByUid(uid); if(!it) return;
   const m=MATS_BY_ID[matId]; if(!m||(S.mats[matId]||0)<1) return;
   S.mats[matId]--;
   it.sat=Math.min(100, it.sat+10*m.rarity);
-  it.int=Math.min(100, it.int+2*m.rarity);
+  it.int=Math.min(100, it.int+m.rarity);
   it.lastFeedAt=Date.now(); it.betrayAt=null;
   const b=NEW_BEAS_BY_ID[it.id];
-  logEvent("喂养「"+b.name+"」"+m.name+"：饱食 +"+(10*m.rarity)+"、亲密 +"+(2*m.rarity),'sys'); sound(560,.12); save(); renderTab();
+  logEvent("喂养「"+b.name+"」"+m.name+"：饱食 +"+(10*m.rarity)+"、亲密 +"+m.rarity,'sys'); sound(560,.12); save(); renderTab();
 }
 /* 炼化：移除灵兽得精魄（数量=稀有度），图鉴保留；放生：返还 稀有度×(1上品+100下品)（略高于炼化） */
 function refinePet(uid){
@@ -926,10 +926,10 @@ function petTick(dt){
   const now=Date.now();
   for(const it of S.pets){
     const b=NEW_BEAS_BY_ID[it.id]; if(!b) continue;
-    const dec={凡:2,灵:3,圣:4}[b.band]||2;
+    const dec={凡:20,灵:18,圣:15}[b.band]||20;
     it.sat=Math.max(0, it.sat - dec*dt/3600);
-    if(it.sat<=0) it.int=Math.max(0, it.int - dt/3600);
-    else it.int=Math.max(0, it.int - dt/7200);
+    if(it.sat<=0) it.int=Math.max(0, it.int - 15*dt/3600); /* 无饱食：每小时 -15（有饱食的 3 倍） */
+    else it.int=Math.max(0, it.int - 5*dt/3600); /* 有饱食：每小时 -5 */
     if(it.int<=0){
       if(it.betrayAt==null){ it.betrayAt=now + ((it.sat<=0?48:72)*3600*1000); }
       else if(it.betrayAt<=now){ S.pets=S.pets.filter(x=>x.uid!==it.uid); S.petActive=S.petActive.filter(u=>u!==it.uid); logEvent("灵兽「"+b.name+"」叛变逃离（长期未喂养）",'warn'); banner("「"+b.name+"」叛变逃离"); }
@@ -1556,6 +1556,31 @@ function randMatOfCat(cid, z){
 const SV_EFF={甲:0.9,乙:0.75,丙:0.6,丁:0.4}; // 傀儡效率 = 玩家效率（100%）的比例
 const SV_AV={甲:"💎",乙:"⚙️",丙:"🗿",丁:"🪵"}; // 傀儡头像：玉傀 / 铁傀 / 石傀 / 木傀
 const LV_NM={甲:"玉",乙:"铁",丙:"石",丁:"木"}; // 傀儡等级显示名
+/* 傀儡上限：随境界分批开放，合体期释放完毕 5 台 */
+const PU_CAP_STEPS=[{realm:0,cap:1},{realm:2,cap:2},{realm:3,cap:3},{realm:4,cap:4},{realm:6,cap:5}];
+function puCap(){ let c=1; PU_CAP_STEPS.forEach(s=>{ if((S.realm||0)>=s.realm) c=s.cap; }); return c; }
+function puNext(){ const n=PU_CAP_STEPS.find(s=>s.realm>(S.realm||0)); return n?{realm:n.realm,cap:n.cap}:null; }
+function puCapMsg(){ const n=puNext(); return "傀儡已达上限（"+S.servants.length+"/"+puCap()+"）"+(n?("，下一档「"+REALMS[n.realm].full+"」解锁至 "+n.cap+" 台"):"（已满额）"); }
+/* 后三秘境底关 BOSS 掉落：石傀(丙) / 铁傀(乙) / 玉傀(甲)，各 1% */
+const PU_DROP={yl:{lv:"丙",nm:"石傀"},sg:{lv:"乙",nm:"铁傀"},kj:{lv:"甲",nm:"玉傀"}};
+function maybeDropPu(area){
+  const d=PU_DROP[area]; if(!d) return false;
+  if(Math.random()>=0.01) return false;
+  const exp=S.exp;
+  if(S.servants.length<puCap()){
+    S.servants.push({lv:d.lv, task:null, prog:0, curR:null});
+    logEvent("BOSS 遗落「"+d.nm+"」！已收入傀儡栏（"+S.servants.length+"/"+puCap()+"）",'sys');
+    banner("获得 "+d.nm+"！");
+    if(exp) exp.loot.push({kind:"pu",id:d.lv,name:d.nm,qty:1});
+  } else {
+    const comp={yl:50,sg:150,kj:400}[area]||50;   // 满额折算：中品灵石×comp
+    logEvent("BOSS 遗落「"+d.nm+"」，但傀儡已满（"+S.servants.length+"/"+puCap()+"），折算中品灵石 ×"+comp,'warn');
+    banner(d.nm+" 已满额，折算中品灵石 ×"+comp);
+    if(exp) exp.loot.push({kind:"stone",tier:"M",qty:comp});
+  }
+  save(); return true;
+}
+
 const SV_VAL={甲:300000,乙:120000,丙:60000,丁:30000}; // 傀儡价值（下品）：出售自动换算高档灵石
 function craftTime(r){ const v=r.value||1; if(v<200)return 10; if(v<1000)return 20; if(v<5000)return 40; if(v<20000)return 90; return 180; }
 function collectByCat(cid){
@@ -1569,7 +1594,7 @@ function collectByCat(cid){
 function craftItem(r){
   if(!r || S.making) return;
   if(S.exp){ banner("探索中不可制造，请先结束探索"); return; }
-  if(r.isPu && (S.servants.length+(S.tres[r.id]||0))>=5){ banner("傀儡已达上限（5/5）"); return; }
+  if(r.isPu && (S.servants.length+(S.tres[r.id]||0))>=puCap()){ banner(puCapMsg()); return; }
   for(const k in r.need){ if((S.mats[k]||0)<r.need[k]) return; }
   if(S.yunning){ banner("运功中不可制造，请先停止运功"); return; }
   if(Object.keys(S.collect).some(k=>S.collect[k]!==undefined)){ banner("采集挂机中不可制造，请先停止挂机采集"); return; }
@@ -1582,7 +1607,7 @@ function craftItem(r){
 function useTres(r){
   if(!r || (S.tres[r.id]||0)<1) return;
   if(r.isPu){
-    if(S.servants.length>=5){ banner("傀儡已达上限（5/5）"); return; } // v30.9：只看激活数，库存傀儡成品应可激活至 5/5
+    if(S.servants.length>=puCap()){ banner(puCapMsg()); return; } // 上限随境界分批开放（合体 5 台）
     S.tres[r.id]--;
     S.servants.push({lv:r.puLv||"丁", task:null, prog:0, curR:null});
     const nm=LV_NM[r.puLv||"丁"]||"丁";
@@ -1754,6 +1779,7 @@ function renderStats(){
       fb.textContent = S.essence>=fNeed ? ("飞升（消耗 "+fmt(fNeed)+" 灵力 · 得 "+fmt(gain)+" 大道碎片）") : ("飞升需 "+fmt(fNeed)+" 灵力（当前 "+fmt(S.essence)+"）");
     }
   }
+  try{ syncBattleEntry(); }catch(e){}
 }
 let activeTab="cult";
 function switchTab(tab){
@@ -2009,6 +2035,10 @@ function uiConfirm(title,msgHtml,okLabel,onOk){
 function renderPu(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 傀儡 —";body.appendChild(st);
+  const nx=puNext();
+  const capBar=document.createElement("div");capBar.className="hint";
+  capBar.innerHTML="<b>傀儡上限："+S.servants.length+" / "+puCap()+"</b>　（炼气 1 → 金丹 2 → 元婴 3 → 化神 4 → <b>合体 5</b>）"+(nx?("　下一档：<b>"+REALMS[nx.realm].full+"</b> 解锁至 "+nx.cap):"　<b style=\"color:var(--jade)\">已达满额 5 台</b>")+"<br>石傀 / 铁傀 / 玉傀 另可由<b>原始禁区 / 上古战场 / 跨界空间</b>底关 BOSS 以 <b>1%</b> 概率掉落。";
+  body.appendChild(capBar);
   const p=document.createElement("div");p.className="hint";p.innerHTML="傀儡以玩家效率（100%）的比例代你采集 / 制造：<b>玉 90%</b>、铁 75%、石 60%、<b>木 40%</b>（玉傀最快、木傀最慢）。指派任务后自动持续产出，无需手动操作；傀儡产出与玩家状态（运功 / 采集 / 制造）互不干扰。制造任务可细分到<b>具体配方</b>（也可选「随机配方」），材料不足时自动等待重试。指派后按钮变为红色「停止」，点击即可停止任务。";body.appendChild(p);
   if(!S.servants.length){ const e=document.createElement("div");e.className="hint";e.textContent="尚无傀儡。";body.appendChild(e); return; }
   const taskOpts=[["","— 无任务 —"],["cai:beast","狩猎（兽类材料）"],["cai:ore","挖矿（矿石）"],["cai:herb","采药（草药）"],["zao:制符","制造·制符"],["zao:炼丹","制造·炼丹"],["zao:炼器","制造·炼器"],["zao:阵法","制造·阵法"]];
@@ -2193,7 +2223,7 @@ function feedPickModal(uid){
     opts.forEach(k=>{
       const m=MATS_BY_ID[k];
       const row=document.createElement("div");row.className="eqPickRow";
-      row.innerHTML=`<span class="nm">${m.ic||""} ${m.name}<div class="sub">${m.cat} · 稀${m.rarity} · 持有 ${S.mats[k]}</div></span><span class="sub">饱食+${10*m.rarity} / 亲密+${2*m.rarity}</span>`;
+      row.innerHTML=`<span class="nm">${m.ic||""} ${m.name}<div class="sub">${m.cat} · 稀${m.rarity} · 持有 ${S.mats[k]}</div></span><span class="sub">饱食+${10*m.rarity} / 亲密+${m.rarity}</span>`;
       const fb=buyBtn(!full&&(S.mats[k]||0)>=1,()=>{ feedPetByMat(uid,k); refresh(); },"喂养"); fb.className="goldBtn"; row.appendChild(fb);
       list.appendChild(row);
     });
@@ -2919,6 +2949,14 @@ function renderExch(body){
 function renderBattle(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 探索 · 秘境 —";body.appendChild(st);
+  if(battleActive()){
+    const ec=document.createElement("div");ec.className="item";ec.id="battleEntryCard";ec.style.borderColor="var(--gold)";
+    ec.innerHTML='<div class="ic">⚔️</div><div class="body"><div class="nm">战斗进行中 <span class="cat">未结算</span></div>'
+      +'<div class="ds" id="battleEntryTxt">'+battleEntryLabel()+'</div>'
+      +'<div class="ln">战斗界面收起后不会丢失战况，点右侧按钮即可回到战斗。</div></div>';
+    ec.appendChild(buyBtn(true,()=>reopenBattle(),"进入战斗"));
+    body.appendChild(ec);
+  }
   const canExp=S.realm>=1;
   const p=document.createElement("div");p.className="hint";
   p.innerHTML="进入区域遭遇凶险、寻获机缘：蜂窝秘境共 10 层，难度与奖励逐层递增，最终层或遇 BOSS；气血耗尽将被迫撤离并损失一半收获。灵根直接影响战斗数值——单灵根战力最强（+30%）、五灵根最低（+10%），灵根越多突破越稳；变异灵根各具战斗特性，神通库中的技能为可施展神通。"+(S.root?(" 当前灵根「"+S.root.name+"」战斗加成 +"+Math.round(S.root.combat*100)+"%。"):"")+(canExp?"":" <b style=\"color:#e05555\">炼气期尚未开悟，筑基后方可踏入秘境。</b>");
@@ -3491,6 +3529,35 @@ function bEndRound(){
   b.phase="play";
 }
 /* 战前进入：接管探索格战斗 */
+/* ============ 战斗返回入口（v32.2）：战斗弹窗收起后可从探索页 / 秘境地图重新进入 ============ */
+function battleActive(){ return !!(typeof BATTLE!=="undefined" && BATTLE && !BATTLE.over); }
+function battleEntryLabel(){
+  if(!battleActive()) return "";
+  const b=BATTLE;
+  const nm=b.kind==="boss"?"秘境BOSS":b.kind==="elite"?"精英守卫":"妖兽";
+  const ar=(typeof EXP_AREAS!=="undefined"&&S.exp&&EXP_AREAS[S.exp.area])?EXP_AREAS[S.exp.area].nm:"秘境";
+  return "⚔ 战斗进行中：第 "+b.turn+" 回合 · "+nm+" · "+ar+" 第 "+((S.exp&&S.exp.floor)||1)+" 层";
+}
+function reopenBattle(){
+  if(!battleActive()){ syncBattleEntry(); banner("当前没有进行中的战斗"); return false; }
+  $("battleOverlay").classList.add("show");
+  try{ renderBattleUI(); }catch(e){}
+  syncBattleEntry();
+  return true;
+}
+function syncBattleEntry(){
+  const on=battleActive();
+  const eb=$("expBattleBtn");
+  if(eb){ eb.style.display=on?"":"none"; if(on) eb.textContent="⚔ 返回战斗（第 "+BATTLE.turn+" 回合）"; }
+  const card=$("battleEntryCard");
+  if(card){
+    if(on){ card.style.display=""; const t=$("battleEntryTxt"); if(t) t.textContent=battleEntryLabel(); }
+    else card.style.display="none";
+  }
+  const cb=$("battleCloseBtn");
+  if(cb) cb.textContent=(typeof BATTLE!=="undefined"&&BATTLE&&BATTLE.over)?"关闭":"收起战斗（可随时返回）";
+  return on;
+}
 function enterBattle(kind,q,r,cell,prev){
   save(); // 进战斗即存档：把本格 used=true 入档，战斗中刷新后可据此判负恢复
   const root=S.root; if(!root){ banner("先定灵根才能战斗"); return; }
@@ -3512,6 +3579,7 @@ function enterBattle(kind,q,r,cell,prev){
   bLog((BATTLE.first==="player"?"玩家":"敌方")+"先手");
   $("battleOverlay").classList.add("show");
   renderBattleUI();
+  syncBattleEntry();
 }
 function finishBattle(result){
   const b=BATTLE; if(!b||b.over)return; b.over=true; b.result=result;
@@ -3520,6 +3588,8 @@ function finishBattle(result){
   else if(result==="lose"){ resolveCell(false); }
   else { logEvent("成功逃跑",'sys'); resolveCell(null,"flee"); }
   BATTLE=null;
+  syncBattleEntry();
+  if(activeTab==="battle") renderTab();
 }
 /* 战斗结算接入探索：胜利/失败/逃跑，并按战斗后气血回写 S.hp
    战败 → 气血归零 → 收1血 → 探索失败损50%收获（设计 9.3） */
@@ -3549,7 +3619,7 @@ function resolveCell(win,fleeMode){
       exp.floor++;
       if(exp.floor>=10){ exp.map=genExpMap(exp.floor,exp.area); exp.pos={q:0,r:0}; const hasBoss=Object.keys(exp.map.cells).some(k=>exp.map.cells[k].t==="boss"); logEvent("击败精英守卫！踏入第 10 层·最终层"+(hasBoss?"（BOSS 潜伏其中）":"（发现出口传送）"),'sys'); }
       else { exp.map=genExpMap(exp.floor,exp.area); exp.pos={q:0,r:0}; logEvent("击败精英守卫！深入第 "+exp.floor+" 层",'sys'); }
-    } else if(b.kind==="boss"){ maybeDropEgg(exp.area, exp.floor); logEvent("击败秘境 BOSS！",'sys'); expFinish(); return; }
+    } else if(b.kind==="boss"){ maybeDropEgg(exp.area, exp.floor); maybeDropPu(exp.area); logEvent("击败秘境 BOSS！",'sys'); expFinish(); return; }
   }
   expRevealNearby();
   save(); renderExpPanel(); renderStats();
@@ -3680,7 +3750,7 @@ function renderBattleUI(){
   renderTargetCard();
   const rg=$("battleRange"); if(rg) rg.textContent="敌强度 "+e.power+" ｜ 我方战力 "+playerPower();
   const bi=$("battleInfo"); if(bi) bi.textContent="五行相克：金克木 · 木克土 · 土克水 · 水克火 · 火克金（克制 ×1.35 / 被克 ×0.8）· "+(b.first==="player"?"我方先手":"敌方先手");
-  const cb=$("battleCloseBtn"); if(cb) cb.style.display=b.over?"":"none";
+  const cb=$("battleCloseBtn"); if(cb){ cb.style.display=""; cb.textContent=b.over?"关闭":"收起战斗（可随时返回）"; }
   renderBattleActions();
   renderBattleLog();
 }
@@ -3841,7 +3911,8 @@ if($("battleBagBtn"))$("battleBagBtn").addEventListener("click",openBattleBag);
 if($("battleBagClose"))$("battleBagClose").addEventListener("click",()=>{ $("battleBagOverlay").classList.remove("show"); });
 if($("battleAutoBtn"))$("battleAutoBtn").addEventListener("click",autoBattle);
 window.addEventListener("resize",()=>placeBattleBar());
-if($("battleCloseBtn"))$("battleCloseBtn").addEventListener("click",()=>{ if(BATTLE&&BATTLE.over){ $("battleOverlay").classList.remove("show"); } });
+if($("battleCloseBtn"))$("battleCloseBtn").addEventListener("click",()=>{ $("battleOverlay").classList.remove("show"); syncBattleEntry(); if(battleActive()){ if(activeTab==="battle") renderTab(); banner("战斗已收起，点「进入战斗」可返回"); } });
+if($("expBattleBtn"))$("expBattleBtn").addEventListener("click",()=>{ reopenBattle(); });
 if($("slotsClose"))$("slotsClose").addEventListener("click",()=>{ $("slotsOverlay").classList.remove("show"); if(activeTab==="battle")renderBattle($("tabBody")); });
 /* ================= 探索系统 v7：气血 + 蜂窝秘境 ================= */
 const EXP_AREAS={
@@ -3989,6 +4060,7 @@ function expSummary(title, lossNote){
     if(it.kind==="mat"){ const m=MATS_BY_ID[it.id]; rows[m?m.name:it.id]=(rows[m?m.name:it.id]||0)+it.qty; }
     else if(it.kind==="tres"){ const r=REC_BY_ID[it.id]; rows[(r?r.name:it.id)]=(rows[(r?r.name:it.id)]||0)+(isEquip(it.id)?1:it.qty); }
     else if(it.kind==="stone"){ const tn={L:"下品灵石",M:"中品灵石",H:"上品灵石",T:"极品灵石",G:"神品灵石"}[it.tier]||it.tier; rows[tn]=(rows[tn]||0)+it.qty; }
+    else if(it.kind==="pu"){ rows[it.name]=(rows[it.name]||0)+(it.qty||1); }
   });
   const line=Object.keys(rows).length? Object.entries(rows).map(([k,v])=>k+" ×"+fmt(v)).join("、") : "（无）";
   showModal(title,"探索区域："+EXP_AREAS[exp.area].nm+"（"+areaDifficulty(exp.area).lv+"）\n到达层数：第 "+exp.floor+" 层"+(lossNote?"\n"+lossNote:"")+"\n本次获得：\n"+line+"\n剩余气血："+Math.floor(S.hp)+"/"+S.hpMax);
@@ -4072,6 +4144,7 @@ function renderExpPanel(){
     if(c.t!=="start"){ g.style.cursor="pointer"; g.addEventListener("click",()=>expMove(c.q,c.r)); }
     svg.appendChild(g);
   }
+  try{ syncBattleEntry(); }catch(e){}
 }
 function renderExpLoot(){
   const exp=S.exp; const box=$("expViewLoot");
@@ -4403,7 +4476,7 @@ const MANUAL_SECTIONS=[
     {h:"蛋与孵化", b:"共 10 种蛋（木灵/土灵/水灵/火灵/金灵/风灵/冰灵/雷灵/毒灵/阴阳），稀有度 1-10，孵化时长 2~24 小时逐蛋递增（在线离线均计时）。孵化槽默认 1 个，可扩容至 4 槽（100 下品 / 1 中品 / 10 中品）。每颗蛋固定对应 3 档灵兽（凡/灵/圣各一种），破壳按当前概率掷档位，共可收集 30 种。"},
     {h:"温养", b:"入槽前可用材料温养（0-100 度）：偏好类别材料 +1×材料稀有度、其余 +0.5×材料稀有度；灵兽精魄每枚 +1。温养度越高，孵出灵品/圣品概率越高（三档合计恒 100%）；满温养孵出的灵兽初始饱食/亲密 +20（至 100）。"},
     {h:"属性与出战", b:"修炼型提供修炼速度 +1%×稀有度、攻击型提供战力 +2%×稀有度；圣品（稀9-10）额外带灵气/会心/突破/减伤 +3% 特性（稀10 两条，阴阳圣兽修炼+10% 且战力+10%）。出战上限按境界解锁：筑基 1 / 金丹 2 / 元婴 3 只，炼气不可出战；孵出灵兽自动上阵至上限。"},
-    {h:"养成", b:"饱食上限 100，按档位衰减（凡 2 / 灵 3 / 圣 4 点每小时）；饱食归零后属性系数×0.5 且亲密衰减加倍。亲密上限 100，每 2 小时 -1；属性生效系数 = 40% + 60%×亲密/100。喂养消耗 1 份任意材料：饱食 +10×稀有度、亲密 +2×稀有度。"},
+    {h:"养成", b:"饱食上限 100，按档位衰减（凡 20 / 灵 18 / 圣 15 点每小时）；饱食归零后属性系数×0.5 且亲密衰减 ×3。亲密上限 100，有饱食时每小时 -5，饱食归零后每小时 -15；属性生效系数 = 40% + 60%×亲密/100。喂养消耗 1 份任意材料：饱食 +10×稀有度、亲密 +1×稀有度。"},
     {h:"叛变与离线", b:"亲密归零后进入叛变倒计时（正常 72 小时；若饱食亦为 0 缩短至 48 小时），期间任何一次喂养重置倒计时；倒计时结束灵兽永久逃离不可找回。离线期间同样结算饱食/亲密衰减与叛变（封顶 12 小时），孵化倒计时自然推进。"},
     {h:"重复与炼化", b:"重复孵出已拥有的灵兽不叠加等级，直接入兽栏；可『炼化』为灵兽精魄（数量=稀有度），精魄可温养任意蛋（+1）或出售（每枚 1 上品灵石）；『放生』返还 稀有度×(1上品+100下品) 灵石且图鉴收录保留。图鉴 30 种可随时查看收集进度。"},
   ]},
