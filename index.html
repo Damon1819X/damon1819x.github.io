@@ -485,6 +485,7 @@ button:hover:not(:disabled){filter:brightness(1.08);}
     <div class="mrow"><div class="sr-l">界面配色</div><div class="sr-v" id="themeBtns">
       <button data-theme="dark">深色</button> <button data-theme="light">亮白</button> <button data-theme="eye">护眼</button>
     </div></div>
+    <div class="mrow"><div class="sr-l">诊断</div><div class="sr-v"><button id="diagBtn">境界记录</button></div></div>
     <div class="mrow"><div class="sr-l">存档</div><div class="sr-v"><button id="saveBtn">保存</button> <button id="exportBtn">导出存档</button> <button id="importBtn">导入存档</button> <button id="pathBtn">选择存档路径</button></div></div>
     <div class="mrow"><div class="sr-l">重生</div><div class="sr-v"><button class="danger" id="rebirthBtn">重生（删除全部修仙数据）</button></div></div>
     <div class="btnPair"><button id="setClose">关闭</button></div>
@@ -1283,6 +1284,11 @@ function normalizeState(){
   if(S.clicks===undefined)S.clicks=0; if(S.lifetime===undefined)S.lifetime=0;
   if(S.ascensions===undefined)S.ascensions=0;
   if(S.essence===undefined)S.essence=0;
+  // v32.4 境界完整性校验：非整数 / 越界 / 脏数据一律校正并留痕
+  const _rawRealm=S.realm;
+  S.realm=Math.max(0,Math.min(REALMS.length-1,Math.floor(Number(S.realm)||0)));
+  if(!Array.isArray(S.realmLog)) S.realmLog=[];
+  if(_rawRealm!==S.realm) pushRealmLog(Number(_rawRealm)||0,S.realm,"校正脏值");
   S.hpMax=hpMaxFor(S.realm); if(S.hp===undefined||S.hp>S.hpMax)S.hp=S.hpMax;
   if(S.exp===undefined)S.exp=null;
   if(S.exp&&S.exp.map&&!S.exp.pos)S.exp.pos={q:0,r:0};
@@ -1301,6 +1307,13 @@ function load(){
   try{ const raw=localStorage.getItem(CFG.saveKey); if(raw) d=JSON.parse(raw); }catch(e){}
   if(d && d.realm!==undefined){
     S=d; normalizeState();
+    // v32.4：与审计记录比对——若读到的境界没有对应的突破/飞升记录，说明被外部改写（多开/手改/异常）
+    { const _lg=(S.realmLog||[]); const _last=_lg[_lg.length-1];
+      if(_last && _last.to!==S.realm){
+        const _a=(REALMS[_last.to]||{}).full||_last.to, _b=(REALMS[S.realm]||{}).full||S.realm;
+        pushRealmLog(_last.to,S.realm,"载入不一致");
+        logEvent("存档境界与记录不符："+_a+" → "+_b+"（可能为多开覆盖或存档被改写）",'warn');
+      } }
     const away=(Date.now()-S.lastSaved)/1000;
     let sec=0; // v30.9 修复：sec 提到 if 块外，否则块外 petTick(sec) 抛 ReferenceError 中断 load()，导致界面不初始化
     if(away>10 && S.root){
@@ -1479,11 +1492,33 @@ function stopYun(){
   blip();
   render();
 }
+/* ============ 境界审计（v32.4）：记录每一次境界变化，便于定位"重新登录后境界跳变" ============ */
+function pushRealmLog(from,to,why){
+  S.realmLog=S.realmLog||[];
+  S.realmLog.push({t:Date.now(),from:from,to:to,why:why});
+  if(S.realmLog.length>30) S.realmLog.splice(0,S.realmLog.length-30);
+}
+function realmDiagText(){
+  const rows=(S.realmLog||[]).slice(-12).map(x=>{
+    const d=new Date(x.t);
+    const p=n=>("0"+n).slice(-2);
+    const nm=i=>(REALMS[i]||{}).full||String(i);
+    return p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds())+"  "+nm(x.from)+" → "+nm(x.to)+"（"+x.why+"）";
+  }).join("\n")||"（无记录）";
+  return "当前境界："+realm().full+"（S.realm="+S.realm+"）\n最后保存："+(S.lastSaved?new Date(S.lastSaved).toLocaleString():"—")+"\n版本："+VERSION+"\n\n"+rows;
+}
+/* 突破防连点：700ms 内的重复触发视为同一次点击 */
+const BREAK_LOCK_MS=700;
 function doBreak(){
   const need=realmNeed();
   if(S.essence<need) return;
+  const nowT=Date.now();
+  if(nowT-(S._brkAt||0)<BREAK_LOCK_MS) return;   // 防连点/防按键重复触发
+  S._brkAt=nowT;
   if(Math.random()<breakChance()){
+    const _from=S.realm;
     S.essence-=need; S.realm++;
+    pushRealmLog(_from,S.realm,"突破成功");
     S.hpMax=hpMaxFor(S.realm); S.hp=S.hpMax;
     sound(760,.2); banner("突破成功！晋入「"+realm().full+"」");
     logEvent("突破成功，晋入「"+realm().full+"」",'sys');
@@ -1492,7 +1527,7 @@ function doBreak(){
     banner("突破失败，损失 "+fmt(loss)+" 灵力");
     logEvent("突破失败，损失 "+fmt(loss)+" 灵力",'n');
   }
-  checkAchievements(); render();
+  checkAchievements(); render(); save();
 }
 function buyFac(i){
   const g=FAC[i]; if(!g || S.realm<g.unlock) return;
@@ -1529,10 +1564,12 @@ function setZone(cid,z){
   logEvent("采集区域切换至"+ZONES[z].nm+"（"+ (cid==="beast"?"狩猎":cid==="ore"?"挖矿":"采药") +"）",'sys');
   save();
 }
-/* 采集抽取（v32.3 重做）：
+/* 采集抽取（v32.5）：
    ① 区域只做「上限截断」，不做归一化——超出区域上限的档位直接不参与，其余档位仍按基础表绝对概率结算；
-   ② 每件材料各自按所属稀有度档位的概率独立结算，不再「档概率 ÷ 档内件数」；
-   ③ 因此一次采集成功可能同时获得多件材料。 */
+   ② 每件材料各自按所属稀有度档位的概率独立结算，不按档内件数平摊；
+   ③ 每次采集只产出 1 件材料：多件同时命中时，按稀有度最高者结算（同级随机）。
+      COLLECT_TIE 可切换为 "random"（命中者中随机取一件）。 */
+const COLLECT_TIE="rarest";
 function rollCollect(cid, z){
   if(Math.random()>=0.5) return [];   // 采集成功率 50%
   const cat = cid==="beast"?"妖兽材料":cid==="ore"?"矿石":"草药";
@@ -1546,17 +1583,21 @@ function rollCollect(cid, z){
               ||(cid==="beast"&& (el==="水"||el==="火"));
     if(aff) hi = Math.min(zn.hi+1, 8);
   }
-  const out=[];
+  const hits=[];
   MATS.forEach(m=>{
     if(m.cat!==cat) return;
     const r=m.rarity||1;
-    if(r<zn.lo || r>hi) return;                     // 区域截断：超出上限的档位概率为 0，不做归一化
+    if(r<zn.lo || r>hi) return;                     // 区域截断（不归一化）
     const p=(RARITY_POOL_PROB[Math.min(Math.max(r-1,0),7)]||0)/100;
-    if(p>0 && Math.random()<p) out.push(m);         // 每件材料独立按档位概率结算
+    if(p>0 && Math.random()<p) hits.push(m);        // 每件材料独立按档位概率结算
   });
-  return out;
+  if(!hits.length) return [];
+  if(COLLECT_TIE==="random") return [hits[Math.floor(Math.random()*hits.length)]];
+  let maxR=0; hits.forEach(h=>{ if((h.rarity||1)>maxR) maxR=h.rarity||1; });
+  const top=hits.filter(h=>(h.rarity||1)===maxR);
+  return [top[Math.floor(Math.random()*top.length)]];
 }
-/* 兼容旧调用：只取第一件（新逻辑请用 rollCollect 取全部） */
+/* 兼容旧调用：只取第一件（新逻辑请用 rollCollect） */
 function randMatOfCat(cid, z){ const a=rollCollect(cid,z); return a.length?a[0]:null; }
 const SV_EFF={甲:0.9,乙:0.75,丙:0.6,丁:0.4}; // 傀儡效率 = 玩家效率（100%）的比例
 const SV_AV={甲:"💎",乙:"⚙️",丙:"🗿",丁:"🪵"}; // 傀儡头像：玉傀 / 铁傀 / 石傀 / 木傀
@@ -1643,6 +1684,7 @@ function useTres(r){
   S.dao+=dao; S.daoTotal+=dao; S.ascensions++;
   banner("飞升成功！获得 "+dao+" 大道碎片");
   logEvent("飞升成功，消耗 "+fmt(fNeed)+" 灵力，获得 "+dao+" 大道碎片",'sys');
+  pushRealmLog(S.realm,0,"飞升");
   S.realm=0; S.lifetime=0; S.fa=FAC.map(()=>0);
   S.mats={}; S.tres={}; S.collect={};
   save(); render();
@@ -1883,7 +1925,7 @@ let caiCat="beast";
 function renderCai(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 采集 · 狩猎 / 挖矿 / 采药 —";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="深入<b>十万大山</b>采集，狩猎 / 挖矿 / 采药共用一张<b>统一稀有度概率表</b>：<b>外围区域</b>可采稀有 1-4（炼气解锁）· <b>中部区域</b>可采稀有 1-6（元婴解锁）· <b>核心区域</b>可采稀有 1-8（合体解锁），区域只做<b>上限截断、不做归一化</b>；每次采集 50% 成功率，成功后<b>每件材料各自按所属稀有度档位的概率独立结算</b>（不按件数平摊），因此一次可能同时获得多件。每个采集框独立选择区域、独立挂机；「立即采集」全局 15 秒冷却（三框共享）。材料存放于须弥空间，可用于制造。"+(S.yunning?'<br><b style="color:#e05555">运功进行中，采集已暂停，请先停止运功。</b>':"");body.appendChild(p);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="深入<b>十万大山</b>采集，狩猎 / 挖矿 / 采药共用一张<b>统一稀有度概率表</b>：<b>外围区域</b>可采稀有 1-4（炼气解锁）· <b>中部区域</b>可采稀有 1-6（元婴解锁）· <b>核心区域</b>可采稀有 1-8（合体解锁），区域只做<b>上限截断、不做归一化</b>；每次采集 50% 成功率，成功后<b>每件材料各自按所属稀有度档位的概率独立结算</b>（不按件数平摊），但<b>每次只采得 1 件</b>——若多件同时命中，取<b>稀有度最高者</b>（同级随机）。每个采集框独立选择区域、独立挂机；「立即采集」全局 15 秒冷却（三框共享）。材料存放于须弥空间，可用于制造。"+(S.yunning?'<br><b style="color:#e05555">运功进行中，采集已暂停，请先停止运功。</b>':"");body.appendChild(p);
   const CATS=[
     {cid:"beast", nm:"狩猎", ic:"🏹", cat:"妖兽材料", ds:"进入深山猎取妖兽，随机得到一种妖兽材料。"},
     {cid:"ore",   nm:"挖矿", ic:"⛏️", cat:"矿石",       ds:"下矿层挖掘，随机得到一种矿石。"},
@@ -4457,7 +4499,7 @@ const MANUAL_SECTIONS=[
   ]},
   {t:"采集", ic:"⛏️", secs:[
     {h:"怎么开", b:"「采集」页分狩猎/挖矿/采药三系，点击『开始采集』后每 15 秒判定一次，材料自动入须弥空间。"},
-    {h:"成功率", b:"采集成功率 50%：先判定是否采集成功，成功后各稀有度档位固定为 稀1 40% / 稀2 25% / 稀3 15% / 稀4 8% / 稀5 5% / 稀6 3% / 稀7 2% / 稀8 2%，档内<b>每件材料各自按该档概率独立结算</b>，一次可能获得多件；区域只截断高稀档位、其余不变。失败则本次无产出。"},
+    {h:"成功率", b:"采集成功率 50%：先判定是否采集成功，成功后各稀有度档位固定为 稀1 40% / 稀2 25% / 稀3 15% / 稀4 8% / 稀5 5% / 稀6 3% / 稀7 2% / 稀8 2%，<b>每件材料各自按该档概率独立结算</b>；<b>每次只采得 1 件</b>，多件同时命中时取稀有度最高者（同级随机）；区域只截断高稀档位、其余不变。失败则本次无产出。"},
     {h:"区域", b:"外围/中部/核心三区域稀有度与产出分开计算（外围稀有1-4 / 中部3-6 / 核心4-8），中部需金丹（境界3）、核心需元婴（境界6）解锁。"},
     {h:"怎么变快", b:"采集速度受傀儡效率影响（玉傀90%/木傀40%）；采集类设施与灵根（毒灵根生产+30%）可提升产出。"},
   ]},
@@ -4558,6 +4600,13 @@ $("setOverlay").addEventListener("click",e=>{ if(e.target.id==="setOverlay")$("s
 $("setClose").addEventListener("click",()=>$("setOverlay").classList.remove("show"));
 document.querySelectorAll("#themeBtns button").forEach(b=>b.addEventListener("click",()=>{ S.settings.theme=b.dataset.theme; applyTheme(S.settings.theme); save(); }));
 $("saveBtn").addEventListener("click",()=>{ save(); banner("已保存"); });
+if($("diagBtn"))$("diagBtn").addEventListener("click",()=>{ showModal("境界记录（最近 12 条）",realmDiagText()); });
+// v32.4 多窗口检测：另一个标签页/窗口写入存档时提示（多开互相覆盖会造成境界与进度跳变）
+window.addEventListener("storage",e=>{ if(!e||e.key!==CFG.saveKey) return;
+  if(!window._multiWinWarned){ window._multiWinWarned=1;
+    banner("检测到另一个窗口也在运行本游戏，可能导致境界/进度跳变，建议只保留一个窗口");
+    logEvent("检测到其他窗口写入存档：多开可能造成境界与进度异常，请只保留一个窗口",'warn'); }
+});
 $("exportBtn").addEventListener("click",()=>{
   const data=JSON.stringify({r:RULESET_ID,s:S});
   const a=document.createElement("a"); a.href="data:application/json;charset=utf-8,"+encodeURIComponent(data); a.download="xiuxian_"+VERSION+"_save.json"; a.click();
@@ -4582,7 +4631,7 @@ document.querySelectorAll(".menu-item").forEach(m=>m.addEventListener("click",()
   // v30.8.2 新手指引：功能步要求点击对应菜单，命中后自动进入下一步
   if(tutStep>=0 && TUT_STEPS[tutStep] && TUT_STEPS[tutStep].menu===m.dataset.tab) tutNext();
 }));
-$("breakBtn").addEventListener("click",()=>doBreak());
+$("breakBtn").addEventListener("click",()=>{ const _b=$("breakBtn"); if(_b&&_b.disabled) return; if(_b)_b.disabled=true; doBreak(); setTimeout(()=>{ try{ renderStats(); }catch(e){} },420); });
 $("flyBtn").addEventListener("click",()=>ascend());
 $("yunBtn").addEventListener("click",()=>{
   // 兜底：引导/灵根弹窗若残留（定根后未正常关闭）先移除，确保点击必响应
