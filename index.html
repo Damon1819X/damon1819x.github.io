@@ -369,6 +369,11 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 .petPh .phTip{position:absolute;left:-2px;top:-2px;font-size:9px;color:var(--ink-dim);}
 #hatchFx img.petArt{width:190px;height:190px;animation:petFloat 4s ease-in-out infinite;}
 #hatchFx .hxEmoji{font-size:96px;line-height:1;filter:drop-shadow(0 0 26px rgba(224,185,94,.55));animation:hxPop .7s cubic-bezier(.2,1.6,.4,1);}
+/* ================= 灵兽兽诀（v33） ================= */
+.skSlot{display:inline-flex;align-items:center;gap:2px;padding:2px 7px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:11px;color:var(--ink);line-height:1.6;white-space:nowrap;}
+.skSlot.empty{opacity:.42;border-style:dashed;}
+.skSlot.locked{border-style:solid;box-shadow:0 0 7px rgba(224,185,94,.45);}
+.skSlot.big{font-size:12px;padding:6px 10px;}
 </style>
 </head>
 <body>
@@ -764,13 +769,202 @@ const EGGS=[
   {id:"eg10", name:"阴阳蛋",   ic:"☯️", rarity:10, pref:"草药",     hatchSec:86400, probs:{fan:[40,27],ling:[55,63],sheng:[5,10]},  pool:["shuangwlm","taijixg","hundunys"]},
 ];
 const EGG_BY_ID={}; EGGS.forEach(x=>EGG_BY_ID[x.id]=x);
+/* ================= 灵兽兽诀系统（v33 · 三期实装） ================= */
+const PS_TIER={凡:{rarity:2,value:8000,color:"#9aa7b0"},灵:{rarity:3,value:35000,color:"#45d0a0"},玄:{rarity:5,value:150000,color:"#e0b95e"},天:{rarity:8,value:600000,color:"#cf7bff"}};
+const PET_SKILLS=[
+  {id:"tuna",   name:"吐纳诀", tier:"凡", kind:"ess",    val:2,  ds:"出战灵兽灵气产出 +2%"},
+  {id:"juling", name:"聚灵诀", tier:"灵", kind:"ess",    val:4,  ds:"出战灵兽灵气产出 +4%"},
+  {id:"dazhout",name:"大周天", tier:"玄", kind:"ess",    val:8,  ds:"出战灵兽灵气产出 +8%"},
+  {id:"wangji", name:"忘机诀", tier:"灵", kind:"offline",val:20, ds:"离线收益效率 +20%"},
+  {id:"siyao",  name:"撕咬诀", tier:"凡", kind:"atk",    val:3,  ds:"战力 +3%"},
+  {id:"pojia",  name:"破甲诀", tier:"灵", kind:"atk",    val:6,  ds:"战力 +6%"},
+  {id:"shixin", name:"噬心诀", tier:"玄", kind:"atk",    val:10, ds:"战力 +10%"},
+  {id:"lingxi", name:"灵犀诀", tier:"灵", kind:"crit",   val:5,  ds:"会心 +5%"},
+  {id:"guixi",  name:"龟息诀", tier:"凡", kind:"dmgR",   val:4,  ds:"探索减伤 +4%"},
+  {id:"bumie",  name:"不灭诀", tier:"玄", kind:"dmgR",   val:8,  ds:"探索减伤 +8%"},
+  {id:"xunbao", name:"寻宝诀", tier:"玄", kind:"loot",   val:10, ds:"秘境灵石有 10% 概率提升一档"},
+  {id:"huchao", name:"护巢诀", tier:"玄", kind:"egg",    val:2,  ds:"秘境出蛋率 +2 个百分点"},
+  {id:"huajiao",name:"化蛟诀", tier:"天", kind:"legacy", val:50, ds:"该灵兽基础特性 ×1.5"},
+];
+const PET_SKILL_BY_ID={}; PET_SKILLS.forEach(s=>PET_SKILL_BY_ID[s.id]=s);
+function petBookName(sid,lv){ const s=PET_SKILL_BY_ID[sid]; return (s?s.name:sid)+((lv||1)>1?("·"+["","一","二","三"][lv]+"阶"):""); }
+function petBookObj(sid,lv){
+  lv=lv||1; const s=PET_SKILL_BY_ID[sid]; if(!s) return null; const t=PS_TIER[s.tier]||PS_TIER.凡;
+  return {id:"bk_"+sid+(lv>1?("_"+lv):""), name:petBookName(sid,lv), ic:"📜", rarity:Math.min(9,t.rarity+lv-1), value:Math.round(t.value*Math.pow(2.2,lv-1)), bookSid:sid, bookLv:lv, ds:s.ds+"（兽诀：打入灵兽技能格生效；满格会随机顶替一格）"};
+}
+const PET_BOOK_BY_ID={}; PET_SKILLS.forEach(s=>{ for(let lv=1;lv<=3;lv++){ const o=petBookObj(s.id,lv); PET_BOOK_BY_ID[o.id]=o; } });
+const PET_ITEM={lock:{name:"锁灵符",price:80000,ic:"🔒",ds:"锁定一个技能格，打书时不会被顶替"},wash:{name:"洗练石",price:30000,ic:"🧪",ds:"重掷一只灵兽的灵韵"}};
+/* 技能格：稀1-2→2、3-4→3、5-6→4、7-8→5、9-10→6；圣品 +1（上限 7） */
+function petSlotCap(b){ if(!b) return 0; const r=b.rarity||1; let n = r<=2?2 : r<=4?3 : r<=6?4 : r<=8?5 : 6; if(b.band==="圣") n++; return Math.min(7,n); }
+function petAptMul(it){ const a=Math.max(0,Math.min(100,(it&&it.apt!=null)?it.apt:60)); return 0.85+0.30*a/100; }
+function petHasSkill(it,sid){ return !!((it&&it.skills)||[]).some(s=>s.sid===sid); }
+function petSkillSum(key){
+  const cap=petCap(); if(cap<=0) return 0;
+  const act=S.petActive||[]; let sum=0;
+  for(let i=0;i<Math.min(cap,act.length);i++){
+    const it=petByUid(act[i]); if(!it) continue;
+    const c=petCoef(it);
+    ((it.skills)||[]).forEach(sk=>{ const s=PET_SKILL_BY_ID[sk.sid]; if(!s||s.kind!==key) return; sum+=s.val*(1+0.5*((sk.lv||1)-1))*c; });
+  }
+  return sum;
+}
+/* 打书：空格必成；满格随机顶替（排除锁定格与保底格） */
+function petUseBook(uid, bookIdx){
+  const it=petByUid(uid); const bk=(S.books||[])[bookIdx]; if(!it||!bk) return;
+  const s=PET_SKILL_BY_ID[bk.sid]; if(!s) return;
+  const lv=bk.lv||1; const b=NEW_BEAS_BY_ID[it.id]||{name:"灵兽",rarity:1,band:"凡"};
+  const cap=petSlotCap(b);
+  it.skills=it.skills||[]; it.locks=it.locks||[]; it.pity=it.pity||[]; while(it.pity.length<cap) it.pity.push(0);
+  if(it.skills.some(k=>k.sid===bk.sid&&(k.lv||1)>=lv)){ banner("「"+b.name+"」已拥有同阶或更高的"+s.name); return; }
+  const cost=Math.round(8000*Math.pow(3,lv-1));
+  if(!canPayL(splitPriceL(cost))&&!canPayAutoL(cost)){ banner("打书需 "+fmt(cost)+" 下品灵石"); return; }
+  const free=[]; for(let i=0;i<cap;i++){ if(!it.skills[i]) free.push(i); }
+  if(free.length){
+    if(!payL(splitPriceL(cost))) payAutoL(cost);
+    S.books.splice(bookIdx,1);
+    it.skills[free[0]]={sid:bk.sid,lv};
+    logEvent("「"+b.name+"」习得兽诀「"+petBookName(bk.sid,lv)+"」（第"+(free[0]+1)+"格）",'sys');
+    banner("打书成功："+s.name); sound(680,.15); save(); renderTab(); return;
+  }
+  const cands=[]; for(let i=0;i<cap;i++){ if(!it.locks[i]&&(it.pity[i]||0)<3) cands.push(i); }
+  if(!cands.length){ banner("技能格全部锁定或处于保底，无法打书"); return; }
+  if(!payL(splitPriceL(cost))) payAutoL(cost);
+  S.books.splice(bookIdx,1);
+  const idx=cands[Math.floor(Math.random()*cands.length)];
+  const old=it.skills[idx]; const oldName=old?petBookName(old.sid,old.lv||1):"空";
+  it.skills[idx]={sid:bk.sid,lv};
+  it.pity=it.pity.map((v,i)=> i===idx?((v||0)+1):0);
+  logEvent("「"+b.name+"」打书「"+petBookName(bk.sid,lv)+"」，顶替「"+oldName+"」（第"+(idx+1)+"格）",'n');
+  banner("顶替成功："+s.name+"（失去 "+oldName+"）"); sound(640,.15); save(); renderTab();
+}
+function petToggleLock(uid, idx){
+  const it=petByUid(uid); if(!it) return; it.locks=it.locks||[];
+  if(it.locks[idx]){ it.locks[idx]=false; logEvent("解锁技能格 "+(idx+1),'dim'); save(); renderTab(); return; }
+  if(!it.skills||!it.skills[idx]){ banner("空格无需锁定"); return; }
+  if((S.petItems.lock||0)<1){ banner("锁灵符不足（灵兽页可购买）"); return; }
+  S.petItems.lock--; it.locks[idx]=true; logEvent("锁定技能格 "+(idx+1)+"（不会被顶替）",'sys'); save(); renderTab();
+}
+function petWash(uid){
+  const it=petByUid(uid); if(!it) return;
+  if((S.petItems.wash||0)<1){ banner("洗练石不足（灵兽页可购买）"); return; }
+  S.petItems.wash--;
+  const b=NEW_BEAS_BY_ID[it.id]||{rarity:1};
+  const base=40+(b.rarity||1)*4;
+  const old=Math.round(it.apt||60);
+  it.apt=Math.max(20,Math.min(100, Math.round(base+(Math.random()*24-12))));
+  logEvent("洗练「"+b.name+"」：灵韵 "+old+" → "+it.apt,'sys');
+  banner("洗练完成：灵韵 "+it.apt); save(); renderTab();
+}
+function petMerge(uid, matUid){
+  const a=petByUid(uid), m=petByUid(matUid); if(!a||!m||a.uid===m.uid) return;
+  const ba=NEW_BEAS_BY_ID[a.id]||{name:"灵兽",rarity:1,band:"凡"}, bm=NEW_BEAS_BY_ID[m.id]||{name:"灵兽",rarity:1};
+  const cap=petSlotCap(ba); a.skills=(a.skills||[]).filter(Boolean);
+  const pool=(m.skills||[]).filter(s=>s&&!a.skills.some(x=>x.sid===s.sid));
+  let got=0;
+  while(got<2 && pool.length && a.skills.length<cap){
+    const k=pool.splice(Math.floor(Math.random()*pool.length),1)[0];
+    a.skills.push({sid:k.sid,lv:k.lv||1}); got++;
+  }
+  const oldApt=Math.round(a.apt||60);
+  a.apt=Math.max(20,Math.min(100, Math.round((a.apt||60)*0.6+(m.apt||60)*0.4+(Math.random()*10-2))));
+  S.pets=S.pets.filter(x=>x.uid!==m.uid); S.petActive=(S.petActive||[]).filter(u=>u!==m.uid);
+  logEvent("合宠：「"+ba.name+"」吞噬「"+bm.name+"」，继承 "+got+" 门兽诀，灵韵 "+oldApt+" → "+a.apt,'sys');
+  banner("合宠完成：继承 "+got+" 门兽诀 · 灵韵 "+a.apt); sound(720,.2); save(); renderTab();
+}
+function petUpgradeBook(sid, lv){
+  lv=lv||1;
+  if(lv>=3){ banner("已是三阶，无法再升"); return; }
+  const arr=(S.books||[]).filter(b=>b.sid===sid&&(b.lv||1)===lv);
+  if(arr.length<2){ banner("需要 2 本同阶「"+petBookName(sid,lv)+"」"); return; }
+  let removed=0;
+  S.books=S.books.filter(b=>{ if(b.sid===sid&&(b.lv||1)===lv&&removed<2){ removed++; return false; } return true; });
+  S.books.push({sid,lv:lv+1});
+  logEvent("兽诀升阶：「"+petBookName(sid,lv)+"」×2 → 「"+petBookName(sid,lv+1)+"」",'sys'); banner("升阶成功"); save(); renderTab();
+}
+function buyPetItem(kind){
+  const d=PET_ITEM[kind]; if(!d) return;
+  const p=splitPriceL(d.price);
+  if(!canPayL(p)&&!canPayAutoL(d.price)){ banner("灵石不足（需 "+fmt(d.price)+"）"); return; }
+  if(!payL(p)) payAutoL(d.price);
+  S.petItems[kind]=(S.petItems[kind]||0)+1;
+  logEvent("购入「"+d.name+"」×1（-"+fmt(d.price)+" 下品）",'sys','trade'); save(); renderTab();
+}
+/* 秘境 BOSS 掉落兽诀：灵/玄 按区域 1%~4%，天诀 0.1%~0.8% */
+function maybeDropBook(area, floor){
+  const conf={dt:[1.0,0.1],yl:[2.0,0.3],sg:[3.0,0.5],kj:[4.0,0.8]}[area]||[1.0,0.1];
+  const isTian=Math.random()*100<conf[1];
+  if(!isTian && Math.random()*100>=conf[0]) return false;
+  const pool=PET_SKILLS.filter(s=>isTian ? s.tier==="天" : (s.tier==="玄"||s.tier==="灵"));
+  if(!pool.length) return false;
+  const s=pool[Math.floor(Math.random()*pool.length)];
+  S.books.push({sid:s.id,lv:1});
+  logEvent("BOSS 遗落兽诀「"+petBookName(s.id,1)+"」（"+s.tier+"阶）",'sys');
+  banner("获得兽诀："+s.name); return true;
+}
+/* 培养弹窗：技能格 / 打书 / 锁定 / 洗练 / 合宠 */
+function openPetForge(uid){
+  const it=petByUid(uid); if(!it) return;
+  const mask=document.createElement("div");mask.className="eqPickMask";
+  mask.onclick=ev=>{ if(ev.target===mask) mask.remove(); };
+  const box=document.createElement("div");box.className="eqPickBox";box.style.width="min(560px,94vw)";
+  const paint=()=>{
+    box.innerHTML="";
+    const b=NEW_BEAS_BY_ID[it.id]||{name:"灵兽",rarity:1,band:"凡"};
+    const cap=petSlotCap(b);
+    const hd=document.createElement("div");hd.className="eqTitle";
+    hd.textContent="培养「"+b.name+"」· 灵韵 "+Math.round(it.apt||60)+" · 技能 "+(it.skills||[]).filter(Boolean).length+"/"+cap;
+    box.appendChild(hd);
+    const sg=document.createElement("div");sg.style.cssText="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px";
+    for(let i=0;i<cap;i++){
+      const sk=(it.skills||[])[i];
+      const d=document.createElement("button");d.className="skSlot big"+(sk?"":" empty")+((it.locks||[])[i]?" locked":"");
+      if(sk){ const s=PET_SKILL_BY_ID[sk.sid]||{name:sk.sid,tier:"凡",ds:""};
+        d.style.borderColor=(PS_TIER[s.tier]||{}).color||"#888";
+        d.textContent=s.name+(sk.lv>1?(" "+sk.lv+"阶"):"")+((it.locks[i])?" 🔒":"");
+        d.title=(s.ds||"")+"（点击"+(it.locks[i]?"解锁":"用锁灵符锁定")+"）";
+        d.onclick=()=>{ petToggleLock(it.uid,i); paint(); };
+      } else { d.textContent="＋ 空格"; d.disabled=true; }
+      sg.appendChild(d);
+    }
+    box.appendChild(sg);
+    const t1=document.createElement("div");t1.style.cssText="font-size:12px;color:var(--ink-dim);margin:2px 0 4px";
+    t1.textContent="兽诀库存（"+(S.books||[]).length+" 本）：空格必成，满格随机顶替一格";box.appendChild(t1);
+    const list=document.createElement("div");list.style.cssText="max-height:22vh;overflow-y:auto;display:flex;flex-direction:column;gap:5px";
+    if(!(S.books||[]).length){ const e=document.createElement("div");e.className="hint";e.textContent="暂无兽诀：坊市/拍卖可购，秘境 BOSS 也会掉落。";list.appendChild(e); }
+    (S.books||[]).forEach((x,idx)=>{
+      const s=PET_SKILL_BY_ID[x.sid]; if(!s) return;
+      const row=document.createElement("div");row.className="eqPickRow";
+      row.innerHTML='<span class="nm">'+petBookName(x.sid,x.lv||1)+'<div class="sub">'+s.ds+'</div></span>';
+      const btn=document.createElement("button");btn.textContent="打入";btn.onclick=()=>{ petUseBook(it.uid, idx); paint(); };
+      row.appendChild(btn);list.appendChild(row);
+    });
+    box.appendChild(list);
+    const ops=document.createElement("div");ops.style.cssText="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px";
+    const wBtn=document.createElement("button");wBtn.textContent="洗练灵韵（洗练石 "+((S.petItems||{}).wash||0)+"）";wBtn.onclick=()=>{ petWash(it.uid); paint(); };
+    ops.appendChild(wBtn);
+    const others=(S.pets||[]).filter(x=>x.uid!==it.uid);
+    if(others.length){
+      const sel=document.createElement("select");sel.style.cssText="padding:6px;border-radius:6px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-size:12px";
+      others.forEach(o=>{ const ob=NEW_BEAS_BY_ID[o.id]||{name:o.id}; const op=document.createElement("option");op.value=o.uid;op.textContent="吞噬："+ob.name+"（灵韵"+Math.round(o.apt||60)+"）";sel.appendChild(op); });
+      ops.appendChild(sel);
+      const mBtn=document.createElement("button");mBtn.textContent="合宠";mBtn.onclick=()=>{ const v=parseInt(sel.value)||0; if(!v) return; petMerge(it.uid, v); mask.remove(); };
+      ops.appendChild(mBtn);
+    }
+    const cBtn=document.createElement("button");cBtn.textContent="关闭";cBtn.onclick=()=>mask.remove();
+    ops.appendChild(cBtn);
+    box.appendChild(ops);
+  };
+  paint();
+  mask.appendChild(box);document.body.appendChild(mask);
+}
+
 function petByUid(uid){ return (S.pets||[]).find(x=>x.uid===uid); }
 function eggByUid(uid){ return (S.eggs||[]).find(x=>x.uid===uid); }
 /* 出战上限：筑基 1 / 金丹 2 / 元婴及以上 3 */
 function petCap(){ return S.realm<=0?0:S.realm===1?1:S.realm===2?2:3; }
 function petActiveUids(){ const cap=petCap(); return (S.petActive||[]).slice(0,cap); }
 /* 属性生效系数：亲密 40%→100% 线性（40%+60%×亲密/100）；饱食 0 时 ×0.5 */
-function petCoef(it){ const c=0.4+0.6*Math.max(0,Math.min(100,it.int))/100; return it.sat<=0?c*0.5:c; }
+function petCoef(it){ const c=(0.4+0.6*Math.max(0,Math.min(100,it.int))/100)*petAptMul(it); return it.sat<=0?c*0.5:c; }
 /* 出战灵兽加成聚合：修炼型=修炼速度%、攻击型=战力%、圣品特性=灵气/会心/突破/减伤 */
 function petSum(key){
   const cap=petCap(); if(cap<=0) return 0;
@@ -778,12 +972,13 @@ function petSum(key){
   for(let i=0;i<Math.min(cap,act.length);i++){
     const it=petByUid(act[i]); if(!it) continue;
     const b=NEW_BEAS_BY_ID[it.id]; if(!b) continue;
-    const c=petCoef(it);
+    const legacy=petHasSkill(it,"huajiao")?1.5:1;   /* 化蛟诀：该兽基础特性 ×1.5 */
+    const c=petCoef(it)*legacy;
     if(key==="atk"){ if(b.type==="攻") sum+=b.attr*c; if(b.extra&&b.extra.atk) sum+=b.extra.atk*c; }
     else if(key==="cult"){ if(b.type==="修") sum+=b.attr*c; }
     else if(b.traits&&b.traits[key]) sum+=b.traits[key]*c;
   }
-  return sum;
+  return sum+petSkillSum(key);   /* 兽诀加成 */
 }
 /* 探索战斗胜利出蛋判定（设计 3.1）：区域基础出蛋率 + 层数×0.15%，封顶 10% */
 function maybeDropEgg(area, floor){
@@ -791,7 +986,7 @@ function maybeDropEgg(area, floor){
   /* 新手保底（3.3）：筑基后首场战斗胜利必得木灵蛋 */
   if(!S.petGuide){ S.petGuide=true; addEgg("eg1"); logEvent("首战告捷！获得新手引导蛋「木灵蛋」×1",'sys'); banner("获得木灵蛋"); save(); return; }
   const base={dt:2.0,yl:3.5,sg:5.0,kj:6.5}[area]||2.0;
-  const rate=Math.min(10, base+floor*0.15);
+  const rate=Math.min(20, base+floor*0.15+petSkillSum("egg"));
   if(Math.random()*100>=rate) return;
   const dist={dt:[[1,40],[2,30],[3,20],[4,10]],yl:[[2,25],[3,25],[4,20],[5,20],[6,10]],sg:[[4,15],[5,20],[6,20],[7,20],[8,15],[9,10]],kj:[[6,10],[7,15],[8,20],[9,25],[10,30]]}[area]||[[1,100]];
   let rr=Math.random()*100, pick=dist[0][0];
@@ -829,7 +1024,9 @@ function hatchDone(slot){
   S.hatch[slot]=null;
   S.hatchCnt=(S.hatchCnt||0)+1; // v31.7 兽潮涌动成就：孵化计数
   const full=w>=100;
-  const it={uid:++S.uid, id:nb.id, sat:full?100:80, int:full?100:80, lastFeedAt:Date.now(), betrayAt:null};
+  const it={uid:++S.uid, id:nb.id, sat:full?100:80, int:full?100:80, lastFeedAt:Date.now(), betrayAt:null,
+    skills:[], locks:[], pity:[],
+    apt:Math.max(20,Math.min(100, 40+(nb.rarity||1)*4+(band==="圣"?5:0)+Math.round((Math.random()*2-1)*8)))};
   S.pets.push(it);
   if(!S.petDex[nb.id]) S.petDex[nb.id]=1;
   if(S.petActive.length<petCap()) S.petActive.push(it.uid);
@@ -1108,18 +1305,18 @@ function buffEffSum(eff){
 
 /* 神通库（战斗系统使用的技能） */
 const SHEN = [
-  {id:"j1", name:"太虚剑诀", cat:"剑诀", ic:"⚔️", tier:"下品", combat:0.10, cost:1,  ds:"剑出太虚，破敌之先。"},
-  {id:"x1", name:"九转玄功", cat:"心法", ic:"🌀", tier:"下品", combat:0.08, cost:1,  ds:"九转护体，气血绵长。"},
-  {id:"s1", name:"御火术",   cat:"仙术", ic:"🔥", tier:"下品", combat:0.12, cost:1,  ds:"御火焚天，攻伐凌厉。"},
-  {id:"z1", name:"天罡北斗阵",cat:"阵法",ic:"🌌", tier:"中品", combat:0.15, cost:3,  ds:"北斗列阵，困敌护己。"},
-  {id:"x2", name:"混元一气", cat:"心法", ic:"☯️", tier:"中品", combat:0.12, cost:3,  ds:"混元护身，卸力化劲。"},
-  {id:"s3", name:"呼风唤雨", cat:"仙术", ic:"🌧️", tier:"中品", combat:0.18, cost:3,  ds:"呼风唤雨，掌控战局。"},
-  {id:"m1", name:"大衍神算", cat:"秘术", ic:"🔮", tier:"上品", combat:0.20, cost:8,  ds:"窥探天机，料敌先机。"},
-  {id:"j2", name:"万剑归宗", cat:"剑诀", ic:"🗡️", tier:"上品", combat:0.25, cost:8,  ds:"万剑齐发，一往无前。"},
-  {id:"s2", name:"九霄雷法", cat:"仙术", ic:"⚡", tier:"上品", combat:0.28, cost:8,  ds:"召九霄神雷，毁天灭地。"},
-  {id:"z2", name:"诛仙剑阵", cat:"阵法", ic:"🛡️", tier:"极品", combat:0.35, cost:15, ds:"诛仙剑阵，势不可挡。"},
-  {id:"m2", name:"天魔解体大法",cat:"禁术",ic:"👹", tier:"极品", combat:0.40, cost:15, ds:"以命搏命，战力暴增。"},
-  {id:"p1", name:"法天象地", cat:"神通", ic:"🏛️", tier:"至尊", combat:0.50, cost:30, ds:"法相天地，威压众生。"},
+  {id:"j1", name:"太虚剑诀", cat:"剑诀", ic:"⚔️", tier:"下品", combat:0.10, cost:20,  ds:"剑出太虚，破敌之先。"},
+  {id:"x1", name:"九转玄功", cat:"心法", ic:"🌀", tier:"下品", combat:0.08, cost:20,  ds:"九转护体，气血绵长。"},
+  {id:"s1", name:"御火术",   cat:"仙术", ic:"🔥", tier:"下品", combat:0.12, cost:20,  ds:"御火焚天，攻伐凌厉。"},
+  {id:"z1", name:"天罡北斗阵",cat:"阵法",ic:"🌌", tier:"中品", combat:0.15, cost:40,  ds:"北斗列阵，困敌护己。"},
+  {id:"x2", name:"混元一气", cat:"心法", ic:"☯️", tier:"中品", combat:0.12, cost:40,  ds:"混元护身，卸力化劲。"},
+  {id:"s3", name:"呼风唤雨", cat:"仙术", ic:"🌧️", tier:"中品", combat:0.18, cost:40,  ds:"呼风唤雨，掌控战局。"},
+  {id:"m1", name:"大衍神算", cat:"秘术", ic:"🔮", tier:"上品", combat:0.20, cost:70,  ds:"窥探天机，料敌先机。"},
+  {id:"j2", name:"万剑归宗", cat:"剑诀", ic:"🗡️", tier:"上品", combat:0.25, cost:70,  ds:"万剑齐发，一往无前。"},
+  {id:"s2", name:"九霄雷法", cat:"仙术", ic:"⚡", tier:"上品", combat:0.28, cost:70,  ds:"召九霄神雷，毁天灭地。"},
+  {id:"z2", name:"诛仙剑阵", cat:"阵法", ic:"🛡️", tier:"极品", combat:0.35, cost:110, ds:"诛仙剑阵，势不可挡。"},
+  {id:"m2", name:"天魔解体大法",cat:"禁术",ic:"👹", tier:"极品", combat:0.40, cost:110, ds:"以命搏命，战力暴增。"},
+  {id:"p1", name:"法天象地", cat:"神通", ic:"🏛️", tier:"至尊", combat:0.50, cost:180, ds:"法相天地，威压众生。"},
 ];
 
 /* 灵根（31 种） */
@@ -1156,15 +1353,15 @@ MUT.forEach(m=>{ ROOTS.push({id:m.id,name:m.name,ic:m.ic,type:"mut",elems:[m.nam
 /* 境界（req 为 v4 ×100 后数值） */
 const REALMS = [
   {full:"炼气期", desc:"初入仙途，凡躯炼灵，采气入体。", req:0,     mult:1,     unlock:0},
-  {full:"筑基期", desc:"筑基凝神，根基初成，灵气入体。", req:20000,  mult:3,     unlock:1},
-  {full:"金丹期", desc:"金丹大成，丹火焚身，气贯长河。", req:300000, mult:10,    unlock:2},
-  {full:"元婴期", desc:"元婴出窍，神游太虚，法力通玄。", req:5e6,    mult:35,    unlock:3},
-  {full:"化神期", desc:"化神登临，可开飞升之门。",       req:8e7,    mult:120,   unlock:4},
-  {full:"炼虚期", desc:"炼虚合道，剑指苍天。",           req:2.5e10, mult:420,   unlock:5},
-  {full:"合体期", desc:"合体归一，力破虚空。",           req:5e11,   mult:1500,  unlock:6},
-  {full:"大乘期", desc:"大乘圆满，万象归一。",           req:1e13,   mult:5400,  unlock:7},
-  {full:"渡劫期", desc:"渡劫飞升，逆天改命。",           req:2e14,   mult:20000, unlock:8},
-  {full:"真仙境", desc:"飞升成仙，逍遥九天。",           req:5e15,   mult:75000, unlock:9},
+  {full:"筑基期", desc:"筑基凝神，根基初成，灵气入体。", req:16000,  mult:3,     unlock:1},
+  {full:"金丹期", desc:"金丹大成，丹火焚身，气贯长河。", req:240000, mult:10,    unlock:2},
+  {full:"元婴期", desc:"元婴出窍，神游太虚，法力通玄。", req:4e6,    mult:35,    unlock:3},
+  {full:"化神期", desc:"化神登临，可开飞升之门。",       req:6.4e7,    mult:120,   unlock:4},
+  {full:"炼虚期", desc:"炼虚合道，剑指苍天。",           req:2e10, mult:420,   unlock:5},
+  {full:"合体期", desc:"合体归一，力破虚空。",           req:4e11,   mult:1500,  unlock:6},
+  {full:"大乘期", desc:"大乘圆满，万象归一。",           req:8e12,   mult:5400,  unlock:7},
+  {full:"渡劫期", desc:"渡劫飞升，逆天改命。",           req:1.6e14,   mult:20000, unlock:8},
+  {full:"真仙境", desc:"飞升成仙，逍遥九天。",           req:4e15,   mult:75000, unlock:9},
 ];
 function realm(){ return REALMS[Math.min(S.realm, REALMS.length-1)]; }
 function realmAt(n){ return REALMS[Math.min(n, REALMS.length-1)]; }
@@ -1258,6 +1455,12 @@ function normalizeState(){
   S.eggs=S.eggs||[]; S.hatch=S.hatch||[null]; while(S.hatch.length<4) S.hatch.push(null);
   S.hatchSlots=Math.max(1,Math.min(4,S.hatchSlots||1));
   S.petEss=S.petEss||0; S.petActive=(S.petActive||[]).filter(u=>petByUid(u)); S.petDex=S.petDex||{}; S.petGuide=!!S.petGuide;
+  /* v33：兽诀库存 / 锁灵符 / 洗练石 / 灵兽技能格与灵韵迁移 */
+  S.books=Array.isArray(S.books)?S.books.filter(x=>x&&PET_SKILL_BY_ID[x.sid]):[];
+  S.petItems=S.petItems||{lock:0,wash:0}; S.petItems.lock=S.petItems.lock||0; S.petItems.wash=S.petItems.wash||0;
+  (S.pets||[]).forEach(it=>{ it.skills=Array.isArray(it.skills)?it.skills.filter(x=>x&&PET_SKILL_BY_ID[x.sid]):[];
+    it.locks=Array.isArray(it.locks)?it.locks:[]; it.pity=Array.isArray(it.pity)?it.pity:[];
+    if(it.apt==null){ const _b=NEW_BEAS_BY_ID[it.id]||{rarity:1}; it.apt=Math.max(20,Math.min(100,40+(_b.rarity||1)*4)); } });
   S.pets.forEach(it=>{ it.sat=it.sat===undefined?80:Math.max(0,Math.min(100,it.sat)); it.int=it.int===undefined?80:Math.max(0,Math.min(100,it.int)); it.lastFeedAt=it.lastFeedAt||Date.now(); });
 
   for(const k in S.collect){ if(!["beast","ore","herb"].includes(k)) delete S.collect[k]; }
@@ -1465,7 +1668,7 @@ function breakChance(){
   if(evt.breakPenalty>Date.now()) base -= 0.20; // v30.8.7 心猿意马：突破成功率-20%
   return Math.min(0.80, base);
 }
-function offlineEfficiency(){ return 0.5 + UPS[4].fx(S.ups.offline) + rootOfflineBonus(); }
+function offlineEfficiency(){ return 0.5 + UPS[4].fx(S.ups.offline) + rootOfflineBonus() + petSkillSum("offline")/100; }
 
 /* ================================================================
    交互动作
@@ -1682,11 +1885,14 @@ function useTres(r){
   logEvent("使用「"+r.name+"」："+effText(r)+(b.stack>1?"（叠层 "+b.stack+"/"+r.maxStack+"）":""));
   banner("使用「"+r.name+"」"); sound(680,.15);
   checkAchievements(); save(); render();
-}function ascend(){
-  const fNeed=realmNeed()*10; // 飞升消耗：当前突破所需灵力 ×10
+}/* 飞升碎片（v32.9 削弱）：指数 0.55 + 总量 ×0.5 —— 同进度约为旧版的 1/3~1/6 */
+/* 飞升碎片（v32.10）：平方根 × 0.1 —— 化神首飞约 12 枚，神通需多次飞升攒够 */
+function ascendShards(){ return Math.max(1, Math.floor(Math.pow((S.lifetime||0)/1e6, 0.5) * 0.1)); }
+function ascend(){
+  const fNeed=realmNeed()*2; // 飞升消耗 = 下一境界突破需求 × 灵根需求倍率 × 2
   if(S.realm<4){ banner("化神期方可开启飞升之门"); return; }
   if(S.essence<fNeed){ banner("飞升需 "+fmt(fNeed)+" 灵力"); return; }
-  const dao=Math.max(1, Math.floor(Math.pow(S.lifetime/1e6,0.6)));
+  const dao=ascendShards();
   S.essence=0;
   S.dao+=dao; S.daoTotal+=dao; S.ascensions++;
   banner("飞升成功！获得 "+dao+" 大道碎片");
@@ -1828,8 +2034,8 @@ function renderStats(){
     const canFly=S.realm>=4; // 化神期及以上开启飞升之门
     fb.style.display=canFly?"":"none";
     if(canFly){
-      const fNeed=realmNeed()*10;
-      const gain=Math.max(1, Math.floor(Math.pow(S.lifetime/1e6,0.6)));
+      const fNeed=realmNeed()*2;
+      const gain=ascendShards();
       fb.disabled=S.essence<fNeed;
       fb.textContent = S.essence>=fNeed ? ("飞升（消耗 "+fmt(fNeed)+" 灵力 · 得 "+fmt(gain)+" 大道碎片）") : ("飞升需 "+fmt(fNeed)+" 灵力（当前 "+fmt(S.essence)+"）");
     }
@@ -1913,14 +2119,14 @@ function renderGong(body){
 function renderShen(body){
   body.innerHTML="";
   const st=document.createElement("div");st.className="sectionTitle";st.textContent="— 神通库（战斗技能）—";body.appendChild(st);
-  const p=document.createElement("div");p.className="hint";p.innerHTML="<b>神通库</b>：收录 12 个战斗神通，以<b>大道碎片</b>购买习得；习得后作为<b>可施展神通</b>影响战斗数值（战力 +8%~+50%）。<br>大道碎片获取：<b>飞升</b>为主要来源（化神期起每次飞升按累计灵力获得）；<b>阴阳灵根</b>额外 +25%。";body.appendChild(p);
+  const p=document.createElement("div");p.className="hint";p.innerHTML="<b>神通库</b>：收录 12 个战斗神通，以<b>大道碎片</b>购买习得；习得后在战斗中以「神通·XX」施展（消耗灵力、按回合冷却），<b>不提供常驻战力/属性加成</b>；碎片也可选择留作修炼加成。<br>大道碎片获取：<b>飞升</b>为主要来源（化神期起每次飞升按累计灵力获得）；<b>阴阳灵根</b>额外 +25%。";body.appendChild(p);
   SHEN.forEach(a=>{
     const owned=S.shen.includes(a.id);
     const item=document.createElement("div");item.className="item";
     item.innerHTML=`<div class="ic">${a.ic}</div><div class="body">
       <div class="nm">${a.name}<span class="cat">${a.cat}</span></div>
       <div class="ds">${a.ds}</div>
-      <div class="ln">战斗加成 +${Math.round(a.combat*100)}% <span class="cm-tag">战斗系统用</span></div>
+      <div class="ln">战斗大招：耗灵 ${(SHEN_BS[a.id]&&SHEN_BS[a.id].cost)||"—"} · 冷却 ${(SHEN_BS[a.id]&&SHEN_BS[a.id].cd)||"—"} 回合 <span class="cm-tag">仅战斗内生效</span></div>
     </div>`;
     item.querySelector(".body").appendChild(owned
       ? buyBtn(false,()=>{},"已习得")
@@ -2372,6 +2578,12 @@ function renderPets(body){
   const top=document.createElement("div");top.className="hint";top.style.cssText="display:flex;gap:10px;align-items:center;margin:8px 0;flex-wrap:wrap";
   top.innerHTML="<b>灵兽精魄：</b>"+S.petEss+" 枚（每枚可温养 +1 或售 1 上品灵石）　<b>图鉴：</b>"+Object.keys(S.petDex||{}).length+"/30";
   const sb=buyBtn(S.petEss>=1,()=>sellPetEss(),"出售精魄 ×1"); sb.className="goldBtn"; top.appendChild(sb);
+  const lkb=buyBtn(true,()=>buyPetItem("lock"),"🔒 锁灵符 ×"+(S.petItems.lock||0)); lkb.className="goldBtn"; top.appendChild(lkb);
+  const wsb=buyBtn(true,()=>buyPetItem("wash"),"🧪 洗练石 ×"+(S.petItems.wash||0)); wsb.className="goldBtn"; top.appendChild(wsb);
+  const bkb=document.createElement("div");bkb.className="hint";bkb.style.cssText="margin:0 0 6px";
+  bkb.innerHTML="<b>兽诀："+((S.books||[]).length)+" 本</b>（坊市/拍卖/秘境 BOSS 掉落）· 锁灵符 "+(S.petItems.lock||0)+" · 洗练石 "+(S.petItems.wash||0)+"　—　在灵兽卡点「培养」打书、洗练或合宠。";
+  body.appendChild(bkb);
+
   body.appendChild(top);
   const es=document.createElement("div");es.className="sectionTitle";es.textContent="蛋仓（"+(S.eggs||[]).length+" 枚）";body.appendChild(es);
   if(!S.eggs.length){ const e=document.createElement("div");e.className="hint";e.textContent="蛋仓空空如也。击败精英守卫或秘境BOSS有概率掉落蛋，筑基后首次击败精英守卫必得木灵蛋。";body.appendChild(e); }
@@ -2436,14 +2648,45 @@ function renderPets(body){
       <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px;margin:2px 0"><div id="petSatBar${i}" style="height:100%;width:${it.sat}%;background:linear-gradient(90deg,#45d0a0,#e0b95e);border-radius:3px"></div></div>
       <div style="height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px"><div id="petIntBar${i}" style="height:100%;width:${it.int}%;background:linear-gradient(90deg,#4aa8ff,#9aa5f0);border-radius:3px"></div></div>
     </div>`;
+    const sr=document.createElement("div");sr.style.cssText="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px";
+    const _cap=petSlotCap(b);
+    for(let si=0;si<_cap;si++){
+      const sk=(it.skills||[])[si];
+      const chip=document.createElement("span");chip.className="skSlot"+(sk?"":" empty")+(sk&&(it.locks||[])[si]?" locked":"");
+      if(sk){ const s=PET_SKILL_BY_ID[sk.sid]||{name:sk.sid,tier:"凡"};
+        chip.style.borderColor=(PS_TIER[s.tier]||{}).color||"#888";
+        chip.textContent=s.name+(sk.lv>1?(" "+sk.lv+"阶"):"")+((it.locks||[])[si]?" 🔒":"");
+      } else chip.textContent="＋";
+      sr.appendChild(chip);
+    }
+    const aptChip=document.createElement("span");aptChip.className="skSlot";aptChip.style.borderColor="#9aa5f0";
+    aptChip.textContent="灵韵 "+Math.round(it.apt||60);
+    sr.appendChild(aptChip);
+    item.querySelector(".body").appendChild(sr);
     const bw2=document.createElement("div");bw2.className="petBtns";
     if(PET_VID[it.id]) bw2.appendChild(buyBtn(true,()=>playPetVideo(it.id),"▶ 动态"));
     bw2.appendChild(buyBtn(true,()=>togglePetActive(it.uid),active?"休战":"出战"));
+    bw2.appendChild(buyBtn(true,()=>openPetForge(it.uid),"培养"));
     bw2.appendChild(buyBtn(true,()=>feedPickModal(it.uid),"喂食"));
     bw2.appendChild(buyBtn(true,()=>refinePet(it.uid),"炼化 · 得"+b.rarity+"精魄"));
     bw2.appendChild(buyBtn(true,()=>releasePet(it.uid),"放生 · "+priceLText(splitPriceL(b.rarity*10100))));
     item.appendChild(bw2);
     body.appendChild(item);
+  });
+  const ks=document.createElement("div");ks.className="sectionTitle";ks.textContent="— 兽诀库 · 藏 "+((S.books||[]).length)+" 本 —";body.appendChild(ks);
+  const kb=document.createElement("div");kb.className="hint";
+  kb.innerHTML="兽诀可从<b>坊市 / 拍卖会</b>购得，或由秘境 <b>BOSS</b> 掉落；点灵兽卡「培养」→「打入」：<b>空格必成</b>，<b>满格随机顶替一格</b>（锁灵符可保护；同一格连续被顶 3 次后自动保底）。两本同阶兽诀可<b>升阶</b>（效果 ×1.5 / ×2）。";
+  body.appendChild(kb);
+  PET_SKILLS.forEach(sk=>{
+    const t=PS_TIER[sk.tier]||{color:"#888"};
+    const c1=(S.books||[]).filter(x=>x.sid===sk.id&&(x.lv||1)===1).length;
+    const c2=(S.books||[]).filter(x=>x.sid===sk.id&&(x.lv||1)===2).length;
+    const c3=(S.books||[]).filter(x=>x.sid===sk.id&&(x.lv||1)===3).length;
+    const row=document.createElement("div");row.className="exchRow";
+    row.innerHTML='<span class="ex-n"><b style="color:'+t.color+'">'+sk.name+'</b> <span style="font-size:11px;opacity:.75">'+sk.tier+'阶</span> · '+sk.ds+'　<span style="color:var(--ink-dim)">持有 '+c1+' / '+c2+' / '+c3+' 阶</span></span>';
+    if(c1>=2) row.appendChild(buyBtn(true,()=>petUpgradeBook(sk.id,1),"升阶 1→2"));
+    if(c2>=2) row.appendChild(buyBtn(true,()=>petUpgradeBook(sk.id,2),"升阶 2→3"));
+    body.appendChild(row);
   });
 }
 /* 灵兽页轻量实时刷新（gameTick 调用）：进度条 / 倒计时 / 破壳按钮 */
@@ -2652,6 +2895,7 @@ function openEquipPick(sl){
 }
 let xumiFold={tres:true,equip:true,mat:true,matBeast:true,matOre:true,matHerb:true};
 function xuSec(body,title,key,count){
+  if(xumiFold[key]===undefined) xumiFold[key]=true;   // v33.1：新分组默认展开，且每个分组独立记忆
   const d=document.createElement("div");d.className="sectionTitle fold";d.style.cursor="pointer";d.style.display="flex";d.style.alignItems="center";d.style.gap="6px";
   d.innerHTML=(xumiFold[key]?"▾ ":"▸ ")+title+(count?`<span class="gcount">${count}种</span>`:"");
   d.addEventListener("click",()=>{ xumiFold[key]=!xumiFold[key]; render(); });
@@ -2708,7 +2952,7 @@ function renderXu(body){
       if(xuFilter==="gong"&&cn!=="功法") return;
       if(xuFilter==="tres"&&cn==="功法") return;
       gids.sort(byRarity); // v30.7.6 成品/功法组内按稀有度排序
-      if(!xuSec(body,cn,"tres",gids.length)) return;
+      if(!xuSec(body,cn,"tres:"+cn,gids.length)) return;   // v33.1：制符/炼丹/炼器/阵法/功法 各自独立折叠
       gids.forEach(id=>{
         let r=REC_BY_ID[id]||TRES_BY_ID[id]; if(!r) r=GONGFAS.find(x=>x.id===id); if(!r) return;
         if(!kf(r.name)) return;
@@ -2773,7 +3017,7 @@ function sellTres(qty){
   sound(520,.15); save(); render();
 }const SHOP_W={1:16,2:8,3:4,4:2,5:1,6:0.5}; // 稀有度→刷新权重（越稀有越低，坊市仅 1~6）
 const SHOP_STOCK={1:10,2:8,3:5,4:3,5:1,6:1}; // 稀有度→库存（越稀有越少，最多10最少1）
-function shopPool(){ const a=[]; MATS.forEach(m=>{if(m.rarity<=6)a.push({kind:"mat",obj:m});}); CRAFT.forEach(c=>c.rec.forEach(r=>{if(r.rarity<=6&&!r.slot)a.push({kind:"tres",obj:r});})); GONGFAS.forEach(g=>{if(g.id!=="yj"&&g.rarity<=6)a.push({kind:"gong",obj:g});}); SPELLS.forEach(s=>{a.push({kind:"skill",obj:s});}); return a; }
+function shopPool(){ const a=[]; MATS.forEach(m=>{if(m.rarity<=6)a.push({kind:"mat",obj:m});}); CRAFT.forEach(c=>c.rec.forEach(r=>{if(r.rarity<=6&&!r.slot)a.push({kind:"tres",obj:r});})); GONGFAS.forEach(g=>{if(g.id!=="yj"&&g.rarity<=6)a.push({kind:"gong",obj:g});}); SPELLS.forEach(s=>{a.push({kind:"skill",obj:s});}); PET_SKILLS.forEach(s=>{ if(s.tier!=="天"){ const o=petBookObj(s.id,1); if(o) a.push({kind:"book",obj:o}); } }); return a; }
 function spellRarityOf(s){ // v31.10 技能无 rarity 字段，按耗灵档位推定稀有度（坊市/拍卖统一口径）
   if(s.cost>=30) return 7; if(s.cost>=20) return 6; if(s.cost>=12) return 5; return 4;
 }
@@ -2790,8 +3034,8 @@ function refreshShop(now){
   for(let i=list.length;i<10 && chosen.size<fill.length;i++){ let pick=weightedShopPick(fill); let guard=0; while(chosen.has(pick.obj.id) && guard<300){ pick=weightedShopPick(fill); guard++; } if(chosen.has(pick.obj.id)) continue; chosen.add(pick.obj.id); list.push({kind:pick.kind, id:pick.obj.id, stock:(SHOP_STOCK[pick.obj.rarity]||1)}); }
   S.shop={list, until:now+10*60*1000};
 }
-function shopItem(id){ const m=MATS_BY_ID[id]; if(m) return {kind:"mat",obj:m}; const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g}; const s=SPELLS_BY_ID[id]; if(s) return {kind:"skill",obj:s}; const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r}; return null; }
-function buyShop(entry){ if(!entry||entry.stock<=0) return; const it=shopItem(entry.id); if(!it) return; const p=splitPriceL(it.obj.value); if(!canPayL(p)&&!canPayAutoL(it.obj.value)){ logEvent("灵石不足（可自动以高品折低品支付，或先至「灵石兑换」低换高凑齐），无法购买「"+it.obj.name+"」。",'warn'); return; } if(it.kind==="skill"){ if((S.skills||[]).includes(entry.id)){ logEvent("已习得「"+it.obj.name+"」，无需重复购买",'dim'); return; } const rEl=S.root?rootSpellElems(S.root):[]; if(!rEl.includes(it.obj.elem)){ logEvent("「"+it.obj.name+"」属"+it.obj.elem+"灵根，与自身灵根（"+(S.root?S.root.name:"未定")+"）不符，无法修炼",'warn'); return; } if(!payL(p)) payAutoL(it.obj.value); entry.stock--; S.skills.push(entry.id); logEvent("购得并习得「"+it.obj.name+"」（"+it.obj.elem+"·"+(it.obj.type==="shen"?"身法":"灵根法术")+"）· 可至战前技能槽装备",'sys','trade'); sound(520,.15); save(); render(); return; } if(!payL(p)) payAutoL(it.obj.value); entry.stock--; if(it.kind==="mat"){ S.mats[entry.id]=(S.mats[entry.id]||0)+1; } else { S.tres[entry.id]=(S.tres[entry.id]||0)+1; } logEvent("于坊市购入「"+it.obj.name+"」（-"+priceLText(p)+"）",'sys','trade'); sound(520,.15); save(); render(); }/* ============ 拍卖会（坊市子项）============ */
+function shopItem(id){ const _bk=PET_BOOK_BY_ID[id]; if(_bk) return {kind:"book",obj:_bk}; const m=MATS_BY_ID[id]; if(m) return {kind:"mat",obj:m}; const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g}; const s=SPELLS_BY_ID[id]; if(s) return {kind:"skill",obj:s}; const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r}; return null; }
+function buyShop(entry){ if(!entry||entry.stock<=0) return; const it=shopItem(entry.id); if(!it) return; const p=splitPriceL(it.obj.value); if(!canPayL(p)&&!canPayAutoL(it.obj.value)){ logEvent("灵石不足（可自动以高品折低品支付，或先至「灵石兑换」低换高凑齐），无法购买「"+it.obj.name+"」。",'warn'); return; } if(it.kind==="skill"){ if((S.skills||[]).includes(entry.id)){ logEvent("已习得「"+it.obj.name+"」，无需重复购买",'dim'); return; } const rEl=S.root?rootSpellElems(S.root):[]; if(!rEl.includes(it.obj.elem)){ logEvent("「"+it.obj.name+"」属"+it.obj.elem+"灵根，与自身灵根（"+(S.root?S.root.name:"未定")+"）不符，无法修炼",'warn'); return; } if(!payL(p)) payAutoL(it.obj.value); entry.stock--; S.skills.push(entry.id); logEvent("购得并习得「"+it.obj.name+"」（"+it.obj.elem+"·"+(it.obj.type==="shen"?"身法":"灵根法术")+"）· 可至战前技能槽装备",'sys','trade'); sound(520,.15); save(); render(); return; } if(it.kind==="book"){ if(!payL(p)) payAutoL(it.obj.value); entry.stock--; S.books.push({sid:it.obj.bookSid,lv:it.obj.bookLv||1}); logEvent("于坊市购得兽诀「"+it.obj.name+"」",'sys','trade'); sound(520,.15); save(); render(); return; } if(!payL(p)) payAutoL(it.obj.value); entry.stock--; if(it.kind==="mat"){ S.mats[entry.id]=(S.mats[entry.id]||0)+1; } else { S.tres[entry.id]=(S.tres[entry.id]||0)+1; } logEvent("于坊市购入「"+it.obj.name+"」（-"+priceLText(p)+"）",'sys','trade'); sound(520,.15); save(); render(); }/* ============ 拍卖会（坊市子项）============ */
 let shopCat="shop"; // "shop" 坊市 / "auction" 拍卖会
 function auctionPool(minR,maxR){
   const a=[];
@@ -2801,11 +3045,13 @@ function auctionPool(minR,maxR){
   CRAFT.forEach(c=>c.rec.forEach(r=>{ if(r.rarity>=minR&&r.rarity<=maxR && !r.slot) a.push({kind:"tres",obj:r}); }));
   GONGFAS.forEach(g=>{ if(g.id!=="yj" && g.rarity>=minR&&g.rarity<=maxR) a.push({kind:"gong",obj:g}); }); // v31.11 黄庭经不再出售
   SPELLS.forEach(s=>{ const r=spellRarityOf(s); if(r>=minR&&r<=maxR) a.push({kind:"skill",obj:s}); }); // v31.10 拍卖池加入技能
+  PET_SKILLS.forEach(s=>{ const o=petBookObj(s.id,1); if(o&&o.rarity>=minR&&o.rarity<=maxR) a.push({kind:"book",obj:o}); }); // v33 兽诀入拍卖
   return a;
 }
 function itemCat(it){
   if(it.kind==="gong") return "功法";
   if(it.kind==="skill") return it.obj.type==="shen"?"身法":"灵根法术";
+  if(it.kind==="book") return "兽诀";
   if(it.kind==="mat") return it.obj.cat||"材料";
   const r=it.obj;
   if(r.slot){
@@ -2822,6 +3068,7 @@ function shopTipHtml(it,en){
   let eff="";
   if(it.kind==="gong") eff="功法 · 灵气倍率 ×"+r.ess;
   else if(it.kind==="skill") eff="购后习得，可装配至战前技能槽 · "+battleSkillDesc("spell",r);
+  else if(it.kind==="book") eff="兽诀 · "+r.ds;
   else if(it.kind==="mat"){ /* 材料无效果段 */ }
   else if(r.slot) eff=eqText(r);
   else { const useable=!!(r.eff||r.heal); eff=useable?("效果："+effText(r)):"无可使用效果，可出售"; }
@@ -2833,6 +3080,7 @@ function shopTipHtml(it,en){
     const wrong=!rEl.includes(r.elem);
     held=" · "+(S.skills.includes(en.id)?"已习得":(wrong?'<b style="color:#e05555">本灵根不可用</b>':"未习得"));
   }
+  else if(it.kind==="book") held=" · 持有 "+((S.books||[]).filter(b=>b.sid===r.bookSid&&(b.lv||1)===(r.bookLv||1)).length);
   else held=" · 持有 "+fmt(S.tres[en.id]||0);
   return `<b>${r.name}${it.kind==="skill"?"（"+r.elem+"灵根）":""}</b>（稀有${it.kind==="skill"?spellRarityOf(r):r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>${it.kind==="mat"?"单价":"价值"} ${r.value} 下品灵石 · 库存 ${en.stock}${held}`;
 }
@@ -2855,6 +3103,7 @@ function auctionItem(kind,id){
   if(kind==="mat"){ const m=MATS_BY_ID[id]; return m?{kind:"mat",obj:m}:null; }
   const g=GONGFAS.find(x=>x.id===id); if(g) return {kind:"gong",obj:g};
   if(kind==="skill"){ const s=SPELLS_BY_ID[id]; if(s) return {kind:"skill",obj:s}; } // v31.10 拍卖池支持技能
+  if(kind==="book"){ const bk=PET_BOOK_BY_ID[id]; if(bk) return {kind:"book",obj:bk}; }
   const r=REC_BY_ID[id]; if(r) return {kind:"tres",obj:r};
   return null;
 }
@@ -2912,6 +3161,7 @@ function settleAuction(now){
     const it=auctionItem(en.kind,en.id);
     if(en.bidder==="player"){
       if(it){ if(it.kind==="mat") S.mats[en.id]=(S.mats[en.id]||0)+1; else if(it.kind==="skill"){ if(!S.skills.includes(en.id)) S.skills.push(en.id); logEvent("拍卖拍得技能「"+it.obj.name+"」并习得",'sys','trade'); } // v31.10 技能拍得直接习得
+        else if(it.kind==="book"){ S.books.push({sid:it.obj.bookSid,lv:it.obj.bookLv||1}); }
         else if(it.kind==="gong"){ S.tres[en.id]=(S.tres[en.id]||0)+1; } else if(isEquip(en.id)){ S.equip.push(newEquip(en.id)); } else { S.tres[en.id]=(S.tres[en.id]||0)+1; } }
       won++; if(it) logEvent("拍卖成交：以 "+fmt(en.bid)+" 下品灵石拍得「"+it.obj.name+"」",'sys','trade');
     } else if(en.bidder==="npc"){
@@ -3678,7 +3928,7 @@ function resolveCell(win,fleeMode){
       exp.floor++;
       if(exp.floor>=10){ exp.map=genExpMap(exp.floor,exp.area); exp.pos={q:0,r:0}; const hasBoss=Object.keys(exp.map.cells).some(k=>exp.map.cells[k].t==="boss"); logEvent("击败精英守卫！踏入第 10 层·最终层"+(hasBoss?"（BOSS 潜伏其中）":"（发现出口传送）"),'sys'); }
       else { exp.map=genExpMap(exp.floor,exp.area); exp.pos={q:0,r:0}; logEvent("击败精英守卫！深入第 "+exp.floor+" 层",'sys'); }
-    } else if(b.kind==="boss"){ maybeDropEgg(exp.area, exp.floor); maybeDropPu(exp.area); logEvent("击败秘境 BOSS！",'sys'); expFinish(); return; }
+    } else if(b.kind==="boss"){ maybeDropEgg(exp.area, exp.floor); maybeDropPu(exp.area); maybeDropBook(exp.area, exp.floor); logEvent("击败秘境 BOSS！",'sys'); expFinish(); return; }
   }
   expRevealNearby();
   save(); renderExpPanel(); renderStats();
@@ -4028,7 +4278,9 @@ function areaMat(area, floor){
 function areaStone(area, floor){
   const T={dt:["L","L","M"],yl:["M","M","H"],sg:["H","H","H","H","H","H","H","H","T","T"],kj:["T","T","T","T","T","T","T","T","G"]};
   const arr=T[area]||["L"];
-  const tier=arr[Math.floor(Math.random()*arr.length)];
+  let tier=arr[Math.floor(Math.random()*arr.length)];
+  const _lp=petSkillSum("loot");
+  if(_lp>0 && Math.random()*100<_lp){ const _ord=["L","M","H","T","G"]; const _i=_ord.indexOf(tier); if(_i>=0&&_i<4) tier=_ord[_i+1]; }
   let qty=1;
   if(tier==="L") qty=Math.max(1,Math.floor((10+Math.random()*50)*(1+floor*0.03)*0.3));
   else if(tier==="M") qty=Math.max(1,Math.floor((3+Math.random()*20)*(1+floor*0.03)*0.3));
@@ -4510,7 +4762,7 @@ const MANUAL_SECTIONS=[
     {h:"怎么选", b:"想快刷灵石/战力走单灵根或毒变异；想稳突破走五灵根。灵根战斗加成直接并入战力，元素还决定你能学哪些法术（见「法术与技能槽」）。"},
   ]},
   {t:"境界与突破", ic:"🧘", secs:[
-    {h:"十重境界", b:"炼气(需求0,×1) → 筑基(2万,×3) → 金丹(30万,×10) → 元婴(500万,×35) → 化神(8000万,×120) → 炼虚(250亿,×420) → 合体(5000亿,×1500) → 大乘(1e13,×5400) → 渡劫(2e14,×2万) → 真仙(5e15,×7.5万)。<br>境界倍率直接乘灵气产出；突破需求再乘灵根需求倍率。"},
+    {h:"十重境界", b:"炼气(需求0,×1) → 筑基(1.6万,×3) → 金丹(24万,×10) → 元婴(400万,×35) → 化神(6400万,×120) → 炼虚(200亿,×420) → 合体(4000亿,×1500) → 大乘(8e12,×5400) → 渡劫(1.6e14,×2万) → 真仙(4e15,×7.5万)。<br>境界倍率直接乘灵气产出；突破需求再乘灵根需求倍率。"},
     {h:"突破成功率", b:"= 灵根上限（10%~50%，变异 35%）+ 突破机缘（每级+2%）+ 突破类丹药/符箓（15%~40%）+ 随机事件（+30%），<b>总上限 80%</b>。"},
     {h:"代价", b:"成功：扣掉所需灵力、境界+1、气血回满。失败：损失<b>所需灵力的 40%</b>，境界不变。"},
     {h:"防连点与留痕", b:"突破按钮 700ms 内重复点击只算一次，且每次突破<b>立即存档</b>；「设置 → 诊断 → 境界记录」可查最近 12 次境界变化（突破/飞升/载入不一致/校正脏值）。"},
@@ -4544,7 +4796,7 @@ const MANUAL_SECTIONS=[
     {h:"技能槽", b:"按灵根扩容（法术/身法/神通）：单 2/1/1、双 3/1/1、三 3/2/1、四 4/2/1、五 4/2/2、变异 2/2/1。战前在「探索」页底部或「装备」页点『配置技能槽』，战斗中不可更换。"},
   ]},
   {t:"神通", ic:"⚡", secs:[
-    {h:"12 门神通", b:"以<b>大道碎片</b>购买：下品 1 / 中品 3 / 上品 8 / 极品 15 / 至尊 30 碎片。习得后可作为战斗大招（高耗灵、长冷却）使用，同时永久提供战力加成。"},
+    {h:"12 门神通", b:"以<b>大道碎片</b>购买：下品 20 / 中品 40 / 上品 70 / 极品 110 / 至尊 180 碎片。习得后只能在<b>战斗内</b>以「神通·XX」施展（耗灵 40~120、冷却 4~10 回合），<b>不提供常驻战力或属性加成</b>；碎片也可以不花，留作每点 +5% 修炼。<br>碎片很稀缺：<b>首次飞升约 12 枚</b>，最便宜的神通（20）也要<b>飞升 2 次</b>才买得起，至尊需约 5 次。"},
     {h:"大招速查", b:"太虚剑诀(50灵/5T 单体×2.5)、九转玄功(40/5 回血30%)、御火术(45/4 单体×2.2+灼烧)、天罡北斗阵(60/5 全体×1.6+降攻)、混元一气(50/5 全属性+30%)、呼风唤雨(55/5 全体×1.5+减速)、大衍神算(70/6 闪避+40%必中)、万剑归宗(75/6 全体×2.0)、九霄雷法(80/6 全体×2.2+破甲)、诛仙剑阵(100/8 全体×2.6+破甲)、天魔解体(60/6 自损15% 攻击×2.5+吸血)、法天象地(120/10 全属性+50%+无敌1回合)。"},
     {h:"碎片来源", b:"飞升（主要）、成就、随机事件、阴阳灵根 +25%。"},
   ]},
@@ -4616,6 +4868,10 @@ const MANUAL_SECTIONS=[
     {h:"温养", b:"偏好类别材料 +1×稀有度、其余材料 +0.5×稀有度；灵兽精魄每枚 +1。温养度越高，破壳出「灵品/圣品」概率越高（三档合计 100%）；满温养初始饱食/亲密 +20。"},
     {h:"30 只灵兽", b:"每颗蛋对应凡/灵/圣三档共 3 只，10 蛋共 30 只。修炼型 +1%×稀有度 修炼速度、攻击型 +2%×稀有度 战力；圣品（稀9-10）额外带 灵气/会心/突破/减伤 特性。出战上限：筑基 1 / 金丹 2 / 元婴及以上 3。"},
     {h:"养成与叛变", b:"饱食每小时衰减（凡20/灵18/圣15），亲密每小时 -5（饱食为 0 时 -15）。喂食 1 份任意材料：饱食 +10×稀有度、亲密 +稀有度。亲密归零后进入叛变倒计时（72 小时；饱食也为 0 则 48 小时），期间喂食即重置，到期永久逃离。"},
+    {h:"兽诀与打书", b:"兽诀共 13 种（凡/灵/玄/天四档），可在<b>坊市、拍卖会</b>购买，或由秘境 BOSS 掉落。每只灵兽按稀有度拥有技能格：稀1-2 两格、稀3-4 三格、稀5-6 四格、稀7-8 五格、稀9-10 六格（圣品 +1）。在灵兽卡点「培养」→「打入」：<b>空格必成</b>；<b>满格时随机顶替一格</b>（同名不重复）。打书另耗灵石（一阶 8000 / 二阶 24000 / 三阶 72000 下品）。"},
+    {h:"锁灵与保底", b:"「锁灵符」（8 万下品）可锁住一个技能格，打书时不会被顶替，点已锁格子可解锁。反挫败保底：同一格<b>连续被顶 3 次</b>后，下一次打书不会再选中它。"},
+    {h:"灵韵与洗练", b:"灵兽另有「灵韵」（20-100，孵化时按稀有度生成）：灵韵越高该兽所有加成越强（系数 0.85~1.15 线性）。「洗练石」（3 万下品）可重掷灵韵，基准随稀有度上移。"},
+    {h:"合宠与升阶", b:"「培养」里可选另一只灵兽<b>合宠</b>：主兽保留自身技能，随机继承材料兽最多 2 门（格子够时），材料兽消失；新灵韵 = 主兽 60% + 材料 40% 再浮动。两本<b>同阶同名</b>兽诀可升阶（1→2→3 阶），效果分别 ×1.5、×2。"},
     {h:"炼化与放生", b:"重复灵兽可『炼化』得精魄（数量=稀有度，图鉴保留）；『放生』返还 稀有度×(1 上品+100 下品)。精魄可用于温养任意蛋（+1）或出售（1 上品/枚）。"},
   ]},
   {t:"成就", ic:"🏆", secs:[
@@ -4624,8 +4880,8 @@ const MANUAL_SECTIONS=[
     {h:"奖励显示", b:"奖励以下品灵石记账，界面自动换算为高品（如 200 → 2 中品），并显示「已领 X 次 / 总 Z 次」或「不限」。"},
   ]},
   {t:"飞升", ic:"🦢", secs:[
-    {h:"条件", b:"化神期（境界≥4）起，修炼页出现紫色「飞升」按钮；消耗 = 当前突破所需灵力 ×10。"},
-    {h:"收益", b:"获得大道碎片 = ⌊(本轮累计灵力 / 100万)^0.6⌋（至少 1）。每点碎片<b>永久 +5% 修炼</b>，并可购买神通。"},
+    {h:"条件", b:"化神期（境界≥4）起，修炼页出现紫色「飞升」按钮；消耗 = 下一境界突破需求 × 灵根需求倍率 × <b>2</b>（界面实时显示所需灵力与可获碎片）。"},
+    {h:"收益", b:"获得大道碎片 = ⌊(本轮累计灵力 / 100万)^0.5 × 0.1⌋（至少 1）。例：累计 160 亿 → 约 12 枚；1 万亿 → 约 100 枚；100 万亿 → 约 3160 枚。每点碎片<b>永久 +5% 修炼</b>，也可用于购买神通（下品 20 → 至尊 180）。"},
     {h:"重置范围", b:"境界归 0、灵力清零、强化设施清零、材料/成品/采集清空；<b>保留</b>灵根、功法、神通、大道碎片、成就、灵石、装备、灵兽、阵容与形象。"},
   ]},
   {t:"存档与安全", ic:"💾", secs:[
