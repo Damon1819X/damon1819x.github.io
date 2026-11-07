@@ -374,6 +374,37 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 .skSlot.empty{opacity:.42;border-style:dashed;}
 .skSlot.locked{border-style:solid;box-shadow:0 0 7px rgba(224,185,94,.45);}
 .skSlot.big{font-size:12px;padding:6px 10px;}
+/* ================= 探索收获总结（v33.4） ================= */
+.expSumMask{position:fixed;inset:0;background:rgba(0,0,0,.66);z-index:130;display:flex;align-items:center;justify-content:center;padding:16px;}
+.expSumCard{width:min(520px,94vw);max-height:82vh;display:flex;flex-direction:column;overflow:hidden;color:var(--ink);border-radius:16px;
+  background:linear-gradient(180deg,#1c2331,#141a22);border:1px solid rgba(224,185,94,.35);
+  box-shadow:0 18px 50px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.06);}
+.expSumHead{padding:12px 16px;font-size:16px;font-weight:800;color:var(--gold);letter-spacing:.5px;
+  background:linear-gradient(90deg,rgba(224,185,94,.18),rgba(224,185,94,0));border-bottom:1px solid rgba(255,255,255,.07);}
+.expSumMeta{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;font-size:11px;color:var(--ink-dim);}
+.esChip{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:3px 9px;}
+.esChip.bad{color:#ff8f86;border-color:rgba(217,83,79,.5);background:rgba(217,83,79,.10);}
+.expSumBody{overflow-y:auto;padding:2px 14px 8px;}
+.esSec{margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.esSecH{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.045);border-bottom:1px solid rgba(255,255,255,.05);}
+.esSecH em{font-style:normal;font-size:10px;font-weight:400;color:var(--ink-dim);margin-left:auto;}
+.esSecH b{font-size:11px;color:var(--jade);font-weight:700;}
+.esRow{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:5px 10px;font-size:12px;border-top:1px dashed rgba(255,255,255,.055);}
+.esRow:first-of-type{border-top:0;}
+.esIc{font-size:14px;line-height:1;}
+.esIc img{width:18px;height:18px;border-radius:5px;vertical-align:middle;}
+.esNm{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.esNm i{font-style:normal;font-size:10px;color:var(--ink-dim);margin-left:6px;}
+.esQty{color:var(--gold);font-weight:700;}
+.esVal{color:var(--ink-dim);font-size:11px;min-width:62px;text-align:right;}
+.expSumEmpty{padding:26px;text-align:center;color:var(--ink-dim);font-size:12px;}
+.expSumFoot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;
+  border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--ink-dim);}
+.expSumFoot b{color:var(--gold);}
+.expSumFoot .esBtn{padding:8px 14px;border-radius:9px;border:none;cursor:pointer;font-weight:700;font-size:12px;
+  background:linear-gradient(135deg,var(--gold),#b8912a);color:#1a1406;}
+.expSumFoot .esBtn:hover{filter:brightness(1.08);}
 </style>
 </head>
 <body>
@@ -898,6 +929,7 @@ function maybeDropBook(area, floor){
   if(!pool.length) return false;
   const s=pool[Math.floor(Math.random()*pool.length)];
   S.books.push({sid:s.id,lv:1});
+  if(S.exp) S.exp.loot.push({kind:"book",sid:s.id,lv:1,name:petBookName(s.id,1),qty:1});
   logEvent("BOSS 遗落兽诀「"+petBookName(s.id,1)+"」（"+s.tier+"阶）",'sys');
   banner("获得兽诀："+s.name); return true;
 }
@@ -4415,17 +4447,85 @@ function expRetreat(){
   logEvent("主动撤出秘境：损失 "+hpL+" 气血、一半战利品",'warn');
   S.exp=null; $("expOverlay").classList.remove("show"); save(); renderTab(); renderStats();
 }
+/* 探索收获总结（v33.4）：卡片式弹窗，战利品按类别分组（材料/成品/装备/兽诀/傀儡/灵石） */
 function expSummary(title, lossNote){
   const exp=S.exp; if(!exp) return;
-  const rows={};
-  exp.loot.forEach(it=>{
-    if(it.kind==="mat"){ const m=MATS_BY_ID[it.id]; rows[m?m.name:it.id]=(rows[m?m.name:it.id]||0)+it.qty; }
-    else if(it.kind==="tres"){ const r=REC_BY_ID[it.id]; rows[(r?r.name:it.id)]=(rows[(r?r.name:it.id)]||0)+(isEquip(it.id)?1:it.qty); }
-    else if(it.kind==="stone"){ const tn={L:"下品灵石",M:"中品灵石",H:"上品灵石",T:"极品灵石",G:"神品灵石"}[it.tier]||it.tier; rows[tn]=(rows[tn]||0)+it.qty; }
-    else if(it.kind==="pu"){ rows[it.name]=(rows[it.name]||0)+(it.qty||1); }
+  const AREA=EXP_AREAS[exp.area]||{nm:"秘境"};
+  const diff=(typeof areaDifficulty==="function")?areaDifficulty(exp.area):{lv:"—"};
+  const STONE_NM={L:"下品灵石",M:"中品灵石",H:"上品灵石",T:"极品灵石",G:"神品灵石"};
+  const STONE_VAL={L:1,M:100,H:10000,T:1000000,G:100000000};
+  const agg={};
+  const add=(g,it)=>{ const k=g.key+"|"+(it.id||it.tier||"")+"|"+(it.sid||"");
+    if(!agg[k]) agg[k]={g:g,it:it,qty:0};
+    agg[k].qty += (it.qty||1); };
+  (exp.loot||[]).forEach(it=>{
+    if(it.kind==="mat"){
+      const m=MATS_BY_ID[it.id];
+      const cat=m?m.cat:"材料";
+      const ic=cat==="妖兽材料"?"🐺":cat==="矿石"?"⛏️":"🌿";
+      const order=cat==="妖兽材料"?1:cat==="矿石"?2:3;
+      add({key:"mat:"+cat,title:cat,ic:ic,order:order},it);
+    } else if(it.kind==="tres"){
+      const r=REC_BY_ID[it.id];
+      let cat="成品", ic="📦", order=6;
+      if(r){
+        if(r.slot){ cat="装备"; ic="🛡️"; order=8; }
+        else if(r.isPu){ cat="傀儡"; ic="🤖"; order=10; }
+        else { const c=CRAFT.find(x=>x.rec.indexOf(r)>=0); cat=c?c.cat:"成品";
+          ic=({制符:"🧧",炼丹:"💊",炼器:"⚒️",阵法:"⛩️"})[cat]||"📦";
+          order=({制符:4,炼丹:5,炼器:6,阵法:7})[cat]||6; }
+      }
+      add({key:"tres:"+cat,title:cat,ic:ic,order:order},it);
+    } else if(it.kind==="stone"){ add({key:"stone",title:"灵石",ic:"💰",order:11},it); }
+    else if(it.kind==="pu"){ add({key:"pu",title:"傀儡",ic:"🤖",order:10},it); }
+    else if(it.kind==="book"){ add({key:"book",title:"兽诀",ic:"📜",order:9},it); }
   });
-  const line=Object.keys(rows).length? Object.entries(rows).map(([k,v])=>k+" ×"+fmt(v)).join("、") : "（无）";
-  showModal(title,"探索区域："+EXP_AREAS[exp.area].nm+"（"+areaDifficulty(exp.area).lv+"）\n到达层数：第 "+exp.floor+" 层"+(lossNote?"\n"+lossNote:"")+"\n本次获得：\n"+line+"\n剩余气血："+Math.floor(S.hp)+"/"+S.hpMax);
+  /* 整理为分组 */
+  const gmap={};
+  Object.keys(agg).forEach(k=>{
+    const a=agg[k], g=a.g, it=a.it;
+    let name=it.name||"?", sub="", val=0, ic=g.ic;
+    if(it.kind==="mat"){ const m=MATS_BY_ID[it.id]; if(m){ name=m.name; val=(m.value||0)*a.qty; sub="稀有"+m.rarity; } }
+    else if(it.kind==="tres"){ const r=REC_BY_ID[it.id]; if(r){ name=r.name; val=(r.value||0)*a.qty; sub=r.slot?SLOT_NAMES[r.slot]:(r.isPu?"傀儡":"稀有"+r.rarity); ic=icOf?icOf(r):g.ic; } }
+    else if(it.kind==="stone"){ name=STONE_NM[it.tier]||"灵石"; val=(STONE_VAL[it.tier]||1)*a.qty; sub=""; }
+    else if(it.kind==="pu"){ name=it.name||"傀儡"; val=0; sub="已入傀儡栏"; }
+    else if(it.kind==="book"){ name=it.name||"兽诀"; const o=(typeof petBookObj==="function"&&it.sid)?petBookObj(it.sid,it.lv||1):null; val=o?(o.value||0)*a.qty:0; sub="兽诀"; }
+    const key=g.key;
+    if(!gmap[key]) gmap[key]={title:g.title,ic:g.ic,order:g.order,qty:0,val:0,rows:[]};
+    gmap[key].qty+=a.qty; gmap[key].val+=val;
+    gmap[key].rows.push({ic:ic,name:name,sub:sub,qty:a.qty,val:val});
+  });
+  const secs=Object.keys(gmap).map(k=>gmap[k]).sort((a,b)=>a.order-b.order);
+  secs.forEach(s=>s.rows.sort((a,b)=>b.val-a.val));
+  const total=secs.reduce((a,s)=>a+s.val,0);
+  /* 弹窗 */
+  const mask=document.createElement("div");mask.className="expSumMask";
+  mask.onclick=ev=>{ if(ev.target===mask) mask.remove(); };
+  const card=document.createElement("div");card.className="expSumCard";
+  let html='<div class="expSumHead">'+(lossNote?"⚠️ ":"🏆 ")+title+'</div>';
+  html+='<div class="expSumMeta">'
+    +'<span class="esChip">🗺️ '+AREA.nm+(diff&&diff.lv?(" · "+diff.lv):"")+'</span>'
+    +'<span class="esChip">⬇️ 第 '+(exp.floor||1)+' 层</span>'
+    +'<span class="esChip">❤️ 气血 '+Math.floor(S.hp)+'/'+S.hpMax+'</span>'
+    +(lossNote?('<span class="esChip bad">'+lossNote+'</span>'):"")
+    +'</div>';
+  if(!secs.length){
+    html+='<div class="expSumEmpty">本次没有获得战利品</div>';
+  }else{
+    html+='<div class="expSumBody">';
+    secs.forEach(g=>{
+      html+='<div class="esSec"><div class="esSecH"><span>'+g.ic+' '+g.title+'</span><em>'+g.rows.length+' 种 · '+fmt(g.qty)+' 件</em>'+(g.val?'<b>+'+fmt(g.val)+'</b>':'')+'</div>';
+      g.rows.forEach(r=>{
+        html+='<div class="esRow"><span class="esIc">'+r.ic+'</span><span class="esNm">'+r.name+(r.sub?('<i>'+r.sub+'</i>'):'')+'</span><span class="esQty">×'+fmt(r.qty)+'</span><span class="esVal">'+(r.val?fmt(r.val):"—")+'</span></div>';
+      });
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  html+='<div class="expSumFoot"><span>合计估值 <b>'+priceLText(splitPriceL(total))+'</b><i style="font-style:normal;color:var(--ink-dim)">（'+fmt(total)+' 下品）</i></span><button type="button" class="esBtn">收入须弥空间</button></div>';
+  card.innerHTML=html;
+  const btn=card.querySelector(".esBtn"); if(btn) btn.onclick=()=>mask.remove();
+  mask.appendChild(card); document.body.appendChild(mask);
 }
 function expRevealNearby(){
   const exp=S.exp; if(!exp) return;
@@ -4464,6 +4564,10 @@ function expMove(q,r){
     }break;
     case "exit":{
       const st=areaStone(exp.area,exp.floor); exp.loot.push({kind:"stone",tier:st.tier,qty:st.qty});
+      /* v33.5：出口传送与 BOSS 享受同样的额外掉落判定（蛋 / 傀儡 / 兽诀） */
+      maybeDropEgg(exp.area, exp.floor);
+      maybeDropPu(exp.area);
+      maybeDropBook(exp.area, exp.floor);
       logEvent("找到出口传送，携少量收获离开秘境",'sys');
       expFinish(); return;
     }break;
@@ -4863,7 +4967,7 @@ const MANUAL_SECTIONS=[
   {t:"探索", ic:"🗺️", secs:[
     {h:"四大区域", b:"洞天福地（建议筑基~元婴）、原始禁区（化神~合体）、上古战场（大乘~真仙）、跨界空间（真仙及以上）。炼气期不可探索；区域难度按玩家战力实时评估（毫无难度→九死一生，影响战斗灵力收益倍率 0.4~3.5）。"},
     {h:"蜂窝秘境", b:"每区域 10 层；浅层(1-3)半径 4、中层(4-7)半径 5、深层(8-10)半径 7。格子内容初始为迷雾，走入即揭示并触发，随机再揭开相邻 2 格；已走过的格子可重复行走（用于绕路），但不再触发事件、也不再揭雾。"},
-    {h:"格子概率", b:"战斗 35% / 机关 15% / 空白 25% / 妖兽材料 7% / 灵石 6% / 丹药 6% / 符箓 6%；每层另有 1 个『下层入口』（精英守卫，击败才进下一层）；第 10 层 50% 为 BOSS、50% 为出口传送。"},
+    {h:"格子概率", b:"战斗 35% / 机关 15% / 空白 25% / 妖兽材料 7% / 灵石 6% / 丹药 6% / 符箓 6%；每层另有 1 个『下层入口』（精英守卫，击败才进下一层）；第 10 层 50% 为 BOSS、50% 为出口传送；<b>出口传送与 BOSS 一样会判定出蛋 / 傀儡 / 兽诀掉落</b>，并额外赠一份灵石。"},
     {h:"伤害与难度", b:"机关扣<b>气血上限的 6%</b>（受减伤影响）；普通怪强度 = 全装基准×50%~70%；精英强度相同但施法概率 45%、减伤 12%；BOSS = 全装基准 × 危险系数（洞天1.15 / 禁区1.25 / 战场1.35 / 跨界1.5，后三图额外 ×1.1）。"},
     {h:"结束方式", b:"①通关（击杀 BOSS 或走到出口传送）；②气血耗尽：被迫撤离、损失一半收获；③主动撤出（-50% 气血、-50% 战利品，需二次确认）。三种结束都会弹出<b>收获总结</b>，战利品在「🎒 战利品」页可查明细与估价。"},
     {h:"秘境界石块位", b:"灵石掉落按区域：洞天=下/中品、禁区=中/上品、战场=上品为主（少量极品）、跨界=极品为主（少量神品）。"},
