@@ -573,7 +573,7 @@ button:hover:not(:disabled){filter:brightness(1.08);}
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v31.13";
+const VERSION = "v31.15";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -1415,15 +1415,15 @@ const ACHS = [
 /* 随机事件 */
 const EVENTS=[
   {id:"rain", nm:"天降灵雨", good:true,  txt:"灵雨润泽，60秒内修炼速度翻倍！", fx:()=>{ evt.prodBoost=Date.now()+60000; }},
-  {id:"heart",nm:"心魔来袭", good:false, txt:"心魔突袭，灵台蒙尘！300秒内修炼速度减半，且灵气散失一成。", fx:()=>{ evt.prodPenalty=Date.now()+300000; const l=Math.floor(S.essence*0.1); if(l>0){ S.essence-=l; logEvent("心魔之下，灵气散失 "+fmt(l)+"！",'warn'); } }},
-  {id:"meet", nm:"偶得奇遇", good:true,  txt:"深山偶遇仙缘，收获一笔灵石！", fx:()=>{ const r=Math.random()*100; if(r<96){ const n=Math.max(1,Math.floor(1+Math.random()*50)); S.stoneL+=n; logEvent("奇遇得财，下品灵石 +"+fmt(n)+"！",'sys'); } else if(r<98.5){ const n=Math.floor(100+Math.random()*900); S.stoneL+=n; logEvent("奇遇得财，下品灵石 +"+fmt(n)+"！",'sys'); } else if(r<99.3){ const n=Math.floor(10+Math.random()*90); S.stoneM+=n; logEvent("奇遇得财，中品灵石 +"+fmt(n)+"！",'sys'); } else if(r<99.99){ const n=Math.floor(1+Math.random()*9); S.stoneH+=n; logEvent("奇遇得财，上品灵石 +"+fmt(n)+"！",'sys'); } else { S.stoneT+=1; logEvent("惊天奇遇！极品灵石 +1！",'sys'); } }},
+  {id:"heart",nm:"心魔来袭", good:false, txt:"心魔突袭，灵台蒙尘！300秒内修炼速度减半，且灵气散失 5%（损失上限＝当前突破所需灵力的 2%）。", fx:()=>{ evt.prodPenalty=Date.now()+300000; const cap=Math.max(1,Math.floor(realmNeed()*0.02)); const l=Math.min(Math.floor(S.essence*0.05), cap); if(l>0){ S.essence-=l; logEvent("心魔之下，灵气散失 "+fmt(l)+"（上限 "+fmt(cap)+"）！",'warn'); } }},
+  {id:"meet", nm:"偶得奇遇", good:true,  txt:"深山偶遇仙缘，收获一笔灵石！", fx:()=>{ const r=Math.random()*100; if(r<90){ const n=Math.max(1,Math.floor(1+Math.random()*50)); S.stoneL+=n; logEvent("奇遇得财，下品灵石 +"+fmt(n)+"！",'sys'); } else if(r<94){ const n=Math.floor(100+Math.random()*900); S.stoneL+=n; logEvent("奇遇得财，下品灵石 +"+fmt(n)+"！",'sys'); } else if(r<97){ const n=Math.floor(10+Math.random()*90); S.stoneM+=n; logEvent("奇遇得财，中品灵石 +"+fmt(n)+"！",'sys'); } else if(r<99){ const n=Math.floor(1+Math.random()*9); S.stoneH+=n; logEvent("奇遇得财，上品灵石 +"+fmt(n)+"！",'sys'); } else { const n=1+Math.floor(Math.random()*3); S.stoneT+=n; logEvent("惊天奇遇！极品灵石 +"+n+"！",'sys'); } }},
   {id:"dawn", nm:"一朝顿悟", good:true,  txt:"顿悟天道，60秒内修炼速度翻倍、突破成功率+10%！", fx:()=>{ evt.prodBoost=Date.now()+60000; evt.breakBoost=Date.now()+60000; evt.breakBoostAmt=0.10; }},
   {id:"tide", nm:"灵气潮汐", good:true,  txt:"灵气潮涌，30秒内修炼速度提升三倍！", fx:()=>{ evt.prodBoost3=Date.now()+30000; }},
   {id:"herb", nm:"仙草现世", good:true,  txt:"荒山仙草现世，采得数株灵药！", fx:()=>{ const hs=MATS.filter(m=>m.cat==="草药"); for(let i=0;i<3;i++){ const h=hs[Math.floor(Math.random()*hs.length)]; S.mats[h.id]=(S.mats[h.id]||0)+1; } }},
   {id:"beast",nm:"妖兽袭营", good:false, txt:"妖兽夜袭，撞散储物袋，损失部分材料！", fx:()=>{ const m2=MATS.filter(m=>(S.mats[m.id]||0)>0); if(m2.length){ for(let i=0;i<2;i++){ const m=m2[Math.floor(Math.random()*m2.length)]; const lose=Math.min((S.mats[m.id]||0),3); S.mats[m.id]=(S.mats[m.id]||0)-lose; logEvent("妖兽劫走 "+m.name+" ×"+lose+"！",'warn'); } } }},
-  {id:"ruin", nm:"上古秘藏", good:true,  txt:"发掘上古秘藏，获得一批中品灵石！", fx:()=>{ const n=Math.floor(5+Math.random()*45); S.stoneM+=n; logEvent("秘藏开掘，中品灵石 +"+fmt(n)+"！",'sys'); }},
+  {id:"ruin", nm:"上古秘藏", good:true,  txt:"发掘上古秘藏，获得一批中品灵石与随机采集物！", fx:()=>{ const n=Math.floor(5+Math.random()*45); S.stoneM+=n; const cnt=1+Math.floor(Math.random()*3); const got={}; for(let i=0;i<cnt;i++){ let tot=0; const ws=MATS.map(m=>{ const w=RARITY_POOL_PROB[Math.min(Math.max((m.rarity||1)-1,0),7)]||0; tot+=w; return w; }); let rd=Math.random()*tot; let pick=MATS[MATS.length-1]; for(let j=0;j<MATS.length;j++){ rd-=ws[j]; if(rd<=0){ pick=MATS[j]; break; } } S.mats[pick.id]=(S.mats[pick.id]||0)+1; got[pick.name]=(got[pick.name]||0)+1; } logEvent("秘藏开掘，中品灵石 +"+fmt(n)+"、"+Object.keys(got).map(k=>k+"×"+got[k]).join("、")+"！",'sys'); }},
   {id:"drought",nm:"灵气枯竭", good:false, txt:"地脉枯竭，120秒内修炼速度降至六成。", fx:()=>{ evt.prodLow=Date.now()+120000; }},
-  {id:"dao", nm:"大道共鸣", good:true,  txt:"大道共鸣，90秒内突破成功率大增！", fx:()=>{ evt.breakBoost=Date.now()+90000; evt.breakBoostAmt=0.30; }},
+  {id:"dao", nm:"大道共鸣", good:true,  txt:"大道共鸣，顿悟灵力，90秒内突破成功率大增！", fx:()=>{ evt.breakBoost=Date.now()+90000; evt.breakBoostAmt=0.30; const g=Math.max(1,Math.floor(realmNeed()*0.02)); S.essence+=g; if(S.lifetime===undefined)S.lifetime=0; S.lifetime+=g; logEvent("大道共鸣，灵力 +"+fmt(g)+"（当前突破所需灵力的 2%）",'sys'); }},
   /* v30.8.7 新增事件：2 吉 + 3 凶 */
   {id:"hunt", nm:"路遇妖兽", good:true,  txt:"路遇妖兽，将其斩杀，夺得妖兽内丹！", fx:()=>{ const n=2+Math.floor(Math.random()*3); S.mats.core=(S.mats.core||0)+n; logEvent("斩杀妖兽，获得妖兽内丹 ×"+n+"！",'sys'); }},
   {id:"forge", nm:"炉火纯青", good:true,  txt:"丹炉火旺，60秒内制造速度翻倍！", fx:()=>{ evt.craftBoost=Date.now()+60000; }},
@@ -2320,6 +2320,36 @@ function renderZao(body){
     cycTxt.addEventListener("click",()=>{ if(S.cycle&&S.cycle.rId===r.id) openCycQty(r.id); });
     cycRow.appendChild(cycTxt);
     item.querySelector(".body").appendChild(cycRow);
+    // 傀儡制造：下拉只列空闲傀儡（未指派任务），可把本配方直接指派给该傀儡
+    const idleList=S.servants.map((s,i)=>({s,i})).filter(o=>!o.s.task);
+    const puRow=document.createElement("div");puRow.style.cssText="display:flex;align-items:center;gap:8px;margin-top:7px;font-size:12px;flex-wrap:wrap";
+    const puLbl=document.createElement("span");puLbl.textContent="傀儡制造：";puLbl.style.color="var(--ink-dim)";puRow.appendChild(puLbl);
+    const puSel=document.createElement("select");
+    puSel.style.cssText="padding:6px 8px;border-radius:7px;font-size:12px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);max-width:200px;";
+    if(idleList.length){
+      idleList.forEach(o=>{ const op=document.createElement("option");op.value=o.i;op.textContent=(SV_AV[o.s.lv]||"🪵")+" "+(LV_NM[o.s.lv]||o.s.lv)+"傀 · 效率 "+Math.round((SV_EFF[o.s.lv]||0.4)*100)+"%";puSel.appendChild(op); });
+    } else {
+      const op=document.createElement("option");op.value="";op.textContent="无空闲傀儡";puSel.appendChild(op);puSel.disabled=true;
+    }
+    puRow.appendChild(puSel);
+    const puBtn=buyBtn(idleList.length>0,()=>{
+      const idx=parseInt(puSel.value,10); const sv0=S.servants[idx];
+      if(!sv0||sv0.task){ banner("该傀儡已在任务中"); render(); return; }
+      sv0.task={kind:"zao", t:cur.cat, rId:r.id}; sv0.prog=0; sv0.curR=null;
+      const nm=(LV_NM[sv0.lv]||sv0.lv)+"傀";
+      logEvent("指派"+nm+"制造「"+r.name+"」",'sys','craft');
+      banner(nm+"开始制造「"+r.name+"」");
+      render();
+    },"傀儡制造");
+    puRow.appendChild(puBtn);
+    // 已有傀儡在做本配方时给出提示
+    const puBusy=S.servants.filter(sv2=>sv2.task&&sv2.task.kind==="zao"&&sv2.task.rId===r.id);
+    if(puBusy.length){
+      const tip2=document.createElement("span");tip2.style.color="var(--jade)";tip2.style.fontSize="12px";
+      tip2.textContent="⏳ "+puBusy.map(sv2=>(LV_NM[sv2.lv]||sv2.lv)+"傀").join("、")+"制造中";
+      puRow.appendChild(tip2);
+    }
+    item.querySelector(".body").appendChild(puRow);
     body.appendChild(item);
   });
 }
@@ -3499,7 +3529,7 @@ const SPELLS=[
   {id:"s-du1",name:"剧毒蚀骨",elem:"毒",type:"dmg",target:"enemy",cost:12,cd:0,mult:0.8,guaranteed:true,eff:[{k:"poison",v:5,t:3}]},
   {id:"s-du2",name:"万毒侵体",elem:"毒",type:"dmg",target:"all",cost:22,cd:3,mult:0.7,eff:[{k:"poison",v:4,t:2},{k:"atkDown",v:15,t:2}]},
   {id:"s-du3",name:"毒体反噬",elem:"毒",type:"shen",target:"self",cost:12,cd:3,eff:[{k:"reflect",v:20,t:3}]},
-  {id:"s-du4",name:"毒瘴护身",elem:"毒",type:"shen",target:"self",cost:10,cd:2,eff:[{k:"dmgRed",v:40,t:2},{k:"reflect",v:15,t:2}]},
+  {id:"s-du4",name:"毒瘴护身",elem:"毒",type:"shen",target:"self",cost:10,cd:2,eff:[{k:"dmgRed",v:40,t:3},{k:"reflect",v:15,t:3}]},
   // 阴阳
   {id:"s-yiny1",name:"阴阳逆转",elem:"阴阳",type:"dmg",target:"enemy",cost:18,cd:2,mult:1.3,lifesteal:0.5},
   {id:"s-yiny2",name:"混沌归一",elem:"阴阳",type:"dmg",target:"all",cost:26,cd:3,mult:0.95},
