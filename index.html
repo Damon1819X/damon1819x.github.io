@@ -569,11 +569,11 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v31.17（拍卖技能灵根限制）
+   修仙挂机 · 问道长生  v31.20（自动折算找零归整）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v31.19";
+const VERSION = "v31.20";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -1625,10 +1625,19 @@ function payL(p){ if(!canPayL(p)) return false; S.stoneG-=p.g; S.stoneT-=p.t; S.
 function canPayAutoL(n){ // 总价值：各品按 99% 折算为下品后是否足够（精确组合由 canPayL 先行判定、无需手续费）
   return S.stoneL + Math.floor(S.stoneM*99) + Math.floor(S.stoneH*9900) + Math.floor(S.stoneT*990000) + Math.floor(S.stoneG*99000000) >= n;
 }
-function payAutoL(n){ // 自动高换低支付 n 下品：低品不足时从低到高逐级折算高品（每品折得 = 面值×99%），折算多余部分以找零下品保留
+function upNormL(){ // v31.18 无损升品归整：100 下→1 中、100 中→1 上、100 上→1 极、100 极→1 神
+  const l=S.stoneL||0; S.stoneM=(S.stoneM||0)+Math.floor(l/100); S.stoneL=l%100;
+  const m=S.stoneM; S.stoneH=(S.stoneH||0)+Math.floor(m/100); S.stoneM=m%100;
+  const h=S.stoneH; S.stoneT=(S.stoneT||0)+Math.floor(h/100); S.stoneH=h%100;
+  const t=S.stoneT; S.stoneG=(S.stoneG||0)+Math.floor(t/100); S.stoneT=t%100;
+}
+function payAutoL(n){ // 自动高换低支付 n 下品：低品不足时从低到高逐级折算高品（每品折得 = 面值×99%）
   if(S.stoneL>=n){ S.stoneL-=n; return true; }
   if(!canPayAutoL(n)) return false;
+  const bk={G:S.stoneG,T:S.stoneT,H:S.stoneH,M:S.stoneM,L:S.stoneL};
   let rem=n-S.stoneL; // 需高品折算补足的缺口
+  S.stoneL=0; // v31.18 原有低品全部计入本次支付，折算找零单独归整
+  let change=0;
   const rates=[["M",100],["H",1e4],["T",1e6],["G",1e8]]; // 中→上→极→神，逐级向上取，最小消耗高品
   for(let i=0;i<rates.length;i++){
     if(rem<=0) break;
@@ -1637,11 +1646,12 @@ function payAutoL(n){ // 自动高换低支付 n 下品：低品不足时从低�
     const per=Math.floor(v*0.99); // 每品折得下品（1% 手续费）
     const take=Math.min(Math.ceil(rem/per), S["stone"+k]);
     S["stone"+k]-=take;
-    S.stoneL+=take*per;
-    rem-=take*per;
+    const got=take*per, used=Math.min(rem,got);
+    rem-=used; change+=got-used; // 本次折算中未用完的部分作为找零
   }
-  if(rem>0) return false;
-  S.stoneL-=n; // stoneL 含原低品+折算所得，扣除后剩余即找零
+  if(rem>0){ S.stoneG=bk.G; S.stoneT=bk.T; S.stoneH=bk.H; S.stoneM=bk.M; S.stoneL=bk.L; return false; }
+  S.stoneL+=change;
+  upNormL(); // v31.18 找零无损升品，避免整块高品折算后余量全堆在下品
   return true;
 }
 function addL(p){ S.stoneG+=p.g; S.stoneT+=p.t; S.stoneH+=p.h; S.stoneM+=p.m; S.stoneL+=p.l; }
