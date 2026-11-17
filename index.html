@@ -573,7 +573,7 @@ button:hover:not(:disabled){filter:brightness(1.08);}
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v31.18";
+const VERSION = "v31.19";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -3508,7 +3508,7 @@ const SPELLS=[
   {id:"s-jin4",name:"锋锐入体",elem:"金",type:"shen",target:"self",cost:10,cd:2,eff:[{k:"nextPower",v:40}]},
   // 木
   {id:"s-mu1",name:"藤蔓缠身",elem:"木",type:"dmg",target:"enemy",cost:10,cd:0,mult:0.9,eff:[{k:"bind",ch:0.70,v:40,t:2}]},
-  {id:"s-mu2",name:"荆棘反噬",elem:"木",type:"shen",target:"enemy",cost:14,cd:1,eff:[{k:"reflectHit",v:20,t:2}]},
+  {id:"s-mu2",name:"荆棘反噬",elem:"木",type:"shen",target:"self",cost:14,cd:1,eff:[{k:"reflectHit",v:20,t:2}]},
   {id:"s-mu3",name:"枯木逢春",elem:"木",type:"fa",target:"self",cost:12,cd:5,eff:[{k:"regen",v:15,t:3}]},
   {id:"s-mu4",name:"木灵遁隐",elem:"木",type:"shen",target:"self",cost:10,cd:2,eff:[{k:"dodge",v:30,t:2}]},
   // 水
@@ -3691,7 +3691,13 @@ let BATTLE=null;
 function bLog(m){ if(BATTLE) BATTLE.roundLog.push(m); }
 function buffAdd(u,k,v,t,srcAtk){
   if(!u.buffs) u.buffs={};
-  if(u.buffs[k]){ u.buffs[k].v+=v; u.buffs[k].t=Math.max(u.buffs[k].t,(t||1)); if(srcAtk!==undefined) u.buffs[k].srcAtk=srcAtk; }
+  if(u.buffs[k]){
+    const b=u.buffs[k];
+    // v31.19：护盾/反伤为"取较高值并刷新时长"，此前直接累加会被反复施放堆到吸不完的程度
+    if(k==="shield"||k==="reflect"){ b.v=Math.max(b.v,v); b.t=Math.max(b.t,(t||1)); }
+    else { b.v+=v; b.t=Math.max(b.t,(t||1)); }
+    if(srcAtk!==undefined) b.srcAtk=srcAtk;
+  }
   else u.buffs[k]={v:v,t:(t||1),srcAtk:srcAtk};
 }
 function bEffDmgRed(u){
@@ -3705,8 +3711,8 @@ function bEffDmgRed(u){
 }
 function bEffSpeed(u){
   let sp=u.speed||100;
-  if(u.buffs&&u.buffs.slow) sp*=1-(u.buffs.slow.v/100);
-  if(u.buffs&&u.buffs.bind) sp*=1-(u.buffs.bind.v/100);
+  if(u.buffs&&u.buffs.slow&&u.buffs.slow.t>0) sp*=1-(u.buffs.slow.v/100);
+  if(u.buffs&&u.buffs.bind&&u.buffs.bind.t>0) sp*=1-(u.buffs.bind.v/100);
   if(u.buffs&&u.buffs.allUp) sp*=1+(u.buffs.allUp.v/100);
   return Math.max(10,Math.floor(sp));
 }
@@ -3839,7 +3845,9 @@ function battleStrike(att,def,opts){
 /* 每回合初：状态回合数递减 */
 function buffTick(u){
   if(!u.buffs)return;
-  Object.keys(u.buffs).forEach(k=>{ const b=u.buffs[k]; if(b.t>0){ b.t--; if(b.t<=0&&!["shield","reflect","poison","burn","slow","bind"].includes(k)) delete u.buffs[k]; } });
+  // v31.19 修复"打不死"：过期 buff 必须清除。此前 shield/reflect/poison/burn/slow/bind 被豁免，
+  // 导致 ①过期护盾剩余值在下次施放时被 buffAdd 累加，护盾越叠越厚；②slow/bind 过期后仍被 bEffSpeed 读取，永久减速。
+  Object.keys(u.buffs).forEach(k=>{ const b=u.buffs[k]; if(b.t>0){ b.t--; if(b.t<=0) delete u.buffs[k]; } });
   if(u.nextFirst>0) u.nextFirst--;
   u.defending=false;
 }
@@ -3855,6 +3863,9 @@ function nextOrder(){
 }
 function bEndCheck(){
   const b=BATTLE;
+  // v31.19 兜底：hp 若被异常数值污染（NaN/Infinity），`hp<=0` 恒为 false 会导致战斗永不结束
+  if(!Number.isFinite(b.enemy.hp)) b.enemy.hp=0;
+  if(!Number.isFinite(b.player.hp)) b.player.hp=0;
   if(b.enemy.hp<=0){ finishBattle("win"); return true; }
   if(b.player.hp<=0){ finishBattle("lose"); return true; }
   return false;
@@ -3923,7 +3934,7 @@ function battleEnemyAct(){
   if(b.enemy.buffs&&b.enemy.buffs.stun&&b.enemy.buffs.stun.t>0){ bLog("敌方被眩晕，跳过行动"); return; }
   const e=b.enemy,p=b.player;
   const r=Math.random();
-  if(e.hp<e.hpMax*0.4){
+  if(b.turn<=15&&e.hp<e.hpMax*0.4){
     if(r<0.25){ const h=Math.floor(e.hpMax*0.20); e.hp=Math.min(e.hpMax,e.hp+h); bLog("敌方施展回气，恢复气血 "+h); }
     else if(r<0.45){ buffAdd(e,"atkUp",30,2); bLog("敌方运功蓄势，攻击提升30%"); }
   }
@@ -3955,6 +3966,13 @@ function bEndRound(){
     if(u.buffs&&u.buffs.poison&&u.buffs.poison.t>0){ const d=Math.floor(u.hpMax*(u.buffs.poison.v/100)); const dd=dealDirect(u,d,null); if(dd>0)bLog((k==="player"?"玩家":"敌方")+"受中毒伤害 "+dd); }
     if(u.buffs&&u.buffs.regen&&u.buffs.regen.t>0){ const amt=Math.min(u.buffs.regen.v,(u.buffs.regen.left||u.buffs.regen.v)); if(amt>0){ u.hp=Math.min(u.hpMax,u.hp+amt); u.buffs.regen.left=(u.buffs.regen.left||u.buffs.regen.v)-amt; bLog((k==="player"?"玩家":"敌方")+"气血缓缓恢复 "+amt); } }
   });
+  // v31.19 久战力竭：第 16 回合起敌方气血每回合流失 4% 上限（不受护盾/减伤影响），
+  // 避免高护盾 + 低血回气叠加成"永远打不死"的无限战斗；正常 5-10 回合的战斗不受影响。
+  if(b.turn>=16&&b.enemy.hp>0){
+    const drain=Math.max(1,Math.floor(b.enemy.hpMax*0.04));
+    b.enemy.hp=Math.max(0,b.enemy.hp-drain);
+    bLog("久战力竭：敌方气血流失 "+drain);
+  }
   bEndCheck();
   if(b.over) return;
   // 下一回合开始
@@ -5025,6 +5043,8 @@ const MANUAL_SECTIONS=[
     {h:"命中与伤害", b:"命中率 = 95% − 敌闪避（下限 5%）；暴击按会心概率触发、伤害 ×1.5（+暴伤词条）；最终伤害再乘（1−敌方减伤），敌方减伤按类型 5%/12%/20%（普通/精英/BOSS）。"},
     {h:"逃跑与失败", b:"逃跑成功率 = 50% +（我方速度−敌速度）×0.1%，区间 5%~90%；失败则敌方追加一击。战斗失败：气血收至 1，被迫撤离并损失 50% 战利品。"},
     {h:"敌方 AI", b:"气血低于 40% 时可能「回气」（回 20% 气血）或「运功蓄势」（攻+30%）；平时按区域元素池施法（普通/精英/BOSS 施法概率 35%/45%/55%），并有对应元素抗性差异。"},
+    {h:"久战力竭", b:"第 16 回合起，敌方气血每回合额外流失 <b>4% 上限</b>（无视护盾与减伤），且「回气」只在 1~15 回合内触发。用于终结「护盾越叠越厚 + 低血回气」造成的无限僵持；正常 5~10 回合的战斗不受影响。"},
+    {h:"护盾与反伤", b:"护盾/反伤<b>不叠加</b>：重复施放只取较高值并刷新持续回合；状态到期即清除（不会再残留护盾数值被下一次施放累加）。「荆棘反噬」为自身获得反伤。"},
     {h:"战斗中离开与返回", b:"战斗中可点右上「收起战斗（可随时返回）」收起界面；此时「探索」页顶部会出现「战斗进行中」卡片、秘境地图底部出现「⚔ 返回战斗（第 N 回合）」，点任一即可回到原战斗，回合数/血量/灵力/冷却全部保留。战斗结算后这些入口自动消失。"},
     {h:"自动战斗", b:"战斗界面点『自动战斗』：低血优先开护盾/回血/减伤身法，否则使用最省灵力的可用法术。适合挂机刷秘境，但不如手动选克制属性高效。"},
   ]},
