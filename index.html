@@ -569,11 +569,11 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v31.13（拍卖悬浮详情显示当前持有数量）
+   修仙挂机 · 问道长生  v31.17（拍卖技能灵根限制）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v31.15";
+const VERSION = "v31.18";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -1176,43 +1176,43 @@ const CRAFT = [
     {id:"ningshen",name:"凝神符",ic:"🧠",value:2884,eff:"crit",val:10,durMin:30,maxStack:3,ds:"凝神静气，会心通明，心魔不侵。", need:{"zishen":10,"herb":22,"tort":12,"lingzhi":6,"longxian":4}},
     {id:"dundi",name:"遁地符",ic:"🌀",value:1358,eff:"dmg_reduce",val:15,durMin:60,maxStack:2,ds:"遁地符成，千山万壑如履平地。", need:{"han":12,"herb":26,"iron":20,"tort":8}},
     {id:"yuhuo",name:"御火符",ic:"🔥",value:3033,eff:"combat",val:8,durMin:30,maxStack:3,ds:"御火之符，火灵护体，攻伐凌厉。", need:{"huoshi":9,"skin":25,"tong":16,"longxian":5,"bone":6,"fea":6}},
-    {id:"pojun",name:"破军符",ic:"⚔️",value:2538,eff:"brk",val:15,durMin:60,maxStack:2,ds:"破军之势，无坚不摧，突破更易。", need:{"gold":12,"tiger":4,"skin":28,"iron":22,"lingzhi":8}},
+    {id:"pojun",name:"破军符",ic:"⚔️",value:2538,eff:"brk",val:1,durMin:10,maxStack:2,ds:"破军之势，无坚不摧，突破更易。", need:{"gold":12,"tiger":4,"skin":28,"iron":22,"lingzhi":8}},
     {id:"xuanling",name:"玄灵符",ic:"✨",value:17576,eff:"ess_flat",val:50,durMin:60,maxStack:4,ds:"玄灵之气，绵绵不绝，福泽自生。", need:{"qing":20,"core":18,"myst":10,"jiuye":6,"xie":4}},
     {id:"zhenfu",name:"镇神符",ic:"🧿",value:15496,eff:"crit",val:12,durMin:60,maxStack:3,ds:"镇神定魄，会心澄澈，外邪难犯。", need:{"zishen":20,"bing":18,"heshouwu":10,"zhu":4,"xuanhuang":4}},
     {id:"jiadun",name:"金甲遁地符",ic:"🛡️",value:12376,eff:"dmg_reduce",val:20,durMin:60,maxStack:2,ds:"金甲护体，遁走无形，攻守兼备。", need:{"qing":22,"xie":18,"jiao":10,"tiger":6,"huoshi":6}},
     {id:"fentian",name:"焚天御火符",ic:"🔥",value:36244,eff:"combat",val:12,durMin:60,maxStack:3,ds:"焚天烈焰，御火成势，战力激增。", need:{"huoshi":20,"chiyan":16,"zhu":8,"dihuo":6,"fenghuangy":2}},
-    {id:"zixiao",name:"紫霄破阵符",ic:"⚡",value:24492,eff:"brk",val:20,durMin:60,maxStack:2,ds:"紫霄神雷，破阵克敌，势如破竹。", need:{"lei":18,"bing":18,"xlangz":6,"hansui":10,"peng":4}},
-    {id:"taichufu",name:"太初灵符",ic:"🌀",value:61620,eff:"ess_pct",val:18,durMin:120,maxStack:2,ds:"太初之气，灵蕴无穷，产出倍增。", need:{"jiuye":18,"peng":16,"hwl":10,"xinghui":4,"wanfuf":2,"hundung":1}},
+    {id:"zixiao",name:"紫霄破阵符",ic:"⚡",value:24492,eff:"brk",val:2,durMin:10,maxStack:2,ds:"紫霄神雷，破阵克敌，势如破竹。", need:{"lei":18,"bing":18,"xlangz":6,"hansui":10,"peng":4}},
+    {id:"taichufu",name:"太初灵符",ic:"🌀",value:61620,eff:"ess_pct",val:5,durMin:120,maxStack:2,ds:"太初之气，灵蕴无穷，产出倍增。", need:{"jiuye":18,"peng":16,"hwl":10,"xinghui":4,"wanfuf":2,"hundung":1}},
     {id:"dinghun",name:"定魂符",ic:"💀",value:67340,eff:"crit",val:16,durMin:120,maxStack:1,ds:"定魂镇魄，魂归本位，会心大增。", need:{"niepan":18,"xuanhuang":16,"xianhe":10,"jiuyang":2,"yinyangh":2,"biluoy":2}},
     {id:"hundunfu",name:"混元遁形符",ic:"🌑",value:68562,eff:"dmg_reduce",val:25,durMin:120,maxStack:1,ds:"混元一气，遁形无迹，减免伤势。", need:{"jiuye":20,"peng":16,"longxue":8,"qilinj":4,"xuanwubei":2,"hunyuan":1}},
     {id:"jiuyangfu",name:"九阳焚天符",ic:"☀️",value:71552,eff:"combat",val:20,durMin:120,maxStack:1,ds:"九阳齐出，焚天煮海，战力无双。", need:{"niepan":18,"xuanhuang":16,"chiyan":12,"zhulongm":4,"fenghuangy":2,"yinglongl":1}},
-    {id:"zhuxianpo",name:"诛仙破妄符",ic:"⚔️",value:79690,eff:"brk",val:28,durMin:120,maxStack:1,ds:"诛仙之力，破妄归真，突破无碍。", need:{"xuanhuang":18,"jiuye":16,"xlangz":8,"qilinj":4,"tianwai":2,"hongmengj":1,"hundung":1}},
-    {id:"hunyuanqi",name:"混元一气符",ic:"🌌",value:189670,eff:"ess_pct",val:30,durMin:120,maxStack:1,ds:"混元归一气，道韵自天成，灵气暴涨。", need:{"xinghui":10,"zijinm":14,"fenghuangy":10,"taichu":4,"hongmengj":1,"hundung":1}},
+    {id:"zhuxianpo",name:"诛仙破妄符",ic:"⚔️",value:79690,eff:"brk",val:5,durMin:10,maxStack:1,ds:"诛仙之力，破妄归真，突破无碍。", need:{"xuanhuang":18,"jiuye":16,"xlangz":8,"qilinj":4,"tianwai":2,"hongmengj":1,"hundung":1}},
+    {id:"hunyuanqi",name:"混元一气符",ic:"🌌",value:189670,eff:"ess_pct",val:10,durMin:120,maxStack:1,ds:"混元归一气，道韵自天成，灵气暴涨。", need:{"xinghui":10,"zijinm":14,"fenghuangy":10,"taichu":4,"hongmengj":1,"hundung":1}},
     {id:"taiyizhen",name:"太一镇神符",ic:"☯️",value:185900,eff:"crit",val:22,durMin:120,maxStack:1,ds:"太一镇神，万邪辟易，会心通神。", need:{"zixiaot":18,"qilinj":12,"jiuyang":8,"yinyangh":10,"hunjing":1,"taichu":1}},
     {id:"wujidun",name:"无极遁世符",ic:"🌀",value:205270,eff:"dmg_reduce",val:30,durMin:120,maxStack:1,ds:"无极之境，遁世无争，万法不侵。", need:{"wanfuf":18,"xinghui":8,"xuanwubei":8,"biluoy":4,"yinglongl":2,"hunjing":1,"chuangshij":1}},
     {id:"hundunpo",name:"混沌破天符",ic:"💥",value:218920,eff:"combat",val:30,durMin:120,maxStack:1,ds:"混沌之力，破天裂地，战力滔天。", need:{"zijinm":18,"zhulongm":14,"fenghuangy":10,"qilinj":6,"hundun":1,"chuangshij":1,"zulongy":1}},
-    {id:"hongmengzheng",name:"鸿蒙证道符",ic:"🪷",value:229320,eff:"brk",val:40,durMin:120,maxStack:1,ds:"鸿蒙初开，证道成符，突破如神。", need:{"qilinj":18,"xinghui":8,"jiuyang":10,"hunyuan":3,"hongmengj":2,"chuangshil":1,"zulongy":1}},
+    {id:"hongmengzheng",name:"鸿蒙证道符",ic:"🪷",value:229320,eff:"brk",val:10,durMin:10,maxStack:1,ds:"鸿蒙初开，证道成符，突破如神。", need:{"qilinj":18,"xinghui":8,"jiuyang":10,"hunyuan":3,"hongmengj":2,"chuangshil":1,"zulongy":1}},
   ]},
   {cat:"炼丹", ic:"⚗️", ds:"以草药妖兽精华炼丹药", rec:[
     {id:"juqi",name:"聚气丹",ic:"💊",value:705,eff:"ess_flat",val:20,durMin:30,maxStack:5,heal:10,ds:"聚气归元，灵气充盈，兼能恢复气血。", need:{"lingzhi":10,"herb":26,"iron":18,"skin":16}},
     {id:"chuiti",name:"淬体丹",ic:"💪",value:572,eff:"combat",val:8,durMin:30,maxStack:3,ds:"淬炼肉身，筋骨如铁，战力提升。", need:{"skin":24,"iron":20,"tong":12,"bone":10}},
     {id:"yangshen",name:"养神丹",ic:"💆",value:2920,eff:"crit",val:10,durMin:30,maxStack:3,ds:"滋养神魂，神思清明，会心提升。", need:{"zishen":8,"longxian":12,"herb":24,"lingzhi":8,"tort":10}},
-    {id:"zhuji",name:"筑基丹",ic:"🫙",value:3711,eff:"brk",val:15,durMin:60,maxStack:3,ds:"稳固根基，筑基有望，突破更易。", need:{"heshouwu":8,"core":6,"herb":26,"iron":20,"lingzhi":6}},
+    {id:"zhuji",name:"筑基丹",ic:"🫙",value:3711,eff:"brk",val:2,durMin:10,maxStack:3,ds:"稳固根基，筑基有望，突破更易。", need:{"heshouwu":8,"core":6,"herb":26,"iron":20,"lingzhi":6}},
     {id:"jinganghu",name:"金刚护体丹",ic:"🛡️",value:1316,eff:"dmg_reduce",val:15,durMin:60,maxStack:2,heal:20,ds:"金刚不坏，减免伤势，兼能恢复气血。", need:{"bone":24,"tort":12,"skin":20,"gold":10}},
     {id:"huiling",name:"回灵丹",ic:"✨",value:16848,eff:"ess_flat",val:50,durMin:60,maxStack:4,heal:30,ds:"回灵养元，灵气奔涌，兼能恢复气血。", need:{"qing":20,"core":18,"myst":8,"jiuye":4,"peng":4}},
     {id:"huoyuancu",name:"火元淬体丹",ic:"🌋",value:35412,eff:"combat",val:12,durMin:60,maxStack:3,ds:"火元淬体，百炼成钢，战力大增。", need:{"huoshi":20,"chiyan":16,"zhu":6,"dihuo":6,"fenghuangy":2}},
     {id:"qiqiao",name:"七窍养神丹",ic:"🧠",value:16432,eff:"crit",val:12,durMin:60,maxStack:3,ds:"七窍通明，神游太虚，会心大增。", need:{"zishen":20,"bing":18,"heshouwu":10,"peng":4,"xuanhuang":4}},
-    {id:"pojing",name:"破境丹",ic:"💠",value:15886,eff:"brk",val:20,durMin:60,maxStack:2,ds:"破境开悟，瓶颈松动，突破更易。", need:{"qing":20,"core":16,"lei":6,"xuanyang":10,"dihuo":8}},
+    {id:"pojing",name:"破境丹",ic:"💠",value:15886,eff:"brk",val:3,durMin:10,maxStack:2,ds:"破境开悟，瓶颈松动，突破更易。", need:{"qing":20,"core":16,"lei":6,"xuanyang":10,"dihuo":8}},
     {id:"xuanguihu",name:"玄龟护体丹",ic:"🐢",value:22568,eff:"dmg_reduce",val:20,durMin:60,maxStack:2,ds:"玄龟之甲，坚不可摧，减免伤势。", need:{"xie":18,"jiao":18,"tiger":8,"myst":8,"xuanwubei":2}},
-    {id:"tianyuan",name:"天元丹",ic:"🔆",value:62270,eff:"ess_pct",val:18,durMin:120,maxStack:2,ds:"天元之气，生生不息，灵气暴涨。", need:{"jiuye":18,"peng":16,"xuanhuang":10,"niepan":6,"zijinm":4,"hunyuan":1}},
+    {id:"tianyuan",name:"天元丹",ic:"🔆",value:62270,eff:"ess_pct",val:3,durMin:120,maxStack:2,ds:"天元之气，生生不息，灵气暴涨。", need:{"jiuye":18,"peng":16,"xuanhuang":10,"niepan":6,"zijinm":4,"hunyuan":1}},
     {id:"jiuzhuanlian",name:"九转炼体丹",ic:"💪",value:59904,eff:"combat",val:20,durMin:120,maxStack:1,ds:"九转炼体，肉身成圣，战力滔天。", need:{"xuanhuang":18,"niepan":16,"chiyan":10,"longxue":6,"qilinj":3,"fenghuangy":2}},
     {id:"taiyiding",name:"太一定神丹",ic:"🧿",value:66040,eff:"crit",val:16,durMin:120,maxStack:1,ds:"太一定神，道心稳固，会心通神。", need:{"jiuye":18,"peng":16,"xianhe":10,"xinghui":4,"jiuyang":2,"yinyangh":2}},
-    {id:"poxudujie",name:"破虚渡劫丹",ic:"🌩️",value:66326,eff:"brk",val:28,durMin:120,maxStack:1,ds:"破虚渡劫，天劫不侵，突破如神。", need:{"xuanhuang":18,"niepan":16,"hwl":8,"longxue":4,"qilinj":2,"taichu":1,"hundung":1}},
+    {id:"poxudujie",name:"破虚渡劫丹",ic:"🌩️",value:66326,eff:"brk",val:5,durMin:10,maxStack:1,ds:"破虚渡劫，天劫不侵，突破如神。", need:{"xuanhuang":18,"niepan":16,"hwl":8,"longxue":4,"qilinj":2,"taichu":1,"hundung":1}},
     {id:"hundunhu",name:"混元护体丹",ic:"🛡️",value:77870,eff:"dmg_reduce",val:25,durMin:120,maxStack:1,heal:60,ds:"混元护体，万法难伤，兼能恢复气血。", need:{"jiuye":20,"peng":16,"liuli":8,"qilinj":3,"xuanwubei":2,"hunyuan":1,"yinglongl":1}},
-    {id:"hundunzaohua",name:"混沌造化丹",ic:"🌌",value:169650,eff:"ess_pct",val:30,durMin:120,maxStack:1,ds:"混沌造化，灵气如渊，源源不绝。", need:{"xinghui":10,"zijinm":14,"jiuyang":10,"wanfuf":6,"hundung":1,"chuangshil":1}},
+    {id:"hundunzaohua",name:"混沌造化丹",ic:"🌌",value:169650,eff:"ess_pct",val:6,durMin:120,maxStack:1,ds:"混沌造化，灵气如渊，源源不绝。", need:{"xinghui":10,"zijinm":14,"jiuyang":10,"wanfuf":6,"hundung":1,"chuangshil":1}},
     {id:"daoticuihuo",name:"道体淬炼丹",ic:"✨",value:156000,eff:"combat",val:30,durMin:120,maxStack:1,ds:"道体淬炼，浑然天成，战力无双。", need:{"zijinm":18,"zhulongm":14,"qilinj":10,"jiuyang":8,"fenghuangy":2,"yinglongl":1}},
     {id:"hongmengding",name:"鸿蒙定魂丹",ic:"🧠",value:147160,eff:"crit",val:22,durMin:120,maxStack:1,ds:"鸿蒙定魂，神念如虹，会心无双。", need:{"qilinj":16,"zixiaot":14,"xinghui":8,"yinyangh":10,"jiuyang":2,"hongmengj":1}},
-    {id:"jiuzhuanpoxu",name:"九转破虚丹",ic:"💥",value:212420,eff:"brk",val:40,durMin:120,maxStack:1,ds:"九转破虚，直指大道，突破无碍。", need:{"qilinj":18,"xinghui":6,"jiuyang":10,"fenghuangy":6,"taichu":1,"hundun":1,"zulongy":1}},
+    {id:"jiuzhuanpoxu",name:"九转破虚丹",ic:"💥",value:212420,eff:"brk",val:10,durMin:10,maxStack:1,ds:"九转破虚，直指大道，突破无碍。", need:{"qilinj":18,"xinghui":6,"jiuyang":10,"fenghuangy":6,"taichu":1,"hundun":1,"zulongy":1}},
     {id:"wujijinshen",name:"无极金身丹",ic:"🛡️",value:186160,eff:"dmg_reduce",val:30,durMin:120,maxStack:1,heal:60,ds:"无极金身，金刚不坏，兼能恢复气血。", need:{"wanfuf":18,"zixiaot":16,"tianwai":10,"biluoy":4,"xuanwubei":2,"taotieg":1,"chuangshij":1}},
   ]},
   {cat:"炼器", ic:"⚒️", ds:"炼器成装备，穿戴生效", rec:[
@@ -1469,6 +1469,12 @@ function normalizeState(){
   }
   if(clearedTres>0) logEvent("已清理 "+clearedTres+" 种废弃奇珍（奇珍体系已停用）",'warn');
   S.making=S.making||null; S.collectCd=S.collectCd||0; S.cycle=S.cycle||null; S.collectZone=S.collectZone||{beast:"外",ore:"外",herb:"外"};
+  // v31.18：探索与运功/炼制/挂机采集互斥——读档时若探索未结束却残留运功/炼制状态，强制归一，避免"探索中仍在产灵气"
+  if(S.exp && !S.exp.over){
+    if(S.yunning){ S.yunning=false; S.critBoost=false; }
+    if(S.making) S.making=null;
+    S.collect={};
+  }
   if(!S.servants || !S.servants.length) S.servants=[{lv:"丁",task:null,prog:0,curR:null}];
   S.servants.forEach(s=>{ s.lv=s.lv||"丁"; s.task=s.task||null; if(s.task&&s.task.kind==="cai"&&!s.task.zone)s.task.zone="外"; s.prog=s.prog||0; s.curR=s.curR||null; });
   if(!S.pets||!Array.isArray(S.pets)) S.pets=[];
@@ -2332,7 +2338,10 @@ function renderZao(body){
       const op=document.createElement("option");op.value="";op.textContent="无空闲傀儡";puSel.appendChild(op);puSel.disabled=true;
     }
     puRow.appendChild(puSel);
-    const puBtn=buyBtn(idleList.length>0,()=>{
+    // v31.16：探索中与整页制造互斥一致，禁止指派（此前探索态残留时仍可点，容易误判为"傀儡制造锁死运功"）
+    if(S.exp) puSel.disabled=true;
+    const puBtn=buyBtn(!S.exp && idleList.length>0,()=>{
+      if(S.exp){ banner("探索中不可指派傀儡制造，请先结束探索"); return; }
       const idx=parseInt(puSel.value,10); const sv0=S.servants[idx];
       if(!sv0||sv0.task){ banner("该傀儡已在任务中"); render(); return; }
       sv0.task={kind:"zao", t:cur.cat, rId:r.id}; sv0.prog=0; sv0.curR=null;
@@ -3180,7 +3189,7 @@ function shopTipHtml(it,en){
   const r=it.obj;
   let eff="";
   if(it.kind==="gong") eff="功法 · 灵气倍率 ×"+r.ess;
-  else if(it.kind==="skill") eff="购后习得，可装配至战前技能槽 · "+battleSkillDesc("spell",r);
+  else if(it.kind==="skill") eff="购后习得，可装配至战前技能槽";
   else if(it.kind==="book") eff="兽诀 · "+r.ds;
   else if(it.kind==="mat"){ /* 材料无效果段 */ }
   else if(r.slot) eff=eqText(r);
@@ -3195,7 +3204,7 @@ function shopTipHtml(it,en){
   }
   else if(it.kind==="book") held=" · 持有 "+((S.books||[]).filter(b=>b.sid===r.bookSid&&(b.lv||1)===(r.bookLv||1)).length);
   else held=" · 持有 "+fmt(S.tres[en.id]||0);
-  return `<b>${r.name}${it.kind==="skill"?"（"+r.elem+"灵根）":""}</b>（稀有${it.kind==="skill"?spellRarityOf(r):r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>${it.kind==="mat"?"单价":"价值"} ${r.value} 下品灵石 · 库存 ${en.stock}${held}`;
+  return `<b>${r.name}${it.kind==="skill"?"（"+r.elem+"灵根）":""}</b>（稀有${it.kind==="skill"?spellRarityOf(r):r.rarity} · ${itemCat(it)}）<br>${it.kind==="skill"?battleSkillDesc("spell",r):(r.ds||"无")}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>${it.kind==="skill"?"单价 "+priceLText(splitPriceL(r.value)):(it.kind==="mat"?"单价":"价值")+" "+r.value+" 下品灵石"} · 库存 ${en.stock}${held}`;
 }
 /* v28 拍卖会货物悬浮详情：与坊市随机出售同机制（#itemTip/bindTip），展示名称/分类/描述/效果与底价、当前出价 */
 function auctionTipHtml(it,en){
@@ -3210,7 +3219,7 @@ function auctionTipHtml(it,en){
   else if(it.kind==="tres") held=" · 持有 "+fmt(S.tres[en.id]||0);
   else if(it.kind==="gong") held=" · "+(S.gongs.includes(en.id)?"已习得":"未习得");
   else if(it.kind==="skill") held=" · "+(S.skills.includes(en.id)?"已习得":"未习得");
-  return `<b>${r.name}</b>（稀有${it.kind==="skill"?spellRarityOf(r):r.rarity} · ${itemCat(it)}）<br>${r.ds||"无"}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>底价 ${ceilPriceText(en.base)} · 当前 ${ceilPriceText(en.bid)}（${who}）${held}`;
+  return `<b>${r.name}</b>（稀有${it.kind==="skill"?spellRarityOf(r):r.rarity} · ${itemCat(it)}）<br>${it.kind==="skill"?battleSkillDesc("spell",r):(r.ds||"无")}${eff?`<br><span style="color:var(--jade)">${eff}</span>`:""}<br>底价 ${ceilPriceText(en.base)} · 当前 ${ceilPriceText(en.bid)}（${who}）${held}`;
 }
 function auctionItem(kind,id){
   if(kind==="mat"){ const m=MATS_BY_ID[id]; return m?{kind:"mat",obj:m}:null; }
@@ -3246,10 +3255,16 @@ function refreshAuction(now, startAt){
 }
 function bidAuction(en){
   if(!en || !S.auction || !S.auction.live) return;
+  const it0=auctionItem(en.kind,en.id);
+  if(it0 && it0.kind==="skill"){ // v31.17 拍卖技能同坊市：非本灵根不可竞拍
+    if((S.skills||[]).includes(en.id)){ logEvent("已习得「"+it0.obj.name+"」，无需重复竞拍",'dim'); return; }
+    const r0=S.root?rootSpellElems(S.root):[];
+    if(!r0.includes(it0.obj.elem)){ logEvent("「"+it0.obj.name+"」属"+it0.obj.elem+"灵根，与自身灵根（"+(S.root?S.root.name:"未定")+"）不符，无法竞拍",'warn'); return; }
+  }
   const add=Math.max(1,Math.ceil(en.base*0.1)); // 加价 = 底价 10%
   const nb=en.bid+add;
   const extra=nb-(en.pPaid||0); // 只需补差额
-  const it=auctionItem(en.kind,en.id);
+  const it=it0;
   if(extra>0 && !canPayL(splitPriceL(extra)) && !canPayAutoL(extra)){ logEvent("灵石不足（可自动以高品折低品支付，或先至「灵石兑换」低换高凑齐），无法出价「"+(it?it.obj.name:"")+"」（需 "+fmt(nb)+" 下品灵石）。",'warn'); return; }
   if(extra>0 && !payL(splitPriceL(extra))) payAutoL(extra);
   en.bid=nb; en.pPaid=nb; en.bidder="player";
@@ -3273,7 +3288,7 @@ function settleAuction(now){
   S.auction.list.forEach(en=>{
     const it=auctionItem(en.kind,en.id);
     if(en.bidder==="player"){
-      if(it){ if(it.kind==="mat") S.mats[en.id]=(S.mats[en.id]||0)+1; else if(it.kind==="skill"){ if(!S.skills.includes(en.id)) S.skills.push(en.id); logEvent("拍卖拍得技能「"+it.obj.name+"」并习得",'sys','trade'); } // v31.10 技能拍得直接习得
+      if(it){ if(it.kind==="mat") S.mats[en.id]=(S.mats[en.id]||0)+1; else if(it.kind==="skill"){ const rq=S.root?rootSpellElems(S.root):[]; if(rq.includes(it.obj.elem)){ if(!S.skills.includes(en.id)) S.skills.push(en.id); logEvent("拍卖拍得技能「"+it.obj.name+"」并习得",'sys','trade'); } else { addL(splitPriceL(en.pPaid||0)); refund+=(en.pPaid||0); logEvent("「"+it.obj.name+"」属"+it.obj.elem+"灵根，与本灵根不符，未能习得（已退还 "+fmt(en.pPaid||0)+" 下品灵石）",'warn','trade'); } } // v31.10 技能拍得直接习得
         else if(it.kind==="book"){ S.books.push({sid:it.obj.bookSid,lv:it.obj.bookLv||1}); }
         else if(it.kind==="gong"){ S.tres[en.id]=(S.tres[en.id]||0)+1; } else if(isEquip(en.id)){ S.equip.push(newEquip(en.id)); } else { S.tres[en.id]=(S.tres[en.id]||0)+1; } }
       won++; if(it) logEvent("拍卖成交：以 "+fmt(en.bid)+" 下品灵石拍得「"+it.obj.name+"」",'sys','trade');
@@ -3306,8 +3321,9 @@ function renderAuction(body){
     const add=Math.max(1,Math.ceil(en.base*0.1));
     const nb=en.bid+add, extra=nb-(en.pPaid||0);
     const row=document.createElement("div");row.className="exchRow";
-    row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name} · 稀有${it.kind==="skill"?spellRarityOf(it.obj):it.obj.rarity} · ${itemCat(it)} · 底价 ${ceilPriceText(en.base)} · 当前 <span id="aucBid${idx}">${ceilPriceText(en.bid)}（${who}）</span></span>`;
-    row.appendChild(buyBtn((canPayL(splitPriceL(extra))||canPayAutoL(extra)),()=>{bidAuction(en);},"出价 "+ceilPriceText(nb)));
+    const rElA=S.root?rootSpellElems(S.root):[]; const wrongA=it.kind==="skill"&&!rElA.includes(it.obj.elem);
+    row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name}${it.kind==="skill"?"（"+it.obj.elem+"灵根）":""}${wrongA?'<b style="color:#e05555"> · 本灵根不可用</b>':""} · 稀有${it.kind==="skill"?spellRarityOf(it.obj):it.obj.rarity} · ${itemCat(it)} · 底价 ${ceilPriceText(en.base)} · 当前 <span id="aucBid${idx}">${ceilPriceText(en.bid)}（${who}）</span></span>`;
+    row.appendChild(buyBtn(!wrongA&&(canPayL(splitPriceL(extra))||canPayAutoL(extra)),()=>{bidAuction(en);},wrongA?"不可用":"出价 "+ceilPriceText(nb)));
     bindTip(row,icOf(it.obj),()=>auctionTipHtml(it,en)); // v30.9 拍卖悬浮实时取最新竞价/竞拍者，避免快照过期
     body.appendChild(row);
   });
@@ -3336,7 +3352,7 @@ function renderShop(body){
   let st=document.createElement("div");st.className="sectionTitle";st.textContent="— 坊市 · 随机出售（每10分钟刷新）—";body.appendChild(st);
   const p=document.createElement("div");p.className="hint";p.innerHTML="随机上架 10 种材料 / 成品，越稀有刷新率越低、库存越少（稀有度1~5 → 库存10~1）。以灵石购买：<b>下品不足时自动以高品折抵</b>（高→低折算含 1% 手续费，多余找回下品）；<b>高品不足不自动低换高</b>，需先至「灵石兑换」手动凑齐。"+(S.shop.list.length?(" 距下次刷新 <b>"+Math.ceil((S.shop.until-Date.now())/60000)+"</b> 分钟。"):"");body.appendChild(p);
   if(!S.shop.list.length){ const e=document.createElement("div");e.className="hint";e.textContent="暂无上架商品。";body.appendChild(e); }
-  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const rEl=S.root?rootSpellElems(S.root):[]; const wrong=it.kind==="skill"&&!rEl.includes(it.obj.elem); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name}${it.kind==="skill"?"（"+it.obj.elem+"灵根）":""}${wrong?'<b style="color:#e05555"> · 本灵根不可用</b>':""} · 稀有${it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; bindTip(row,icOf(it.obj),()=>shopTipHtml(it,en)); const learned=it.kind==="skill"&&(S.skills||[]).includes(en.id); row.appendChild(buyBtn(en.stock>0&&(canPayL(pr)||canPayAutoL(it.obj.value))&&!learned&&!wrong,()=>{buyShop(en);render();},learned?"已习得":(wrong?"不可用":"购买"))); body.appendChild(row); });
+  else S.shop.list.forEach(en=>{ const it=shopItem(en.id); if(!it) return; const pr=splitPriceL(it.obj.value); const rEl=S.root?rootSpellElems(S.root):[]; const wrong=it.kind==="skill"&&!rEl.includes(it.obj.elem); const row=document.createElement("div");row.className="exchRow"; row.innerHTML=`<span class="ex-n">${icOf(it.obj)} ${it.obj.name}${it.kind==="skill"?"（"+it.obj.elem+"灵根）":""}${wrong?'<b style="color:#e05555"> · 本灵根不可用</b>':""} · 稀有${it.kind==="skill"?spellRarityOf(it.obj):it.obj.rarity} · ${itemCat(it)} · 库存 ${en.stock} · ${priceLText(pr)}</span>`; bindTip(row,icOf(it.obj),()=>shopTipHtml(it,en)); const learned=it.kind==="skill"&&(S.skills||[]).includes(en.id); row.appendChild(buyBtn(en.stock>0&&(canPayL(pr)||canPayAutoL(it.obj.value))&&!learned&&!wrong,()=>{buyShop(en);render();},learned?"已习得":(wrong?"不可用":"购买"))); body.appendChild(row); });
 }
 function renderExch(body){
   const st2=document.createElement("div");st2.className="sectionTitle";st2.textContent="— 坊市 · 灵石兑换（手续费1%）—";body.appendChild(st2);
@@ -4477,6 +4493,24 @@ function expRetreat(){
   logEvent("主动撤出秘境：损失 "+hpL+" 气血、一半战利品",'warn');
   S.exp=null; $("expOverlay").classList.remove("show"); save(); renderTab(); renderStats();
 }
+/* v31.16 修复：刷新/重开后 S.exp 仍留在存档但探索界面不恢复，运功被"探索中"永久拦截（表现为"无法修炼"）。
+   有效进度 → 自动恢复探索界面；数据不完整 → 清理，避免死状态。 */
+function resumeExploreIfAny(){
+  if(!S.exp) return;
+  const e=S.exp;
+  const valid = !e.over && e.map && e.pos && EXP_AREAS[e.area] && typeof renderExpPanel==="function";
+  if(!valid){
+    S.exp=null;
+    logEvent("上次探索进度不完整，已自动清理（可重新开启探索）",'warn');
+    save();
+    return;
+  }
+  expTab="explore";
+  renderExpPanel();
+  $("expOverlay").classList.add("show");
+  logEvent("已恢复未结束的探索「"+EXP_AREAS[e.area].nm+"」（可继续深入或撤出）",'sys');
+  banner("已恢复上次未结束的探索，可继续或撤出");
+}
 /* 探索收获总结（v33.4）：卡片式弹窗，战利品按类别分组（材料/成品/装备/兽诀/傀儡/灵石） */
 function expSummary(title, lossNote){
   const exp=S.exp; if(!exp) return;
@@ -4930,7 +4964,7 @@ const MANUAL_SECTIONS=[
   {t:"入门总览", ic:"🧭", secs:[
     {h:"目标", b:"从炼气一路修到真仙，飞升换取<b>大道碎片</b>做永久成长。单次打开 5~10 分钟就能看到明显推进，离线也有收益。"},
     {h:"核心循环", b:"<b>运功</b>产灵力 → <b>突破</b>境界，解锁设施与区域；<b>采集</b>材料 → <b>制造</b>成品 → <b>出售</b>换灵石 → 买<b>强化设施</b>与功法技能。<b>探索</b>秘境产出材料、灵力与灵兽蛋。"},
-    {h:"互斥关系", b:"<b>运功 / 采集（含挂机）/ 制造 / 探索</b> 同一时间只能进行一项：开始运功会停掉采集挂机，进入探索会自动停掉运功、炼制、循环制造与挂机采集，反之亦然。"},
+    {h:"互斥关系", b:"<b>运功 / 采集（含挂机）/ 制造 / 探索</b> 同一时间只能进行一项：开始运功会停掉采集挂机，进入探索会自动停掉运功、炼制、循环制造与挂机采集，反之亦然。探索中刷新或重开页面会自动恢复未结束的探索界面，继续深入或撤出即可；探索期间运功、采集、制造（含傀儡制造）均不可用。"},
     {h:"界面", b:"左栏菜单（14 项）／中栏内容（滚动区）／右栏事件日志（可按 系统·交易·采集·制造·强化 过滤）。顶部为道号、灵力、境界、灵根与大道碎片；下方货币栏含五品灵石与气血。"},
     {h:"新手指引", b:"首次进入会询问是否开启指引：道号必填 → 选择立绘 → 刷取灵根（免费 10 次）。指引可随时跳过（仍要填道号）。"},
   ]},
@@ -4948,7 +4982,7 @@ const MANUAL_SECTIONS=[
   ]},
   {t:"境界与突破", ic:"🧘", secs:[
     {h:"十重境界", b:"炼气(需求0,×1) → 筑基(1.6万,×3) → 金丹(24万,×10) → 元婴(400万,×35) → 化神(6400万,×120) → 炼虚(200亿,×420) → 合体(4000亿,×1500) → 大乘(8e12,×5400) → 渡劫(1.6e14,×2万) → 真仙(4e15,×7.5万)。<br>境界倍率直接乘灵气产出；突破需求再乘灵根需求倍率。"},
-    {h:"突破成功率", b:"= 灵根上限（10%~50%，变异 35%）+ 突破机缘（每级+2%）+ 突破类丹药/符箓（15%~40%）+ 随机事件（+30%），<b>总上限 80%</b>。"},
+    {h:"突破成功率", b:"= 灵根上限（10%~50%，变异 35%）+ 突破机缘（每级+2%）+ 突破类丹药（2%~10%）、符箓（1%~10%）+ 随机事件（+30%），<b>总上限 80%</b>。"},
     {h:"代价", b:"成功：扣掉所需灵力、境界+1、气血回满。失败：损失<b>所需灵力的 40%</b>，境界不变。"},
     {h:"防连点与留痕", b:"突破按钮 700ms 内重复点击只算一次，且每次突破<b>立即存档</b>；「设置 → 诊断 → 境界记录」可查最近 12 次境界变化（突破/飞升/载入不一致/校正脏值）。"},
     {h:"解锁", b:"筑基解锁探索、金丹解锁会心一击、元婴解锁中部采集/闭关收益、化神可飞升、合体解锁核心采集与 5 台傀儡上限。"},
@@ -5024,7 +5058,7 @@ const MANUAL_SECTIONS=[
     {h:"操作", b:"「装备」页点人物栏凹槽 → 弹窗选择穿戴；已穿戴装备不可出售（需先卸下）；装备库可出售换灵石。属性常驻生效并实时计入属性面板。"},
   ]},
   {t:"丹药·符箓·阵法", ic:"💊", secs:[
-    {h:"效果类型", b:"灵气固定值 / 灵气百分比 / 突破成功率 / 会心 / 战力 / 秘境减伤 / 回气血。数值与持续时间按套位递增（30~120 分钟）。"},
+    {h:"效果类型", b:"灵气固定值 / 灵气百分比 / 突破成功率 / 会心 / 战力 / 秘境减伤 / 回气血。数值与持续时间按套位递增（10~120 分钟）。"},
     {h:"叠层", b:"同类可叠加到各自上限（maxStack 1~5），重复使用刷新持续时间；到期前 5 秒日志提醒「即将失效」，结束时提示「效果已结束」。"},
     {h:"使用场景", b:"战斗外用「须弥空间」使用；<b>战斗内</b>可点战斗界面「道具」打开战斗背包，使用回血丹药与战斗类符箓/丹药/阵图（不占技能槽，消耗一次行动）。"},
     {h:"注意", b:"突破类丹药只影响突破，别在战斗前误用；灵气类丹药与运功叠加计算。"},
@@ -5387,6 +5421,7 @@ if(!S.root){ if(S.tut==="done"||S.tut==="skip") openReroll(); else openTutAsk();
 sizeBg();
 updateBadges();
 render();
+resumeExploreIfAny(); // v31.16：刷新后恢复未结束的探索，避免"探索中"永久锁死运功
 setInterval(autoLoop,1000);
 setInterval(()=>{ if(S.root && S.realm>=1 && Date.now()>=evt.nextAt) triggerEvent(); },60000);
 // 中列已改为按需刷新（点击/采集产出/坊市刷新），移除高频自动重建以避免按钮闪烁与单击丢失
