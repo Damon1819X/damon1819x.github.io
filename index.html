@@ -4437,11 +4437,23 @@ function enemyPower(floor, area, boss){
   if(boss) p=pw*MUL[area]*(LATE[area]||1);
   return Math.floor(p);
 }
-function randRec(cat){ const c=CRAFT.find(c=>c.cat===cat); return c?c.rec[Math.floor(Math.random()*c.rec.length)]:null; }
-/* v13：区域产出稀有度区间——洞天 1-5 / 禁区 2-6 / 战场 3-8 / 跨界 4-10；权重 11-rarity+lift 递减，稀有度越高产出概率越低。 */
+function areaRec(area, floor, cat){
+  const c=CRAFT.find(x=>x.cat===cat); if(!c||!c.rec.length) return null;
+  /* 丹符按秘境分层：洞天 1-7 / 禁区 1-8 / 战场 2-9 / 跨界 3-10；权重 11-rarity+lift 递减，高阶越难出 */
+  const R={dt:[1,7],yl:[1,8],sg:[2,9],kj:[3,10]};
+  const rr=R[area]||[1,10];
+  let pool=c.rec.filter(r=>{ const ra=r.rarity||1; return ra>=rr[0]&&ra<=rr[1]; });
+  if(!pool.length) pool=c.rec; // 保底：区间无出品时回退全池
+  const lift=Math.min(2,Math.floor(((floor||1)-1)/2));
+  const ws=pool.map(r=>Math.max(1,(11-(r.rarity||1))+lift));
+  let tot=0; ws.forEach(w=>tot+=w); let x=Math.random()*tot;
+  for(let i=0;i<pool.length;i++){ x-=ws[i]; if(x<=0) return pool[i]; }
+  return pool[0];
+}
+/* 区域产出稀有度区间——洞天 1-7 / 禁区 1-8 / 战场 2-9 / 跨界 3-10；权重 11-rarity+lift 递减，稀有度越高产出概率越低。 */
 function areaMat(area, floor){
   const A={dt:["herb","herb","ore"],yl:["beast","beast","ore"],sg:["beast","ore","ore"],kj:["beast","ore","ore","herb"]};
-  const R={dt:[1,5],yl:[2,6],sg:[3,8],kj:[4,10]};
+  const R={dt:[1,7],yl:[1,8],sg:[2,9],kj:[3,10]};
   const cats=A[area]||["herb"]; const cat=cats[Math.floor(Math.random()*cats.length)];
   const rr=R[area]||[1,10];
   const pool=MATS.filter(m=>m.cat===(cat==="herb"?"草药":cat==="ore"?"矿石":"妖兽材料")&&(m.rarity||1)>=rr[0]&&(m.rarity||1)<=rr[1]);
@@ -4662,8 +4674,8 @@ function expMove(q,r){
     case "blank": logEvent("空无一物",'dim'); break;
     case "mat":{ if(Math.random()<0.5){ const m=areaMat(exp.area,exp.floor); exp.loot.push({kind:"mat",id:m.id,name:m.name,qty:1}); logEvent("拾获 "+m.name+" ×1",'sys','collect'); } else logEvent("此地灵气稀薄，一无所获",'dim'); }break;
     case "stone":{ const st=areaStone(exp.area,exp.floor); exp.loot.push({kind:"stone",tier:st.tier,qty:st.qty}); logEvent("拾获 "+(st.tier==="L"?"下品":st.tier==="M"?"中品":st.tier==="H"?"上品":st.tier==="T"?"极品":"神品")+"灵石 ×"+st.qty,'sys','trade'); }break;
-    case "dan":{ if(Math.random()<0.55){ const r=randRec("炼丹"); if(r){ exp.loot.push({kind:"tres",id:r.id,name:r.name,qty:1}); logEvent("拾获丹药 "+r.name+" ×1",'sys','collect'); } } else logEvent("丹炉残渣，一无所获",'dim'); }break;
-    case "fu":{ if(Math.random()<0.55){ const r=randRec("制符"); if(r){ exp.loot.push({kind:"tres",id:r.id,name:r.name,qty:1}); logEvent("拾获符箓 "+r.name+" ×1",'sys','collect'); } } else logEvent("符纸受潮，一无所获",'dim'); }break;
+    case "dan":{ if(Math.random()<0.55){ const r=areaRec(exp.area,exp.floor,"炼丹"); if(r){ exp.loot.push({kind:"tres",id:r.id,name:r.name,qty:1}); logEvent("拾获丹药 "+r.name+" ×1",'sys','collect'); } } else logEvent("丹炉残渣，一无所获",'dim'); }break;
+    case "fu":{ if(Math.random()<0.55){ const r=areaRec(exp.area,exp.floor,"制符"); if(r){ exp.loot.push({kind:"tres",id:r.id,name:r.name,qty:1}); logEvent("拾获符箓 "+r.name+" ×1",'sys','collect'); } } else logEvent("符纸受潮，一无所获",'dim'); }break;
     case "trap":{ const dmg=expDmg(Math.ceil(S.hpMax*0.06)); S.hp-=dmg; logEvent("触发机关！损失 "+dmg+" 气血",'warn'); if(S.hp<=0){ S.hp=1; retreat=true; } }break;
     case "fight":{
       enterBattle("fight",q,r,c,prev); return;
