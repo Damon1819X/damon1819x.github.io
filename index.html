@@ -68,7 +68,19 @@ body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft 
 #equipSetupBar .esN{flex:1;min-width:0;}
 #equipSetupBar .esBtns{display:flex;gap:6px;flex:none;}
 #equipSetupBar .esBtns button{flex:none;padding:5px 12px;border-radius:6px;border:none;background:linear-gradient(135deg,var(--gold),#b8912a);color:#1a1406;font-weight:700;cursor:pointer;font-size:12px;}
-#logPanel{grid-column:3;display:flex;flex-direction:column;min-height:60vh;}
+#logWrap{grid-column:3;position:relative;display:flex;min-width:0;}
+#logPanel{display:flex;flex-direction:column;min-height:60vh;flex:1;min-width:0;}
+/* v31.21 事件日志收起/展开：竖条按钮贴在日志列左边界，收起后固定到屏幕右边缘（位置由 JS 精确计算） */
+#logToggleBtn{position:absolute;z-index:8;top:50%;transform:translateY(-50%);
+  width:16px;height:72px;padding:0;border:1px solid rgba(255,255,255,.10);border-right:none;border-radius:6px 0 0 6px;
+  background:linear-gradient(90deg,rgba(0,0,0,.52),rgba(0,0,0,.24));color:var(--ink);font-size:16px;font-weight:700;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .2s ease,background .2s ease;}
+#logToggleBtn:hover{color:var(--gold);background:rgba(0,0,0,.46);}
+#app.log-collapsed{grid-template-columns:172px minmax(0,1fr) 0;}
+#app.log-collapsed #logWrap{display:none;}
+@media(min-width:761px) and (max-width:1060px){
+  #app.log-collapsed{grid-template-columns:148px minmax(0,1fr) 0;}
+}
 #logPanel .h-t{font-size:12px;color:var(--ink-dim);padding:6px 2px;}
 #logFilter{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px;}
 .lfBtn{flex:1;min-width:0;padding:5px 2px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--ink-dim);font-size:11px;cursor:pointer;}
@@ -410,6 +422,7 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 <body>
 <canvas id="bg"></canvas>
 <div id="app">
+  <button id="logToggleBtn" title="收起事件日志" aria-label="收起事件日志">›</button>
   <div id="topbar">
     <div class="stat"><div class="lbl">道号</div><div class="val gold" id="playerNm">无名散修</div></div>
     <div class="stat"><div class="lbl">灵力（修炼）</div><div class="val jade" id="essenceVal">0</div><div style="font-size:11px;color:var(--ink-dim)" id="essenceRate">0/s</div></div>
@@ -475,7 +488,8 @@ button:hover:not(:disabled){filter:brightness(1.08);}
     <div id="battleSetupBar"></div>
     <div id="equipSetupBar"></div>
   </div>
-  <div id="logPanel">
+  <div id="logWrap">
+    <div id="logPanel">
     <div class="h-t">— 事件日志 —</div>
     <div id="logFilter">
       <button class="lfBtn active" data-lf="all">全部</button>
@@ -486,6 +500,7 @@ button:hover:not(:disabled){filter:brightness(1.08);}
       <button class="lfBtn" data-lf="up">强化</button>
     </div>
     <div id="logList"></div>
+    </div>
   </div>
 </div>
 
@@ -569,11 +584,11 @@ button:hover:not(:disabled){filter:brightness(1.08);}
 
 <script>
 /* ================================================================
-   修仙挂机 · 问道长生  v31.20（自动折算找零归整）
+   修仙挂机 · 问道长生  v31.21（事件日志可收起）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v31.20";
+const VERSION = "v31.21";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
@@ -4999,6 +5014,7 @@ const MANUAL_SECTIONS=[
     {h:"核心循环", b:"<b>运功</b>产灵力 → <b>突破</b>境界，解锁设施与区域；<b>采集</b>材料 → <b>制造</b>成品 → <b>出售</b>换灵石 → 买<b>强化设施</b>与功法技能。<b>探索</b>秘境产出材料、灵力与灵兽蛋。"},
     {h:"互斥关系", b:"<b>运功 / 采集（含挂机）/ 制造 / 探索</b> 同一时间只能进行一项：开始运功会停掉采集挂机，进入探索会自动停掉运功、炼制、循环制造与挂机采集，反之亦然。探索中刷新或重开页面会自动恢复未结束的探索界面，继续深入或撤出即可；探索期间运功、采集、制造（含傀儡制造）均不可用。"},
     {h:"界面", b:"左栏菜单（14 项）／中栏内容（滚动区）／右栏事件日志（可按 系统·交易·采集·制造·强化 过滤）。顶部为道号、灵力、境界、灵根与大道碎片；下方货币栏含五品灵石与气血。"},
+    {h:"事件日志可收起", b:"日志左边界有一条竖排按钮：点 <b>›</b> 收起右栏，中栏自动加宽；收起后按钮固定在屏幕右侧，箭头变为 <b>‹</b>，再点一次恢复日志。收起状态会被记住，下次打开沿用上次的选择。"},
     {h:"新手指引", b:"首次进入会询问是否开启指引：道号必填 → 选择立绘 → 刷取灵根（免费 10 次）。指引可随时跳过（仍要填道号）。"},
   ]},
   {t:"创建角色", ic:"🧑‍🚀", secs:[
@@ -5213,6 +5229,44 @@ document.addEventListener("keydown",e=>{
 $("manualClose").addEventListener("click",()=>{ $("manualOverlay").classList.remove("show"); });
 $("manualPrev").addEventListener("click",()=>{ manualIdx=(manualIdx+MANUAL_SECTIONS.length-1)%MANUAL_SECTIONS.length; renderManual(); });
 $("manualNext").addEventListener("click",()=>{ manualIdx=(manualIdx+1)%MANUAL_SECTIONS.length; renderManual(); });
+/* v31.21 事件日志收起/展开：按钮贴在日志列左边界，收起后固定到屏幕右侧并变为向左展开 */
+(function(){
+  const KEY="xiuxian_log_collapsed";
+  const app=$("app"), btn=$("logToggleBtn"), wrap=$("logWrap"); if(!app||!btn||!wrap) return;
+  // 位置用像素计算：窄窗口下日志列会被压缩，固定 right 值会跑位
+  function place(){
+    const collapsed=app.classList.contains("log-collapsed")||wrap.offsetParent===null;
+    if(window.innerWidth<=760){
+      btn.style.position="fixed"; btn.style.left="auto"; btn.style.right="8px";
+      btn.style.top="auto"; btn.style.bottom="14px"; btn.style.transform="none";
+      btn.style.width="24px"; btn.style.height="48px"; btn.style.borderRadius="6px";
+      return;
+    }
+    btn.style.width="16px"; btn.style.height="72px"; btn.style.borderRadius="6px 0 0 6px";
+    if(collapsed){
+      btn.style.position="fixed"; btn.style.left="auto"; btn.style.right="0";
+      btn.style.top="50%"; btn.style.bottom="auto"; btn.style.transform="translateY(-50%)";
+      return;
+    }
+    const ar=app.getBoundingClientRect(), wr=wrap.getBoundingClientRect();
+    btn.style.position="absolute"; btn.style.left="auto";
+    btn.style.top="50%"; btn.style.bottom="auto"; btn.style.transform="translateY(-50%)";
+    btn.style.right=(wr.width>0)?Math.round(ar.right-wr.left+2)+"px":"2px";
+  }
+  const apply=c=>{
+    app.classList.toggle("log-collapsed",c);
+    btn.textContent=c?"‹":"›";
+    const label=c?"展开事件日志":"收起事件日志";
+    btn.title=label; btn.setAttribute("aria-label",label);
+    try{ localStorage.setItem(KEY,c?"1":"0"); }catch(e){}
+    place();
+  };
+  btn.addEventListener("click",()=>apply(!app.classList.contains("log-collapsed")));
+  window.addEventListener("resize",place);
+  let saved=false; try{ saved=localStorage.getItem(KEY)==="1"; }catch(e){}
+  apply(saved);
+  setTimeout(place,60); setTimeout(place,600);
+})();
 $("qqGroupBtn").addEventListener("click",()=>{
   const num="1128330622";
   const done=()=>{ banner("QQ群号已复制：1128330622"); logEvent("已复制官方QQ群号 1128330622",'sys'); };
