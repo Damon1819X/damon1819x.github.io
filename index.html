@@ -1539,7 +1539,7 @@ function normalizeState(){
   if(S.exp&&S.exp.map&&!S.exp.pos)S.exp.pos={q:0,r:0};
   // 战斗中刷新中断恢复：已进入但未结算完成的战斗格（used 且无 finished），重置为未占用，避免永久空置
   if(S.exp&&S.exp.map&&S.exp.map.cells){
-    for(const k in S.exp.map.cells){ const c=S.exp.map.cells[k]; if(c&&c.used&&["fight","elite","boss"].includes(c.t)&&!c.finished){ c.used=false; } }
+    for(const k in S.exp.map.cells){ const c=S.exp.map.cells[k]; if(c&&c.used&&["fight","down","boss"].includes(c.t)&&!c.finished){ c.used=false; } }
   }
 }
 function save(){
@@ -4068,7 +4068,12 @@ function resolveCell(win,fleeMode){
   S.hp=Math.max(1,BATTLE.player.hp);
   const c=exp.map.cells[b.q+","+b.r];
   if(!c){ return; }
-  if(win||fleeMode==="flee") c.finished=true; // 结算完成标记：刷新后不误判为中断
+  if(win){ c.finished=true; }
+  else if(fleeMode==="flee"){
+    // 入口/终点格逃跑后解除占用并退回战前位置，允许再次挑战；普通妖兽格保留已探索状态
+    if(c.t==="down"||c.t==="boss"){ c.used=false; c.finished=false; if(b.prev) exp.pos={q:b.prev.q,r:b.prev.r}; }
+    else { c.finished=true; }
+  }
   const st=areaStone(exp.area,exp.floor);
   if(fleeMode==="flee"){ logEvent("成功逃跑，返回地图",'dim'); }
   else if(win){
