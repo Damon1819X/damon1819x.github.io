@@ -623,14 +623,14 @@ function showModal(t,body,cb){ $("mTitle").textContent=t; $("mBody").textContent
    v26.4 数值修正：全设施统一 10 秒回本（out=cost/10，单位灵石产出恒定 10%）；
    outM 与 costM 对齐（每级成本×M、产出×M，升级边际性价比恒定），消除"同灵石投入产出倒挂"。 */
 const FAC = [
-  {id:"array",  name:"聚灵阵",   ic:"🌀", cost:20,    out:2,     costM:1.15, outM:1.15, unlock:0, ds:"吸纳四方灵气，每秒凝聚灵气。"},
-  {id:"beast",  name:"驭兽台",   ic:"🐉", cost:150,   out:15,    costM:1.15, outM:1.15, unlock:1, ds:"驭兽台上百兽驯服，灵气自聚。"},
-  {id:"cave",   name:"洞府",     ic:"🏔️", cost:1800,  out:180,   costM:1.16, outM:1.16, unlock:2, ds:"洞天福地，汇聚灵气。"},
-  {id:"pill",   name:"丹药炉",   ic:"⚗️", cost:20000, out:2000,  costM:1.16, outM:1.16, unlock:3, ds:"丹火不息，炼化灵气。"},
-  {id:"field",  name:"仙田",     ic:"🌾", cost:280000,out:28000, costM:1.17, outM:1.17, unlock:4, ds:"种植仙草，萌发灵气。"},
-  {id:"sword",  name:"剑冢",     ic:"🗡️", cost:4e6,   out:400000,costM:1.17, outM:1.17, unlock:5, ds:"万剑归宗，剑气化灵。"},
-  {id:"disciple",name:"炼丹童子",ic:"🧒", cost:7e7,   out:7e6,   costM:1.12, outM:1.12, unlock:6, ds:"童子服侍，吐纳灵气。"},
-  {id:"vein",   name:"灵脉",     ic:"⛰️", cost:1.2e9, out:1.2e8, costM:1.12, outM:1.12, unlock:7, ds:"地脉灵髓，涌出灵气。"},
+  {id:"array",  name:"聚灵阵",   ic:"🌀", cost:20,    out:2,     costM:1.13, outM:1.13, unlock:0, ds:"吸纳四方灵气，每秒凝聚灵气。"},
+  {id:"beast",  name:"驭兽台",   ic:"🐉", cost:150,   out:15,    costM:1.13, outM:1.13, unlock:1, ds:"驭兽台上百兽驯服，灵气自聚。"},
+  {id:"cave",   name:"洞府",     ic:"🏔️", cost:1800,  out:180,   costM:1.13, outM:1.13, unlock:2, ds:"洞天福地，汇聚灵气。"},
+  {id:"pill",   name:"丹药炉",   ic:"⚗️", cost:20000, out:2000,  costM:1.13, outM:1.13, unlock:3, ds:"丹火不息，炼化灵气。"},
+  {id:"field",  name:"仙田",     ic:"🌾", cost:280000,out:28000, costM:1.13, outM:1.13, unlock:4, ds:"种植仙草，萌发灵气。"},
+  {id:"sword",  name:"剑冢",     ic:"🗡️", cost:4e6,   out:400000,costM:1.13, outM:1.13, unlock:5, ds:"万剑归宗，剑气化灵。"},
+  {id:"disciple",name:"炼丹童子",ic:"🧒", cost:7e7,   out:7e6,   costM:1.13, outM:1.13, unlock:6, ds:"童子服侍，吐纳灵气。"},
+  {id:"vein",   name:"灵脉",     ic:"⛰️", cost:1.2e9, out:1.2e8, costM:1.13, outM:1.13, unlock:7, ds:"地脉灵髓，涌出灵气。"},
   {id:"guard",  name:"护山大阵", ic:"🛡️", cost:2e10,  out:2e9,   costM:1.13, outM:1.13, unlock:8, ds:"大阵运转，聚拢灵气。"},
   {id:"thunder",name:"天雷淬体", ic:"⚡", cost:3.5e11,out:3.5e10,costM:1.13, outM:1.13, unlock:9, ds:"引天雷淬体，灵气温养。"},
 ];
