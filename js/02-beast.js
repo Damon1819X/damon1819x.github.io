@@ -597,18 +597,18 @@ function buffEffSum(eff){
 
 /* 神通库（战斗系统使用的技能） */
 const SHEN = [
-  {id:"j1", name:"太虚剑诀", cat:"剑诀", ic:"⚔️", tier:"下品", combat:0.10, cost:20,  ds:"剑出太虚，破敌之先。"},
-  {id:"x1", name:"九转玄功", cat:"心法", ic:"🌀", tier:"下品", combat:0.08, cost:20,  ds:"九转护体，气血绵长。"},
-  {id:"s1", name:"御火术",   cat:"仙术", ic:"🔥", tier:"下品", combat:0.12, cost:20,  ds:"御火焚天，攻伐凌厉。"},
-  {id:"z1", name:"天罡北斗阵",cat:"阵法",ic:"🌌", tier:"中品", combat:0.15, cost:40,  ds:"北斗列阵，困敌护己。"},
-  {id:"x2", name:"混元一气", cat:"心法", ic:"☯️", tier:"中品", combat:0.12, cost:40,  ds:"混元护身，卸力化劲。"},
-  {id:"s3", name:"呼风唤雨", cat:"仙术", ic:"🌧️", tier:"中品", combat:0.18, cost:40,  ds:"呼风唤雨，掌控战局。"},
-  {id:"m1", name:"大衍神算", cat:"秘术", ic:"🔮", tier:"上品", combat:0.20, cost:70,  ds:"窥探天机，料敌先机。"},
-  {id:"j2", name:"万剑归宗", cat:"剑诀", ic:"🗡️", tier:"上品", combat:0.25, cost:70,  ds:"万剑齐发，一往无前。"},
-  {id:"s2", name:"九霄雷法", cat:"仙术", ic:"⚡", tier:"上品", combat:0.28, cost:70,  ds:"召九霄神雷，毁天灭地。"},
-  {id:"z2", name:"诛仙剑阵", cat:"阵法", ic:"🛡️", tier:"极品", combat:0.35, cost:110, ds:"诛仙剑阵，势不可挡。"},
-  {id:"m2", name:"天魔解体大法",cat:"禁术",ic:"👹", tier:"极品", combat:0.40, cost:110, ds:"以命搏命，战力暴增。"},
-  {id:"p1", name:"法天象地", cat:"神通", ic:"🏛️", tier:"至尊", combat:0.50, cost:180, ds:"法相天地，威压众生。"},
+  {id:"j1", name:"太虚剑诀", cat:"剑诀", ic:"⚔️", tier:"下品", combat:0.10, cost:40,  ds:"剑出太虚，破敌之先。"},
+  {id:"x1", name:"九转玄功", cat:"心法", ic:"🌀", tier:"下品", combat:0.08, cost:40,  ds:"九转护体，气血绵长。"},
+  {id:"s1", name:"御火术",   cat:"仙术", ic:"🔥", tier:"下品", combat:0.12, cost:40,  ds:"御火焚天，攻伐凌厉。"},
+  {id:"z1", name:"天罡北斗阵",cat:"阵法",ic:"🌌", tier:"中品", combat:0.15, cost:80,  ds:"北斗列阵，困敌护己。"},
+  {id:"x2", name:"混元一气", cat:"心法", ic:"☯️", tier:"中品", combat:0.12, cost:80,  ds:"混元护身，卸力化劲。"},
+  {id:"s3", name:"呼风唤雨", cat:"仙术", ic:"🌧️", tier:"中品", combat:0.18, cost:80,  ds:"呼风唤雨，掌控战局。"},
+  {id:"m1", name:"大衍神算", cat:"秘术", ic:"🔮", tier:"上品", combat:0.20, cost:140, ds:"窥探天机，料敌先机。"},
+  {id:"j2", name:"万剑归宗", cat:"剑诀", ic:"🗡️", tier:"上品", combat:0.25, cost:140, ds:"万剑齐发，一往无前。"},
+  {id:"s2", name:"九霄雷法", cat:"仙术", ic:"⚡", tier:"上品", combat:0.28, cost:140, ds:"召九霄神雷，毁天灭地。"},
+  {id:"z2", name:"诛仙剑阵", cat:"阵法", ic:"🛡️", tier:"极品", combat:0.35, cost:220, ds:"诛仙剑阵，势不可挡。"},
+  {id:"m2", name:"天魔解体大法",cat:"禁术",ic:"👹", tier:"极品", combat:0.40, cost:220, ds:"以命搏命，战力暴增。"},
+  {id:"p1", name:"法天象地", cat:"神通", ic:"🏛️", tier:"至尊", combat:0.50, cost:360, ds:"法相天地，威压众生。"},
 ];
 
 /* 灵根（31 种） */
