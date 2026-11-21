@@ -1,9 +1,9 @@
 /* ================================================================
-   修仙挂机 · 问道长生  v31.22（音效分层）
+   修仙挂机 · 问道长生  v31.24（飞升碎片下调 / 神通涨价）
    ruleset: xiuxian-idle-v5
    ================================================================ */
 const RULESET_ID = "xiuxian-idle-v5";
-const VERSION = "v31.22";
+const VERSION = "v31.24";
 const CFG = {
   saveKey: "xiuxianIdle_save_v5", // 存档键保持 v5 以兼容历史存档（版本演进见 GDD）
   huangBase: 10.0,
