@@ -218,8 +218,8 @@ function useTres(r){
   banner("使用「"+r.name+"」"); sound(680,.15);
   checkAchievements(); save(); render();
 }/* 飞升碎片（v32.9 削弱）：指数 0.55 + 总量 ×0.5 —— 同进度约为旧版的 1/3~1/6 */
-/* 飞升碎片（v32.10）：平方根 × 0.1 —— 化神首飞约 12 枚，神通需多次飞升攒够 */
-function ascendShards(){ return Math.max(1, Math.floor(Math.pow((S.lifetime||0)/1e6, 0.5) * 0.1)); }
+/* 飞升碎片（v31.24）：平方根 × 0.06 —— 同进度只得旧版的 60%，化神首飞约 7 枚 */
+function ascendShards(){ return Math.max(1, Math.floor(Math.pow((S.lifetime||0)/1e6, 0.5) * 0.06)); }
 function ascend(){
   const fNeed=realmNeed()*2; // 飞升消耗 = 下一境界突破需求 × 灵根需求倍率 × 2
   if(S.realm<4){ banner("化神期方可开启飞升之门"); return; }
@@ -227,11 +227,12 @@ function ascend(){
   const dao=ascendShards();
   S.essence=0;
   S.dao+=dao; S.daoTotal+=dao; S.ascensions++;
-  banner("飞升成功！获得 "+dao+" 大道碎片（傀儡上限与已解锁采集区域已保留）");
+  banner("飞升成功！获得 "+dao+" 大道碎片（傀儡上限、采集区域、材料与成品已保留）");
   logEvent("飞升成功，消耗 "+fmt(fNeed)+" 灵力，获得 "+dao+" 大道碎片",'sys');
   pushRealmLog(S.realm,0,"飞升");
   S.realm=0; S.lifetime=0; S.fa=FAC.map(()=>0);
-  S.mats={}; S.tres={}; S.collect={};
+  // v31.23：材料与成品改为保留（玩家刷到的库存不因飞升蒸发）；采集记录仍清零
+  S.collect={};
   save(); render();
 }
 function buyShen(a){
